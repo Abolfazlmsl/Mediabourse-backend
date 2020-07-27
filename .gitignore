@@ -1,0 +1,19 @@
+# ignore an entire directory   
+/.idea/
+/bourseapp/__pycache__/
+/Bourse/__pycache__/
+/bourseapp/migrations/
+/.venv/*
+/.venv
+.venv
+.idea
+.idea/*
+Mediabourse/db.sqlite3
+Mediabourse/Bourse/migrations/*
+Mediabourse/Bourse/migrations
+Mediabourse/Bourse/__pycache__
+Mediabourse/Bourse/__pycache__/*
+Mediabourse/Mediabourse/__pycache__/
+Mediabourse/Bourse/rest_api/__pycache__/
+Mediabourse/Mediabourse/__pycache__/*
+Mediabourse/Bourse/rest_api/__pycache__/*
