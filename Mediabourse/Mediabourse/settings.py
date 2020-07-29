@@ -84,9 +84,9 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mysite',
-        'USER': 'webappadmin',
-        'PASSWORD': '1qaz!QAZ',
+        'NAME': 'media_bourse',
+        'USER': 'admin',
+        'PASSWORD': 'A.8562497130.Rs',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
@@ -140,8 +140,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=2),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=200),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=500),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 

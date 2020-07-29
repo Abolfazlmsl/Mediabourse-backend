@@ -1,6 +1,36 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
+from ..models import *
+from django.utils import timezone
+
+
+class CompanySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Company
+        fields = '__all__'
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
+class WatcherSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Watcher
+        fields = '__all__'
+
+
+class StockSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Stock
+        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):

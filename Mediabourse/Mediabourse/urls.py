@@ -18,9 +18,10 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from django.conf.urls import url
 
+
 urlpatterns = [
-    url(r'^admin/$', admin.site.urls, name='admin'),
-    url(r'users/', include('Bourse.urls')),
+    path('admin/', admin.site.urls, name='admin'),
+    url(r'bourse/', include('Bourse.urls')),
 
     # REST API
     url(r'^api/login/$', TokenObtainPairView.as_view(), name='token_obtain_pair'),

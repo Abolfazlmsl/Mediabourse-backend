@@ -15,19 +15,13 @@ SYMBOL_TYPE_CHOICES = (
 ###################################################
 
 
-class Category(models.Model): #ModelMeta
+class Category(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                              help_text='کاربر')
     title = models.CharField(max_length=120, null=True, blank=True, help_text='گروه بورسی')
     createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
     pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
     description = models.TextField(max_length=10000, null=True, blank=True, help_text='توضیحات')
-
-    # _metadata = {
-    #     'title': 'title',
-    #     'description': 'description',
-    #     'image': 'get_meta_image',
-    # }
 
     class Meta:
         ordering = ["createAt"]
@@ -42,15 +36,11 @@ class Category(models.Model): #ModelMeta
     def get_absolute_url(self, request=None):
         return reverse("bourseapp:category-detail", kwargs={'category_id': self.pk})
 
-    # def get_meta_image(self):
-    #     if self.pic:
-    #         return self.pic.url
-
 
 class Company(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                              help_text='کاربر')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, help_text='گروه')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, help_text='گروه')
     symbol = models.CharField(max_length=120, null=True, blank=True, help_text='نماد')
     fullName = models.CharField(max_length=120, null=True, blank=True, help_text='نام شرکت')
     alias = models.CharField(max_length=120, null=True, blank=True, help_text='نام معادل انگلیسی')
@@ -66,17 +56,42 @@ class Company(models.Model):
     description = models.TextField(max_length=10000, null=True, blank=True, help_text='توضیحات')
 
     class Meta:
-        ordering = ["-createAt"]
+        ordering = ["createAt"]
 
     def __str__(self):
-        return self.symbol
+        return self.fullName
 
-    @property
-    def owner(self):
-        return self.user
 
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:company-detail", kwargs={'company_id': self.pk})
+class Stock(models.Model):
+    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text='نماد')
+    status = models.CharField(max_length=250, default='ممنوع،متوقف', null=False, blank=False, help_text='وضعیت نماد')
+    trade_volume = models.BigIntegerField(default=0, null=False, blank=False, help_text='حجم معاملات')
+    # trade_counter = models.BigIntegerField(default=0, null=False, blank=False, help_text='تعداد معاملات')
+    # trade_value = models.BigIntegerField(default=0, null=False, blank=0, help_text='ارزش معاملات')
+    stock_price_max = models.IntegerField(default=0, null=False, blank=False, help_text='بیشترین قیمت سهم')
+    stock_price_min = models.IntegerField(default=0, null=False, blank=False, help_text='کمترین قیمت سهم')
+    latest_price = models.IntegerField(default=0, null=False, blank=False, help_text='آخرین قیمت')
+    latest_price_indicator_effect = models.IntegerField(default=0, null=0, blank=False,
+                                                        help_text='تاثیر آخرین قیمت بر شاخص')
+    latest_price_indicator_effect_percent = models.IntegerField(default=0, null=0, blank=False,
+                                                                help_text='درصد تاثیر آخرین قیمت بر شاخص')
+    final_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت پایانی')
+    final_price_indicator_effect = models.IntegerField(default=0, null=0, blank=False,
+                                                       help_text='تاثیر قیمت پایانی بر شاخص')
+    final_price_indicator_effect_percent = models.IntegerField(default=0, null=0, blank=False,
+                                                               help_text='درصد تاثیر قیمت پایانی بر شاخص')
+    # real_selling_count = models.IntegerField(default=0, null=0, blank=False, help_text='تعداد فروش حقیقی')
+    # real_selling_volume = models.BigIntegerField(default=0, null=0, blank=False, help_text='حجم فروش حقیقی')
+    # real_selling_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت فروش حقیقی')
+    # legal_selling_count = models.IntegerField(default=0, null=0, blank=False, help_text='تعداد فروش حقوقی')
+    # legal_selling_volume = models.BigIntegerField(default=0, null=0, blank=False, help_text='حجم فروش حقوقی')
+    # legal_selling_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت فروش حقوقی')
+
+
+class Watcher(models.Model):
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False, blank=False,
+                                help_text='کاربر')
+    stocks = models.TextField(null=False, blank=False, help_text='نام سهم ها')
 
 
 @receiver(reset_password_token_created)
