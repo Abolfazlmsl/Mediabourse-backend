@@ -94,10 +94,38 @@ class Watcher(models.Model):
     stocks = models.TextField(null=False, blank=False, help_text='نام سهم ها')
 
 
+class Orders(models.Model):
+    order_num = models.BigIntegerField()
+    date = models.DateTimeField()
+    action = models.CharField(max_length=100, default="Buy")
+    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
+    volume = models.IntegerField(null=False, blank=False, help_text="حجم")
+    price = models.IntegerField(null=False, blank=False, help_text="قیمت")
+    done = models.IntegerField(help_text="حجم انجام شده")
+    status = models.BooleanField(default=0, help_text="وضعیت")
+    account_type = models.CharField(max_length=150, default="حساب نزد کارگزار", help_text="نوع حساب")
+    source = models.CharField(max_length=150, default="وب سایت", help_text="مبدأ")
+
+
+class Cart(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False, blank=False,
+                                help_text='کاربر')
+    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
+    stock_balance = models.IntegerField(default=0, null=False, blank=False, help_text="دارایی سهم")
+    selling_value = models.IntegerField(default=0, null=False, blank=False, help_text="ارزش فروش")
+    neutral_price = models.IntegerField(default=0, null=False, blank=False, help_text="قیمت سر به سر")
+    latest_price = models.IntegerField(default=0, null=False, blank=False, help_text='آخرین قیمت')
+    final_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت پایانی')
+    today_sell = models.IntegerField(default=0, null=0, blank=False, help_text='فروش امروز')
+    today_buy = models.IntegerField(default=0, null=0, blank=False, help_text='خرید امروز')
+    open_order = models.IntegerField(default=0, null=0, blank=False, help_text='سفارشات باز')
+
+
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
 
-    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'), reset_password_token.key)
+    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'),
+                                                   reset_password_token.key)
 
     s = send_mail(
         # title

@@ -68,11 +68,6 @@ class CompanyCreate(viewsets.ModelViewSet):
     serializer_class = serializers.CompanySerializer
     queryset = Company.objects.all()
 
-    # def list(self, request, *args, **kwargs):
-    #     queryset = Company.objects.all()
-    #     serializer = serializers.CompanySerializer(queryset, many=True)
-    #     return Response(serializer.data)
-    #
     def retrieve(self, request, *args, **kwargs):
         queryset = Company.objects.all()
         company = None
@@ -82,6 +77,34 @@ class CompanyCreate(viewsets.ModelViewSet):
             company = get_object_or_404(queryset, symbol=str(kwargs['pk']))
         serializer = serializers.CompanySerializer(company)
         return Response(serializer.data)
+
+
+class Ordering(viewsets.ModelViewSet):
+    """
+    Buy Stocks
+    """
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+    serializer_class = serializers.OrderSerializer
+    queryset = Orders.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = Orders.objects.all()
+        order = None
+        if not kwargs['pk'].isnumeric():
+            order = get_object_or_404(queryset, order_num=int(kwargs['pk']))
+        serializer = serializers.OrderSerializer(order)
+        return Response(serializer.data)
+
+
+class ManageCart(viewsets.ModelViewSet):
+    """
+    Manage Cart
+    """
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+    serializer_class = serializers.CartSerializer
+    queryset = Cart.objects.all()
 
 
 class UserCreate(APIView):
