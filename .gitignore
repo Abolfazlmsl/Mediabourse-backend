@@ -5,6 +5,7 @@
 /bourseapp/migrations/
 /.venv/*
 /.venv
+/venv/
 .venv
 .idea
 .idea/*

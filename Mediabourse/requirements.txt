@@ -1,0 +1,12 @@
+asgiref==3.2.10
+Django==3.0.8
+django-rest-passwordreset==1.1.0
+djangorestframework==3.11.0
+djangorestframework-simplejwt==4.4.0
+PyJWT==1.7.1
+pytz==2020.1
+selenium==3.141.0
+sqlparse==0.3.1
+tabulate==0.8.7
+urllib3==1.25.10
+websockets==8.1

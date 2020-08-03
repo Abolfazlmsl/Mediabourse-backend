@@ -78,22 +78,22 @@ WSGI_APPLICATION = 'Mediabourse.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    # }
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'media_bourse',
-        'USER': 'admin',
-        'PASSWORD': 'A.8562497130.Rs',
-        'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
-        'PORT': '3306',
-        'OPTIONS': {
-                    'charset': 'utf8mb4',
-                    'use_unicode': True,
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'media_bourse',
+    #     'USER': 'admin',
+    #     'PASSWORD': 'A.8562497130.Rs',
+    #     'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+    #     'PORT': '3306',
+    #     'OPTIONS': {
+    #                 'charset': 'utf8mb4',
+    #                 'use_unicode': True,
+    #     },
+    # }
 }
 
 
