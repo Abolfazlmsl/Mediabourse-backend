@@ -21,7 +21,7 @@ from django.conf.urls import url
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
-    url(r'bourse/', include('Bourse.urls')),
+    url(r'bourse/', include('bourse.urls')),
 
     # REST API
     url(r'^api/login/$', TokenObtainPairView.as_view(), name='token_obtain_pair'),
