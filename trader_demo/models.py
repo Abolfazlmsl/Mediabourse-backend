@@ -88,28 +88,107 @@ class DemoWatchListItem(models.Model):
 
 
 class DemoOrders(models.Model):
+    ACTION_CHOICES = (
+        ('buy', 'خرید'),
+        ('sell', 'فروش')
+    )
     order_num = models.IntegerField()
     date = models.DateTimeField()
-    action = models.CharField(max_length=100, default="Buy")
-    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
-    volume = models.IntegerField(null=False, blank=False, help_text="حجم")
-    price = models.IntegerField(null=False, blank=False, help_text="قیمت")
+    action = models.CharField(
+        max_length=100,
+        choices=ACTION_CHOICES,
+        default='buy'
+    )
+    symbol = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        help_text="نماد"
+    )
+    volume = models.IntegerField(
+        null=False,
+        blank=False,
+        help_text="حجم"
+    )
+    price = models.IntegerField(
+        null=False,
+        blank=False,
+        help_text="قیمت"
+    )
     done = models.IntegerField(help_text="حجم انجام شده")
     status = models.BooleanField(default=0, help_text="وضعیت")
-    account_type = models.CharField(max_length=150, default="حساب نزد کارگزار", help_text="نوع حساب")
-    source = models.CharField(max_length=150, default="وب سایت", help_text="مبدأ")
+    account_type = models.CharField(
+        max_length=150,
+        default="حساب نزد کارگزار",
+        help_text="نوع حساب"
+    )
+    source = models.CharField(
+        max_length=150,
+        default="وب سایت",
+        help_text="مبدأ"
+    )
 
 
 class DemoCart(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                                help_text='کاربر')
-    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
-    stock_balance = models.IntegerField(default=0, null=False, blank=False, help_text="دارایی سهم")
-    selling_value = models.IntegerField(default=0, null=False, blank=False, help_text="ارزش فروش")
-    neutral_price = models.IntegerField(default=0, null=False, blank=False, help_text="قیمت سر به سر")
-    latest_price = models.IntegerField(default=0, null=False, blank=False, help_text='آخرین قیمت')
-    final_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت پایانی')
-    today_sell = models.IntegerField(default=0, null=0, blank=False, help_text='فروش امروز')
-    today_buy = models.IntegerField(default=0, null=0, blank=False, help_text='خرید امروز')
-    open_order = models.IntegerField(default=0, null=0, blank=False, help_text='سفارشات باز')
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    symbol = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        help_text="نماد"
+    )
+    stock_balance = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text="دارایی سهم"
+    )
+    selling_value = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text="ارزش فروش"
+    )
+    neutral_price = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text="قیمت سر به سر"
+    )
+    latest_price = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text='آخرین قیمت'
+    )
+    final_price = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text='قیمت پایانی'
+    )
+    today_sell = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text='فروش امروز'
+    )
+    today_buy = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text='خرید امروز'
+    )
+    open_order = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False,
+        help_text='سفارشات باز'
+    )
 

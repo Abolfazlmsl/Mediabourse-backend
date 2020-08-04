@@ -108,12 +108,16 @@ class Category(models.Model):
     )
     created_on = models.DateField(auto_now_add=True,)
     logo = models.ImageField(
-        upload_to='uploads/category/',
+        upload_to='uploads/images/category/',
         null=True,
         blank=True,
         help_text='تصویر'
     )
-    description = models.TextField(null=True, blank=True, help_text='توضیحات')
+    description = models.TextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.title
@@ -178,7 +182,7 @@ class Company(models.Model):
         help_text='بازار بورس'
     )
     image = models.ImageField(
-        upload_to='uploads/company/',
+        upload_to='uploads/images/company/',
         null=True,
         blank=True,
         help_text='تصویر'
@@ -279,7 +283,7 @@ class News(models.Model):
         help_text='تاریخ ایجاد'
     )
     pic = models.ImageField(
-        upload_to='uploads/news/',
+        upload_to='uploads/images/news/',
         null=True,
         blank=True,
         help_text='تصویر'
@@ -305,98 +309,141 @@ class News(models.Model):
         help_text='توضیحات'
     )
 
-# kharabe, bayad doros she
 
 class Technical(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
-    video = models.FileField(upload_to='videos/', null=True, blank=True, help_text='فایل ویدیو')
-    audio = models.FileField(upload_to='audio/', null=True, blank=True, help_text='فایل صوتی')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
-    aparatEmbedCode = models.CharField(max_length=1000, null=True, blank=True, help_text='کد امبد آپارات')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
+    video = models.FileField(
+        upload_to='uploads/videos/technical/',
+        null=True,
+        blank=True,
+        help_text='فایل ویدیو'
+        )
+    audio = models.FileField(
+        upload_to='upload/audio/technical',
+        null=True,
+        blank=True,
+        help_text='فایل صوتی'
+    )
+    image = models.ImageField(
+        upload_to='upload/image/technical',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
+    title = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=
+        'عنوان')
+    aparat_embed_code = models.TextField(
+        null=True,
+        blank=True,
+        help_text='کد امبد آپارات'
+    )
     hit_count = models.BigIntegerField(default=0)
-    isSuperUserPermition = models.BooleanField(default=False, help_text='دسترسی سطح بالا')
-    description = RichTextUploadingField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-isSuperUserPermition", "-createAt"]
+    description = RichTextField(null=True, blank=True, help_text='توضیحات')
 
     def __str__(self):
         return self.company.symbol
 
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:technical-detail", kwargs={'technical_id': self.pk})
-
 
 class ChatMessage(models.Model):
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sender_user', on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='فرستنده')
-    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='receiver_user', on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='گیرنده')
-    createAt = models.DateTimeField(default=timezone.now, help_text='تاریخ ایجاد')
-    isSeen = models.BooleanField(default=False, help_text='مشاهده شده')
-    description = RichTextUploadingField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-createAt"]
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='sender_user',
+        on_delete=models.CASCADE,
+        help_text='فرستنده'
+    )
+    receiver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='receiver_user',
+        on_delete=models.CASCADE,
+        help_text='گیرنده')
+    created_on = models.DateTimeField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
+    isSeen = models.BooleanField(
+        default=False,
+        help_text='مشاهده شده'
+    )
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return str(self.sender)
 
-    @property
-    def owner(self):
-        return self.sender
-
 
 class Webinar(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
-    aparatEmbedCode = models.CharField(max_length=1000, null=True, blank=True, help_text='کد امبد آپارات')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
+    video = models.FileField(
+        upload_to='uploads/videos/webinar/',
+        null=True,
+        blank=True,
+        help_text='فایل ویدیو'
+    )
+    audio = models.FileField(
+        upload_to='upload/audio/webinar',
+        null=True,
+        blank=True,
+        help_text='فایل صوتی'
+    )
+    image = models.ImageField(
+        upload_to='upload/image/webinar',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
+    title = models.CharField(
+        max_length=120,
+        help_text='عنوان'
+    )
+    aparat_embed_code = models.TextField(
+        null=True,
+        blank=True,
+        help_text='کد امبد آپارات'
+        )
     hit_count = models.BigIntegerField(default=0)
-    isSuperUserPermition = models.BooleanField(default=False, help_text='دسترسی سطح بالا')
-    description = RichTextUploadingField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-isSuperUserPermition", "-createAt"]
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.company.symbol
 
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:webinar-detail", kwargs={'webinar_id': self.pk})
-
-
-class MapBazaar(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-
-    class Meta:
-        ordering = ["-createAt"]
-
-    def __unicode__(self):
-        return self.createAt
-
-    @property
-    def owner(self):
-        return self.user
-
+# kharabe, bayad chek she
 
 class Fundamental(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
