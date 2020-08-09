@@ -273,7 +273,7 @@ class News(models.Model):
         blank=True,
         help_text='مرجع'
     )
-    created_on = models.DateField(
+    created_on = models.DateTimeField(
         auto_now_add=True,
         help_text='تاریخ ایجاد'
     )
@@ -293,16 +293,14 @@ class News(models.Model):
     is_important = models.BooleanField(default=False, help_text='خبر مهم')
     hit_count = models.BigIntegerField(default=0)
     short_description = models.TextField(
-        max_length=200,
-        null=True,
-        blank=True,
         help_text='توضیحات کوتاه'
     )
     description = RichTextField(
-        null=True,
-        blank=True,
         help_text='توضیحات'
     )
+
+    def __str__(self):
+        return self.title
 
 
 class Technical(models.Model):
@@ -342,8 +340,8 @@ class Technical(models.Model):
         max_length=255,
         null=True,
         blank=True,
-        help_text=
-        'عنوان')
+        help_text='عنوان'
+    )
     aparat_embed_code = models.TextField(
         null=True,
         blank=True,
@@ -367,12 +365,13 @@ class ChatMessage(models.Model):
         settings.AUTH_USER_MODEL,
         related_name='receiver_user',
         on_delete=models.CASCADE,
-        help_text='گیرنده')
+        help_text='گیرنده'
+    )
     created_on = models.DateTimeField(
         auto_now_add=True,
         help_text='تاریخ ایجاد'
     )
-    isSeen = models.BooleanField(
+    is_seen = models.BooleanField(
         default=False,
         help_text='مشاهده شده'
     )
@@ -562,9 +561,9 @@ class TechnicalUser(models.Model):
         max_length=255,
         help_text='نام فایل'
     )
-    is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
+    is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاری')
     # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
-    data = models.JSONField(help_text='فایل متنی شده json')
+    data = models.TextField(help_text='فایل متنی شده json')
 
     def __str__(self):
         return self.company.symbol
@@ -611,7 +610,7 @@ class TutorialSubCategory(models.Model):
     title = models.CharField(max_length=255, help_text='عنوان')
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    categoryLevel = models.CharField(
+    category_level = models.CharField(
         max_length=20,
         help_text='سطح آموزش',
         choices=CATEGORY_LEVEL_CHOICES,
@@ -640,12 +639,12 @@ class Tutorial(models.Model):
         help_text='فایل'
     )
     title = models.CharField(max_length=255, help_text='عنوان')
-    subCategory = models.ForeignKey(
+    sub_category = models.ForeignKey(
         TutorialSubCategory,
         on_delete=models.CASCADE,
         help_text='زیر دسته بندی'
     )
-    externalLink = models.URLField(
+    external_link = models.URLField(
         null=True,
         blank=True,
         help_text='لینک آموزش'
@@ -754,7 +753,8 @@ class FileRepository(models.Model):
     file = models.FileField(
         upload_to='uploads/file/file-repository',
         null=True,
-        blank=True)
+        blank=True
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     file_tag = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

@@ -1,14 +1,13 @@
 from django.urls import path, include
-from django.conf.urls import url
-from .views import *
 from rest_framework.routers import DefaultRouter
 from . import views
 
 
-# Create a router and register our viewsets with it.
+router = DefaultRouter()
+router.register('company', views.CompanyListRetrieveApiView)
+router.register('news', views.NewsListRetrieveApiView)
+router.register('technical-user', views.TechnicalUserListRetrieveApiView)
 
 urlpatterns = [
-    # url(r'^register/$', UserCreate.as_view(), name='account-create'),
-    # url(r'^change-password/$', ChangePasswordView.as_view(), name='change-password'),
-    # url('', include(router.urls)),
+    path('', include(router.urls)),
 ]
