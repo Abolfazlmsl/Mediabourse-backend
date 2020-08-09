@@ -1,13 +1,8 @@
-import jsonfield as jsonfield
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.conf import settings
-from django.dispatch import receiver
-from django.urls import reverse
-from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 
 

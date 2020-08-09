@@ -14,7 +14,7 @@ mediabourse/bourse/migrations/*
 mediabourse/trader_demo/migrations/*
 mediabourse/Bourse/__pycache__
 mediabourse/Bourse/__pycache__/*
-mediabourse/Mediabourse/__pycache__/
-mediabourse/Bourse/rest_api/__pycache__/
-mediabourse/Mediabourse/__pycache__/*
-mediabourse/Bourse/rest_api/__pycache__/*
+mediabourse/mediabourse/__pycache__/
+mediabourse/bourse/rest_api/__pycache__/
+mediabourse/mediabourse/__pycache__/*
+mediabourse/bourse/rest_api/__pycache__/*

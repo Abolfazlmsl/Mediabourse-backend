@@ -33,7 +33,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'bourse.apps.BourseConfig',
-    'django_rest_passwordreset',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
