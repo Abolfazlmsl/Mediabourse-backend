@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ckeditor',
     'django_filters',
+    'staff_panel.apps.StaffPanelConfig',
+    'user_panel.apps.UserPanelConfig',
+    'trader_demo.apps.TraderDemoConfig'
 ]
 
 MIDDLEWARE = [

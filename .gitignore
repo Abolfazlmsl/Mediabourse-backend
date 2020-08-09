@@ -10,8 +10,8 @@
 .idea
 .idea/*
 mediabourse/db.sqlite3
-mediabourse/Bourse/migrations/*
-mediabourse/Bourse/migrations
+mediabourse/bourse/migrations/*
+mediabourse/trader_demo/migrations/*
 mediabourse/Bourse/__pycache__
 mediabourse/Bourse/__pycache__/*
 mediabourse/Mediabourse/__pycache__/
