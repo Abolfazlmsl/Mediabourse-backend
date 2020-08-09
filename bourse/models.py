@@ -443,238 +443,331 @@ class Webinar(models.Model):
     def __str__(self):
         return self.company.symbol
 
-# kharabe, bayad chek she
 
 class Fundamental(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    createAt = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    image = models.ImageField(
+        upload_to='uploads/image/fundamental',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
+    title = models.CharField(
+        max_length=255,
+        help_text='عنوان'
+    )
     hit_count = models.BigIntegerField(default=0)
-    isSuperUserPermition = models.BooleanField(default=False, help_text='دسترسی سطح بالا')
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-isSuperUserPermition", "-createAt"]
 
     def __str__(self):
         return self.company.symbol
-
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:fundamental-detail", kwargs={'fundamental_id': self.pk})
 
 
 class Bazaar(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    createAt = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
-    aparatEmbedCode = models.CharField(max_length=1000, null=True, blank=True, help_text='کد امبد آپارات')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
+    image = models.ImageField(
+        upload_to='uploads/image/bazaar',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
+    title = models.CharField(
+        max_length=255,
+        help_text='عنوان'
+    )
+    aparat_embed_code = models.TextField(
+        null=True,
+        blank=True,
+        help_text='کد امبد آپارات'
+    )
     hit_count = models.BigIntegerField(default=0)
-    isSuperUserPermition = models.BooleanField(default=False, help_text='دسترسی سطح بالا')
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-isSuperUserPermition", "-createAt"]
 
     def __str__(self):
         return self.company.symbol
-
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:bazaar-detail", kwargs={'bazaar_id': self.pk})
-
-
-TIME_FRAME_CHOICES = (
-    ('M1', "1 دقیقه"),
-    ('M5', "5 دقیقه"),
-    ('M15', "15 دقیقه"),
-    ('M30', "30 دقیقه"),
-    ('H1', "۱ ساعت"),
-    ('H4', "4 ساعت"),
-    ('D1', "1 روز"),
-    ('W1', "1 هفته"),
-    ('MN1', "1 ماه"),
-)
 
 
 class Chart(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
+    TIME_FRAME_CHOICES = (
+        ('M1', "1 دقیقه"),
+        ('M5', "5 دقیقه"),
+        ('M15', "15 دقیقه"),
+        ('M30', "30 دقیقه"),
+        ('H1', "۱ ساعت"),
+        ('H4', "4 ساعت"),
+        ('D1', "1 روز"),
+        ('W1', "1 هفته"),
+        ('MN1', "1 ماه"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    lastCandleDate = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    timeFrame = models.CharField(max_length=20, help_text='تایم فریم', choices=TIME_FRAME_CHOICES, default='D1')
-    data = models.FileField('uploaded chart file', upload_to='charts/', null=True, blank=True, help_text='فایل csv,  prn, txt چارت نماد')
-
-    class Meta:
-        ordering = ["-lastCandleDate"]
+    last_candle_date = models.DateField(help_text='تاریخ ایجاد')
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    timeFrame = models.CharField(
+        max_length=20,
+        help_text='تایم فریم',
+        choices=TIME_FRAME_CHOICES,
+        default='D1'
+    )
+    data = models.FileField(
+        upload_to='uploads/file/chart/',
+        null=True,
+        blank=True,
+        help_text='فایل csv,  prn, txt چارت نماد'
+    )
 
     def __str__(self):
         return self.company.symbol
-
-    @property
-    def owner(self):
-        return self.user
 
 
 class TechnicalUser(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    created_on = models.DateTimeField(auto_now_add=True, help_text='تاریخ ایجاد')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='نام فایل')
-    isShare = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
+    title = models.CharField(
+        max_length=255,
+        help_text='نام فایل'
+    )
+    is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
     # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
-    data = jsonfield.JSONField(help_text='فایل متنی شده json')
-
-    class Meta:
-        ordering = ["-createAt"]
+    data = models.JSONField(help_text='فایل متنی شده json')
 
     def __str__(self):
         return self.company.symbol
-
-    @property
-    def owner(self):
-        return self.user
 
 
 class TutorialCategory(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    title = models.CharField(
+        max_length=255,
+        help_text='عنوان'
+    )
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
-    createAt = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-
-    class Meta:
-        ordering = ["-createAt"]
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    image = models.ImageField(
+        'uploads/image/tutorial-category',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
 
     def __str__(self):
         return self.title
-
-    @property
-    def owner(self):
-        return self.user
-
-
-CATEGORY_LEVEL_CHOICES = (
-    ('0', "مقدماتی"),
-    ('1', "پیشرفته"),
-)
 
 
 class TutorialSubCategory(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    category = models.ForeignKey(TutorialCategory, on_delete=models.CASCADE, null=True, blank=True, help_text='دسته بندی')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
+    CATEGORY_LEVEL_CHOICES = (
+        ('0', "مقدماتی"),
+        ('1', "پیشرفته"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    category = models.ForeignKey(
+        TutorialCategory,
+        on_delete=models.CASCADE,
+        help_text='دسته بندی'
+    )
+    title = models.CharField(max_length=255, help_text='عنوان')
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    categoryLevel = models.CharField(max_length=20, help_text='سطح آموزش', choices=CATEGORY_LEVEL_CHOICES,
-                                default='0')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-
-    class Meta:
-        ordering = ["-createAt"]
+    categoryLevel = models.CharField(
+        max_length=20,
+        help_text='سطح آموزش',
+        choices=CATEGORY_LEVEL_CHOICES,
+        default='0'
+    )
+    image = models.ImageField(
+        upload_to='uploads/image/tutorial-subcategory',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
 
     def __str__(self):
         return self.title
-
-    @property
-    def owner(self):
-        return self.user
 
 
 class Tutorial(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    createAt = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    file = models.FileField('uploaded file', null=True, blank=True, help_text='فایل')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='عنوان')
-    # category = models.CharField(max_length=120, null=True, blank=True, help_text='دسته آموزش', choices=CATEGORY_CHOICES,
-    #                             default='تحلیل بازار')
-    subCategory = models.ForeignKey(TutorialSubCategory, on_delete=models.CASCADE, null=True, blank=True, help_text='زیر دسته بندی')
-    externalLink = models.URLField(null=True, blank=True, help_text='لینک آموزش')
-    aparatEmbedCode = models.CharField(max_length=1000, null=True, blank=True, help_text='کد امبد آپارات')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    file = models.FileField(
+        upload_to='uploads/file/tutorial',
+        help_text='فایل'
+    )
+    title = models.CharField(max_length=255, help_text='عنوان')
+    subCategory = models.ForeignKey(
+        TutorialSubCategory,
+        on_delete=models.CASCADE,
+        help_text='زیر دسته بندی'
+    )
+    externalLink = models.URLField(
+        null=True,
+        blank=True,
+        help_text='لینک آموزش'
+    )
+    aparat_embed_code = models.TextField(
+        null=True,
+        blank=True,
+        help_text='کد امبد آپارات'
+    )
     hit_count = models.BigIntegerField(default=0)
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["-createAt"]
 
     def __str__(self):
         return self.title
 
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:tutorial-detail", kwargs={'tutorial_id': self.pk})
-
 
 class CompanyFinancial(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        help_text='نماد'
+    )
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    file = models.FileField(upload_to='CompanyFinancial/', null=True, blank=True, help_text='فایل')
-    previousFinancialPeriodProfitability = models.IntegerField(default=0, help_text='سودآوری-دوره مالی قبل')
-    previousFinancialPeriodSell = models.IntegerField(default=0, help_text='فروش-دوره مالی قبل')
-    previousFinancialPeriodProduction = models.IntegerField(default=0, help_text='تولی-دوره مالی قبلد')
-    previousFinancialPeriodAccumulatedProfits = models.IntegerField(default=0, help_text='سود انباشته-دوره مالی قبل')
-    previousFinancialPeriodSymbolPrice = models.IntegerField(default=0, help_text='قیمت سهم-دوره مالی قبل')
-    newFinancialPeriodProfitability = models.IntegerField(default=0, help_text='سودآوری-دوره مالی جدید')
-    newFinancialPeriodSell = models.IntegerField(default=0, help_text='فروش-دوره مالی جدید')
-    newFinancialPeriodProduction = models.IntegerField(default=0, help_text='تولید-دوره مالی جدید')
-    newFinancialPeriodAccumulatedProfits = models.IntegerField(default=0, help_text='سود انباشته-دوره مالی جدید')
-    newFinancialPeriodSymbolPrice = models.IntegerField(default=0, help_text='قیمت سهم-دوره مالی جدید')
-    forecastProfitability = models.IntegerField(default=0, help_text='سودآوری-پیشبینی')
-    forecastSell = models.IntegerField(default=0, help_text='فروش-پیشبینی')
-    forecastProduction = models.IntegerField(default=0, help_text='تولید-پیشبینی')
-    forecastAccumulatedProfits = models.IntegerField(default=0, help_text='سود انباشته-پیشبینی')
-    forecastSymbolPrice = models.IntegerField(default=0, help_text='قیمت سهم-پیشبینی')
+    file = models.FileField(
+        upload_to='uploads/file/company-financial/',
+        null=True,
+        blank=True,
+        help_text='فایل'
+    )
+    previousFinancialPeriodProfitability = models.IntegerField(
+        default=0,
+        help_text='سودآوری-دوره مالی قبل'
+    )
+    previousFinancialPeriodSell = models.IntegerField(
+        default=0,
+        help_text='فروش-دوره مالی قبل'
+    )
+    previousFinancialPeriodProduction = models.IntegerField(
+        default=0,
+        help_text='تولی-دوره مالی قبلد'
+    )
+    previousFinancialPeriodAccumulatedProfits = models.IntegerField(
+        default=0,
+        help_text='سود انباشته-دوره مالی قبل'
+    )
+    previousFinancialPeriodSymbolPrice = models.IntegerField(
+        default=0,
+        help_text='قیمت سهم-دوره مالی قبل'
+    )
+    newFinancialPeriodProfitability = models.IntegerField(
+        default=0,
+        help_text='سودآوری-دوره مالی جدید'
+    )
+    newFinancialPeriodSell = models.IntegerField(
+        default=0,
+        help_text='فروش-دوره مالی جدید'
+    )
+    newFinancialPeriodProduction = models.IntegerField(
+        default=0,
+        help_text='تولید-دوره مالی جدید'
+    )
+    newFinancialPeriodAccumulatedProfits = models.IntegerField(
+        default=0,
+        help_text='سود انباشته-دوره مالی جدید'
+    )
+    newFinancialPeriodSymbolPrice = models.IntegerField(
+        default=0,
+        help_text='قیمت سهم-دوره مالی جدید'
+    )
+    forecastProfitability = models.IntegerField(
+        default=0,
+        help_text='سودآوری-پیشبینی'
+    )
+    forecastSell = models.IntegerField(
+        default=0,
+        help_text='فروش-پیشبینی'
+    )
+    forecastProduction = models.IntegerField(
+        default=0,
+        help_text='تولید-پیشبینی'
+    )
+    forecastAccumulatedProfits = models.IntegerField(
+        default=0,
+        help_text='سود انباشته-پیشبینی'
+    )
+    forecastSymbolPrice = models.IntegerField(
+        default=0,
+        help_text='قیمت سهم-پیشبینی'
+    )
 
     def __str__(self):
         return self.company.symbol
 
-    @property
-    def owner(self):
-        return self.user
-
 
 class FileRepository(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    file = models.FileField('uploaded file', upload_to='files/', null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر'
+    )
+    file = models.FileField(
+        upload_to='uploads/file/file-repository',
+        null=True,
+        blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    fileTag = models.CharField(max_length=100, null=True, blank=True)
-    description = models.CharField(max_length=10000, null=True, blank=True)
+    file_tag = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return str(self.pk)
 
-    class Meta:
-        ordering = ["-createAt"]
 
-    @property
-    def owner(self):
-        return self.user
-
-
-##################################################################################################
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
 
