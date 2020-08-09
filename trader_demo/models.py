@@ -57,7 +57,8 @@ class Company(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        help_text='کاربر'
+        help_text='کاربر',
+        related_name='company_user'
     )
     category = models.ForeignKey(
         Category,
@@ -137,9 +138,10 @@ class Stock(models.Model):
 
 
 class WatchList(models.Model):
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
-                                help_text='کاربر'
+                                help_text='کاربر',
+                                related_name='watchlist_user'
                                 )
     stocks = models.TextField(null=False,
                               blank=False,
