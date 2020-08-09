@@ -273,7 +273,7 @@ class News(models.Model):
         blank=True,
         help_text='مرجع'
     )
-    created_on = models.DateField(
+    created_on = models.DateTimeField(
         auto_now_add=True,
         help_text='تاریخ ایجاد'
     )
@@ -293,16 +293,14 @@ class News(models.Model):
     is_important = models.BooleanField(default=False, help_text='خبر مهم')
     hit_count = models.BigIntegerField(default=0)
     short_description = models.TextField(
-        max_length=200,
-        null=True,
-        blank=True,
         help_text='توضیحات کوتاه'
     )
     description = RichTextField(
-        null=True,
-        blank=True,
         help_text='توضیحات'
     )
+
+    def __str__(self):
+        return self.title
 
 
 class Technical(models.Model):
@@ -563,7 +561,7 @@ class TechnicalUser(models.Model):
         max_length=255,
         help_text='نام فایل'
     )
-    is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
+    is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاری')
     # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
     data = models.TextField(help_text='فایل متنی شده json')
 

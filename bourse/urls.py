@@ -5,6 +5,8 @@ from . import views
 
 router = DefaultRouter()
 router.register('company', views.CompanyListRetrieveApiView)
+router.register('news', views.NewsListRetrieveApiView)
+router.register('technical-user', views.TechnicalUserListRetrieveApiView)
 
 urlpatterns = [
     path('', include(router.urls)),
