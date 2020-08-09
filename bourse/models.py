@@ -66,7 +66,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user model that support email instead of username"""
-    name = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(
         validators=[validate_phone_number],
         max_length=11,
