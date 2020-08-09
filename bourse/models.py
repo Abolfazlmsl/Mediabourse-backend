@@ -565,7 +565,7 @@ class TechnicalUser(models.Model):
     )
     is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
     # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
-    data = models.JSONField(help_text='فایل متنی شده json')
+    data = models.TextField(help_text='فایل متنی شده json')
 
     def __str__(self):
         return self.company.symbol
