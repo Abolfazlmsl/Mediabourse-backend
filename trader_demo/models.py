@@ -10,64 +10,109 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from django.utils import timezone
 
-###################################################
-SYMBOL_TYPE_CHOICES = (
-    ('0', "شاخص کل"),
-    ('1', "نماد"),
-    ('2', "شاخص صنعت"),
-)
-###################################################
-
 
 class Category(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    title = models.CharField(max_length=120, null=True, blank=True, help_text='گروه بورسی')
-    createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    description = models.TextField(max_length=10000, null=True, blank=True, help_text='توضیحات')
-
-    class Meta:
-        ordering = ["createAt"]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             help_text='کاربر',
+                             related_name='category_user'
+                             )
+    title = models.CharField(max_length=120,
+                             help_text='گروه بورسی'
+                             )
+    create_on = models.DateTimeField(auto_now=True, help_text='تاریخ ایجاد')
+    image = models.ImageField(upload_to='uploads/images/trader-category/',
+                              null=True,
+                              blank=True,
+                              help_text='تصویر'
+                              )
+    description = models.TextField(max_length=255,
+                                   null=True,
+                                   blank=True,
+                                   help_text='توضیحات'
+                                   )
 
     def __str__(self):
         return self.title
 
-    @property
-    def owner(self):
-        return self.user
-
-    def get_absolute_url(self, request=None):
-        return reverse("bourseapp:category-detail", kwargs={'category_id': self.pk})
-
 
 class Company(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                             help_text='کاربر')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, help_text='گروه')
-    symbol = models.CharField(max_length=120, null=True, blank=True, help_text='نماد')
-    fullName = models.CharField(max_length=120, null=True, blank=True, help_text='نام شرکت')
-    alias = models.CharField(max_length=120, null=True, blank=True, help_text='نام معادل انگلیسی')
-    type = models.CharField(max_length=20, help_text='نوع نماد', choices=SYMBOL_TYPE_CHOICES, default='1')
-    bourseType = models.CharField(max_length=120, null=True, blank=True, help_text='بازار بورس')
-    pic = models.ImageField('uploaded image', null=True, blank=True, help_text='تصویر')
-    createAt = models.DateField(default=timezone.now, help_text='تاریخ ایجاد')
-    tse = models.URLField(null=True, blank=True, help_text='لینک tse')
-    site = models.URLField(null=True, blank=True, help_text='وبسایت')
-    isTarget = models.BooleanField(default=False, help_text='تحت نظر')
-    isSuperUserPermition = models.BooleanField(default=False, help_text='دسترسی سطح بالا')
-    hit_count = models.BigIntegerField(default=0)
-    description = models.TextField(max_length=10000, null=True, blank=True, help_text='توضیحات')
 
-    class Meta:
-        ordering = ["createAt"]
+    SYMBOL_TYPE_CHOICES = (
+        ('0', "شاخص کل"),
+        ('1', "نماد"),
+        ('2', "شاخص صنعت"),
+    )
+    BOURSE_TYPE_CHOICES = (
+        ('0', "تابلو اصلی بازار اول بورس"),
+        ('1', "تابلو فرعی بازار اول بورس"),
+        ('2', "بازار دوم بورس"),
+        ('3', "بازار اول فرابورس"),
+        ('4', "بازار دوم فرابورس"),
+        ('5', "بازار پایه زرد فرابورس"),
+        ('6', "بازار پایه نارنجی فرابورس"),
+        ('7', "بازار پایه قرمز فرابورس"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text='کاربر',
+        related_name='company_user'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text='گروه'
+    )
+    symbol = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text='نماد'
+    )
+    name = models.CharField(
+        max_length=255,
+        help_text='نام شرکت'
+    )
+    alias = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text='نام معادل انگلیسی'
+    )
+    type = models.CharField(
+        max_length=255,
+        help_text='نوع نماد',
+        choices=SYMBOL_TYPE_CHOICES,
+        default='1'
+    )
+    bourse_type = models.CharField(
+        max_length=120,
+        null=True,
+        blank=True,
+        choices=BOURSE_TYPE_CHOICES,
+        help_text='بازار بورس'
+    )
+    image = models.ImageField(
+        upload_to='uploads/images/company/',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
+    created_on = models.DateField(auto_now_add=True)
+    tse = models.URLField(help_text='لینک tse')
+    site = models.URLField(null=True, blank=True, help_text='وبسایت')
+    hit_count = models.BigIntegerField(default=0)
+    description = models.TextField(null=True, blank=True, help_text='توضیحات')
 
     def __str__(self):
-        return self.fullName
+        return self.symbol
 
 
 class Stock(models.Model):
-    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text='نماد')
+    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, help_text='نماد')
     status = models.CharField(max_length=250, default='ممنوع،متوقف', null=False, blank=False, help_text='وضعیت نماد')
     trade_volume = models.BigIntegerField(default=0, null=False, blank=False, help_text='حجم معاملات')
     # trade_counter = models.BigIntegerField(default=0, null=False, blank=False, help_text='تعداد معاملات')
@@ -92,17 +137,23 @@ class Stock(models.Model):
     # legal_selling_price = models.IntegerField(default=0, null=0, blank=False, help_text='قیمت فروش حقوقی')
 
 
-class Watcher(models.Model):
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False, blank=False,
-                                help_text='کاربر')
-    stocks = models.TextField(null=False, blank=False, help_text='نام سهم ها')
+class WatchList(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                help_text='کاربر',
+                                related_name='watchlist_user'
+                                )
+    stocks = models.TextField(null=False,
+                              blank=False,
+                              help_text='نام سهم ها'
+                              )
 
 
 class Orders(models.Model):
     order_num = models.BigIntegerField()
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now=True)
     action = models.CharField(max_length=100, default="Buy")
-    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
+    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, help_text="نماد")
     volume = models.IntegerField(null=False, blank=False, help_text="حجم")
     price = models.IntegerField(null=False, blank=False, help_text="قیمت")
     done = models.IntegerField(help_text="حجم انجام شده")
@@ -112,9 +163,14 @@ class Orders(models.Model):
 
 
 class Cart(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False, blank=False,
-                                help_text='کاربر')
-    symbol = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, blank=False, help_text="نماد")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             help_text='کاربر'
+                             )
+    symbol = models.ForeignKey(Company,
+                               on_delete=models.CASCADE,
+                               help_text="نماد"
+                               )
     stock_balance = models.IntegerField(default=0, null=False, blank=False, help_text="دارایی سهم")
     selling_value = models.IntegerField(default=0, null=False, blank=False, help_text="ارزش فروش")
     neutral_price = models.IntegerField(default=0, null=False, blank=False, help_text="قیمت سر به سر")
