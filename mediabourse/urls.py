@@ -18,6 +18,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from django.conf.urls import url
 
+app_name = 'bours'
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),

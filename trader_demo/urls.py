@@ -4,6 +4,7 @@ from .views import *
 from rest_framework.routers import DefaultRouter
 from . import views
 
+app_name = 'trader_demo'
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
