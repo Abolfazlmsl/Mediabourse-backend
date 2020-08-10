@@ -18,13 +18,14 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem
 from . import serializers
-from .permissions import IsOwner
+from .permissions import IsOwner, IsWatchListOwner
 
 
 class UserInfoView(RetrieveUpdateAPIView):
     """Show detailed of user"""
     serializer_class = serializers.UserUpdateSerializer
     authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         """Retrieve and return authenticated user"""
@@ -151,10 +152,14 @@ class ChangePasswordView(UpdateAPIView):
 class WatchListViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.WatchListSerializer
     authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):
         return WatchList.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class WatchListItemViewSet(viewsets.GenericViewSet,
@@ -163,6 +168,7 @@ class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.CreateModelMixin):
     serializer_class = serializers.WatchListItemSerializer
     authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated, IsWatchListOwner)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):

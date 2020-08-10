@@ -57,7 +57,7 @@ class WatchListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WatchList
         fields = '__all__'
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'user')
 
 
 class WatchListItemSerializer(serializers.ModelSerializer):
