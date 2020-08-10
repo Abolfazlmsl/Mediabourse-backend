@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django_filters',
     'staff_panel.apps.StaffPanelConfig',
     'user_panel.apps.UserPanelConfig',
-    'trader_demo.apps.TraderDemoConfig'
+    'trader_demo.apps.TraderDemoConfig',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -155,6 +156,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 SIMPLE_JWT = {

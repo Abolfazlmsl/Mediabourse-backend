@@ -32,6 +32,7 @@ class UserInfoView(RetrieveUpdateAPIView):
 
 
 class SignUpAPIView(APIView):
+    """User Signup API"""
     serializer_class = serializers.UserSignUpSerializer
 
     def post(self, request):
@@ -69,6 +70,7 @@ class SignUpAPIView(APIView):
 
 
 class UserPhoneRegisterAPIView(APIView):
+    """User verification via sms"""
 
     def put(self, request):
         data = request.data
@@ -87,30 +89,6 @@ class UserPhoneRegisterAPIView(APIView):
                     )
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-def is_manager(user):
-    return user.groups.filter(name='Manager').exists()
-
-
-class IsManagerAPIView(APIView):
-
-    def get(self, request):
-        user = User.objects.get(phone_number=request.user.phone_number)
-        if is_manager(user):
-            return Response(
-                {
-                    'isManager': True,
-                },
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {
-                    'isManager': False,
-                },
-                status=status.HTTP_200_OK
-            )
 
 
 class ChangePasswordView(UpdateAPIView):
@@ -149,6 +127,9 @@ class ChangePasswordView(UpdateAPIView):
 
 
 class WatchListViewSet(viewsets.ModelViewSet):
+    """
+        An endpoint for User Watch List.
+    """
     serializer_class = serializers.WatchListSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = WatchList.objects.all()
@@ -161,6 +142,9 @@ class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.ListModelMixin,
                            mixins.DestroyModelMixin,
                            mixins.CreateModelMixin):
+    """
+        An endpoint for items in user watchlist.
+    """
     serializer_class = serializers.WatchListItemSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = WatchList.objects.all()

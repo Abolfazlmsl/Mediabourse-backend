@@ -1,3 +1,5 @@
+from abc import ABC, ABCMeta
+
 from rest_framework import serializers
 
 from bourse.models import User, WatchList, WatchListItem
@@ -45,8 +47,6 @@ class UserPhoneRegisterSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     """Serializer for password change"""
-
-    model = User
 
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
