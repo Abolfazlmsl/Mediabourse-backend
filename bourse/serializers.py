@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Company, News, TechnicalUser
+from .models import Company, News, TechnicalUser, Technical, Webinar
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -38,4 +38,18 @@ class TechnicalUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TechnicalUser
+        fields = '__all__'
+
+
+class TechnicalSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Technical
+        fields = '__all__'
+
+
+class WebinarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Webinar
         fields = '__all__'

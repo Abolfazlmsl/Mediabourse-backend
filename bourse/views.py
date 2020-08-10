@@ -3,12 +3,12 @@ from rest_framework import mixins, viewsets
 from rest_framework import filters
 
 from .serializers import \
-    CompanySerializer,\
-    NewsListSerializer,\
-    NewsRetrieveSerializer,\
-    TechnicalUserSerializer
+    CompanySerializer, \
+    NewsListSerializer, \
+    NewsRetrieveSerializer, \
+    TechnicalUserSerializer, TechnicalSerializer, WebinarSerializer
 
-from .models import Company, News, TechnicalUser
+from .models import Company, News, TechnicalUser, Technical, Webinar
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
@@ -72,3 +72,37 @@ class TechnicalUserListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         return self.queryset.filter(is_share=True)
+
+
+class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
+                                   mixins.ListModelMixin,
+                                   mixins.RetrieveModelMixin):
+    """List and retrieve technical"""
+
+    serializer_class = TechnicalSerializer
+    queryset = Technical.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    search_fields = ['company__name', 'title']
+    ordering_fields = ['created_on', 'hit_count']
+    ordering = ['-created_on']
+
+
+class WebinarListRetrieveApiView(viewsets.GenericViewSet,
+                                 mixins.ListModelMixin,
+                                 mixins.RetrieveModelMixin):
+    """List and retrieve webinar"""
+
+    serializer_class = WebinarSerializer
+    queryset = Webinar.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    search_fields = ['company__name', 'title']
+    ordering_fields = ['created_on', 'hit_count']
+    ordering = ['-created_on']
