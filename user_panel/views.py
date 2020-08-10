@@ -18,7 +18,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem
 from . import serializers
-from .permissions import IsOwner
+from .permissions import IsOwner, IsWatchListOwner
 
 
 class UserInfoView(RetrieveUpdateAPIView):
@@ -32,6 +32,9 @@ class UserInfoView(RetrieveUpdateAPIView):
 
 
 class SignUpAPIView(APIView):
+    """
+    User signup API
+    """
     serializer_class = serializers.UserSignUpSerializer
 
     def post(self, request):
@@ -69,7 +72,9 @@ class SignUpAPIView(APIView):
 
 
 class UserPhoneRegisterAPIView(APIView):
-
+    """
+    User verification via sms
+    """
     def put(self, request):
         data = request.data
         user = get_object_or_404(get_user_model(), phone_number=data['phone_number'])
@@ -87,30 +92,6 @@ class UserPhoneRegisterAPIView(APIView):
                     )
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-def is_manager(user):
-    return user.groups.filter(name='Manager').exists()
-
-
-class IsManagerAPIView(APIView):
-
-    def get(self, request):
-        user = User.objects.get(phone_number=request.user.phone_number)
-        if is_manager(user):
-            return Response(
-                {
-                    'isManager': True,
-                },
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {
-                    'isManager': False,
-                },
-                status=status.HTTP_200_OK
-            )
 
 
 class ChangePasswordView(UpdateAPIView):
@@ -149,6 +130,9 @@ class ChangePasswordView(UpdateAPIView):
 
 
 class WatchListViewSet(viewsets.ModelViewSet):
+    """
+        User watchlist API
+    """
     serializer_class = serializers.WatchListSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = WatchList.objects.all()
@@ -156,14 +140,33 @@ class WatchListViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return WatchList.objects.filter(user=self.request.user)
 
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return serializers.WatchListRetrieveSerializer
+        else:
+            return self.serializer_class
+
 
 class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.ListModelMixin,
                            mixins.DestroyModelMixin,
                            mixins.CreateModelMixin):
-    serializer_class = serializers.WatchListItemSerializer
+    """
+        items of user watchlist API
+    """
+    serializer_class = serializers.WatchListItemCreateSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = WatchList.objects.all()
+    permission_classes = (IsAuthenticated, IsWatchListOwner)
 
     def get_queryset(self):
         return WatchListItem.objects.filter(watch_list__user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return serializers.WatchListItemListRetrieveSerializer
+        else:
+            return self.serializer_class
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
