@@ -18,14 +18,13 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem
 from . import serializers
-from .permissions import IsOwner, IsWatchListOwner
+from .permissions import IsOwner
 
 
 class UserInfoView(RetrieveUpdateAPIView):
     """Show detailed of user"""
     serializer_class = serializers.UserUpdateSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         """Retrieve and return authenticated user"""
@@ -152,37 +151,19 @@ class ChangePasswordView(UpdateAPIView):
 class WatchListViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.WatchListSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):
         return WatchList.objects.filter(user=self.request.user)
 
-    def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return serializers.WatchListRetrieveSerializer
-        else:
-            return self.serializer_class
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
 
 class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.ListModelMixin,
                            mixins.DestroyModelMixin,
-                           mixins.CreateModelMixin,
-                           mixins.RetrieveModelMixin):
-    serializer_class = serializers.WatchListItemCreateSerializer
+                           mixins.CreateModelMixin):
+    serializer_class = serializers.WatchListItemSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated, IsWatchListOwner)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):
         return WatchListItem.objects.filter(watch_list__user=self.request.user)
-
-    def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return serializers.WatchListItemListRetrieveSerializer
-        else:
-            return self.serializer_class
