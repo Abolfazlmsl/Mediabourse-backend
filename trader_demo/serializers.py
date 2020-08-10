@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
-from ..models import *
+from trader_demo.models import *
 from django.utils import timezone
 
 
@@ -22,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class WatcherSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Watcher
+        model = WatchList
         fields = '__all__'
 
 

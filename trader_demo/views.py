@@ -2,10 +2,10 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .rest_api.serializers import UserSerializer
+from trader_demo.serializers import UserSerializer
 from rest_framework import status, generics, viewsets
-from .rest_api.serializers import ChangePasswordSerializer
-from .rest_api import serializers
+from trader_demo.serializers import ChangePasswordSerializer
+from . import serializers
 from .models import *
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404

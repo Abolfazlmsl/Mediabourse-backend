@@ -77,6 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mediabourse.wsgi.application'
 
+KAVENEGAR_APIKEY = '686F47626F616A397639556D7A78316E357945474235477544586E323879355855516568695059383941413D'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
