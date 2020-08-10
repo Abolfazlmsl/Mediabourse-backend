@@ -158,6 +158,12 @@ class WatchListViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return WatchList.objects.filter(user=self.request.user)
 
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return serializers.WatchListRetrieveSerializer
+        else:
+            return self.serializer_class
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -165,11 +171,18 @@ class WatchListViewSet(viewsets.ModelViewSet):
 class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.ListModelMixin,
                            mixins.DestroyModelMixin,
-                           mixins.CreateModelMixin):
-    serializer_class = serializers.WatchListItemSerializer
+                           mixins.CreateModelMixin,
+                           mixins.RetrieveModelMixin):
+    serializer_class = serializers.WatchListItemCreateSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated, IsWatchListOwner)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):
         return WatchListItem.objects.filter(watch_list__user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return serializers.WatchListItemListRetrieveSerializer
+        else:
+            return self.serializer_class

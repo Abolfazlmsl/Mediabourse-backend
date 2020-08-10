@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from bourse.models import User, WatchList, WatchListItem
+from bourse.models import User, WatchList, WatchListItem, Company, Category, News
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -52,6 +52,48 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
 
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = [
+            'id',
+            'title',
+        ]
+
+
+class NewsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = News
+        fields = [
+            'id',
+            'title',
+            'pic',
+            'short_description'
+        ]
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+    news = NewsSerializer(many=True)
+
+    class Meta:
+        model = Company
+        fields = [
+            'id',
+            'category',
+            'symbol',
+            'name',
+            'type',
+            'bourse_type',
+            'image',
+            'tse',
+            'site',
+            'news',
+        ]
+
+
 class WatchListSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -64,5 +106,34 @@ class WatchListItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WatchListItem
+        exclude = ['id', 'watch_list']
+        depth = 1
+
+
+class WatchListRetrieveSerializer(serializers.ModelSerializer):
+    item = WatchListItemSerializer(many=True)
+
+    class Meta:
+        model = WatchList
+        fields = '__all__'
+        read_only_fields = ('id', 'user')
+
+
+class WatchListItemCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WatchListItem
         fields = '__all__'
         read_only_fields = ('id',)
+
+
+class WatchListItemListRetrieveSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(many=False)
+
+    class Meta:
+        model = WatchListItem
+        fields = '__all__'
+        read_only_fields = ('id',)
+
+
+

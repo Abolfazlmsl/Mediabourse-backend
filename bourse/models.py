@@ -192,6 +192,10 @@ class Company(models.Model):
     def __str__(self):
         return self.symbol
 
+    @property
+    def news(self):
+        return self.news_set.all()
+
 
 class RequestSymbol(models.Model):
     user = models.ForeignKey(
@@ -233,6 +237,10 @@ class WatchList(models.Model):
 
     def __str__(self):
         return f'{self.user}, {self.name}'
+
+    @property
+    def item(self):
+        return self.watchlistitem_set.all()
 
 
 class WatchListItem(models.Model):
