@@ -231,6 +231,9 @@ class WatchList(models.Model):
         help_text='نام دیده بان'
     )
 
+    def __str__(self):
+        return f'{self.user}, {self.name}'
+
 
 class WatchListItem(models.Model):
     watch_list = models.ForeignKey(
@@ -241,6 +244,9 @@ class WatchListItem(models.Model):
         Company,
         on_delete=models.CASCADE
     )
+
+    def __str__(self):
+        return f'{self.watch_list.name}, {self.company.symbol}'
 
 
 class News(models.Model):
@@ -338,8 +344,6 @@ class Technical(models.Model):
     )
     title = models.CharField(
         max_length=255,
-        null=True,
-        blank=True,
         help_text='عنوان'
     )
     aparat_embed_code = models.TextField(
