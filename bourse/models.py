@@ -765,3 +765,53 @@ class FileRepository(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+
+class HitCount(models.Model):
+    ip = models.CharField(max_length=255)
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    news = models.ForeignKey(
+        News,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    technical = models.ForeignKey(
+        Technical,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    webinar = models.ForeignKey(
+        Webinar,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    fundamental = models.ForeignKey(
+        Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    bazaar = models.ForeignKey(
+        Bazaar,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    tutorial = models.ForeignKey(
+        Tutorial,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ip

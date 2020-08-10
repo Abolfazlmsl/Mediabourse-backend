@@ -9,6 +9,9 @@ router.register('news', views.NewsListRetrieveApiView)
 router.register('technical-user', views.TechnicalUserListRetrieveApiView)
 router.register('technical', views.TechnicalListRetrieveApiView)
 router.register('webinar', views.WebinarListRetrieveApiView)
+router.register('fundamental', views.FundamentalListRetrieveApiView)
+router.register('bazaar', views.BazaarListRetrieveApiView)
+router.register('tutorial', views.TutorialListRetrieveApiView)
 
 urlpatterns = [
     path('', include(router.urls)),
