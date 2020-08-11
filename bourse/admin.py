@@ -19,6 +19,7 @@ class UserAdmin(UserAdminBase):
                     'email',
                     'generated_token',
                     'is_verified',
+                    'picture'
                 )
             }
         ),

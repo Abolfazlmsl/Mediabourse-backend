@@ -4,6 +4,7 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from PIL import Image
 
 
 def validate_phone_number(value):
@@ -28,6 +29,15 @@ def is_valid_phone_number(number):
         return True
     else:
         return False
+
+
+def validate_image(image):
+    min_height = 200
+    min_width = 200
+    height = image.height
+    width = image.width
+    if width < min_width or height < min_height:
+        raise ValidationError("سایز عکس باید از 200 * 200 بیشتر باشد!")
 
 
 class UserManager(BaseUserManager):
@@ -82,6 +92,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
+    picture = models.ImageField(upload_to='uploads/image/user', null=True, blank=True, validators=[validate_image])
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)

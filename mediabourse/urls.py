@@ -3,6 +3,9 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from django.conf.urls import url
 from rest_framework_swagger.views import get_swagger_view
+from django.conf.urls.static import static
+
+from mediabourse import settings
 
 schema_view = get_swagger_view(title='KIR API')
 
@@ -18,4 +21,4 @@ urlpatterns = [
 
     path('', schema_view)
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
