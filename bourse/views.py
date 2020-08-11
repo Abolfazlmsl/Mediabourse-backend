@@ -348,3 +348,4 @@ class TutorialListRetrieveApiView(viewsets.GenericViewSet,
                 pass
 
         return self.queryset
+

@@ -8,7 +8,10 @@ from .models import Company, \
     Webinar, \
     Category, \
     Fundamental, \
-    Bazaar, Tutorial, TutorialCategory, TutorialSubCategory
+    Bazaar,\
+    Tutorial,\
+    TutorialCategory,\
+    TutorialSubCategory
 
 
 class UserSerializer(serializers.ModelSerializer):
