@@ -8,8 +8,8 @@ from PIL import Image
 
 
 def validate_phone_number(value):
-    if value and is_number(value) and\
-            is_valid_phone_number(value) and\
+    if value and is_number(value) and \
+            is_valid_phone_number(value) and \
             len(value) == 11:
         return value
     else:
@@ -38,6 +38,11 @@ def validate_image(image):
     width = image.width
     if width < min_width or height < min_height:
         raise ValidationError("سایز عکس باید از 200 * 200 بیشتر باشد!")
+
+
+def validate_watchlist_items(watchlist):
+    if WatchListItem.objects.filter(watch_list_id=watchlist).count() >= 20:
+        raise ValidationError('شما نمی توانید بیش از 20 نماد در یک دیده بان ذخیره نمایید.')
 
 
 class UserManager(BaseUserManager):
@@ -75,7 +80,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """Custom user model that support email instead of username"""
+    """Custom user model that support phone number instead of username"""
     name = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(
         validators=[validate_phone_number],
@@ -93,6 +98,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     picture = models.ImageField(upload_to='uploads/image/user', null=True, blank=True, validators=[validate_image])
+    national_code = models.IntegerField(null=True, blank=True)
+    father_name = models.CharField(max_length=128, null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    postal_code = models.IntegerField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
@@ -112,7 +122,7 @@ class Category(models.Model):
         max_length=255,
         help_text='گروه بورسی'
     )
-    created_on = models.DateField(auto_now_add=True,)
+    created_on = models.DateField(auto_now_add=True, )
     logo = models.ImageField(
         upload_to='uploads/images/category/',
         null=True,
@@ -130,7 +140,6 @@ class Category(models.Model):
 
 
 class Company(models.Model):
-
     SYMBOL_TYPE_CHOICES = (
         ('0', "شاخص کل"),
         ('1', "نماد"),
@@ -257,7 +266,8 @@ class WatchList(models.Model):
 class WatchListItem(models.Model):
     watch_list = models.ForeignKey(
         WatchList,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        validators=(validate_watchlist_items,)
     )
     company = models.ForeignKey(
         Company,
@@ -266,6 +276,19 @@ class WatchListItem(models.Model):
 
     def __str__(self):
         return f'{self.watch_list.name}, {self.company.symbol}'
+
+
+class Basket(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    company = models.ForeignKey(Company,
+                                on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'company',)
+
+    def __str__(self):
+        return f'{self.user}, {self.company.name}'
 
 
 class News(models.Model):
@@ -328,6 +351,16 @@ class News(models.Model):
         return self.title
 
 
+class Filter(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=False, blank=False)
+    filter_content = models.TextField(null=False, blank=False)
+
+    def __str__(self):
+        return f'{self.user}, {self.name}'
+
+
 class Technical(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -348,7 +381,7 @@ class Technical(models.Model):
         null=True,
         blank=True,
         help_text='فایل ویدیو'
-        )
+    )
     audio = models.FileField(
         upload_to='upload/audio/technical',
         null=True,
@@ -449,7 +482,7 @@ class Webinar(models.Model):
         null=True,
         blank=True,
         help_text='کد امبد آپارات'
-        )
+    )
     hit_count = models.BigIntegerField(default=0)
     description = RichTextField(
         null=True,

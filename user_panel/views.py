@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
-from bourse.models import User, WatchList, WatchListItem
+from bourse.models import User, WatchList, WatchListItem, Basket
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
@@ -170,3 +170,25 @@ class WatchListItemViewSet(viewsets.GenericViewSet,
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class BasketViewSet(viewsets.GenericViewSet,
+                    mixins.CreateModelMixin,
+                    mixins.ListModelMixin,
+                    mixins.DestroyModelMixin):
+    serializer_class = serializers.BasketCreateSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = Basket.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return Basket.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.BasketSerializer
+        else:
+            return self.serializer_class

@@ -2,7 +2,7 @@ from abc import ABC, ABCMeta
 
 from rest_framework import serializers
 
-from bourse.models import User, WatchList, WatchListItem, Company, Category, News
+from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -133,7 +133,19 @@ class WatchListItemListRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = WatchListItem
         fields = '__all__'
-        read_only_fields = ('id',)
 
 
+class BasketCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Basket
+        fields = '__all__'
+        read_only_fields = ('id', 'user')
+
+
+class BasketSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(many=False)
+
+    class Meta:
+        model = Basket
+        fields = '__all__'
 

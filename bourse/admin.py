@@ -19,7 +19,12 @@ class UserAdmin(UserAdminBase):
                     'email',
                     'generated_token',
                     'is_verified',
-                    'picture'
+                    'picture',
+                    'national_code',
+                    'father_name',
+                    'birth_date',
+                    'postal_code',
+                    'address'
                 )
             }
         ),
@@ -53,7 +58,9 @@ admin.site.register(models.WatchListItem)
 admin.site.register(models.News)
 admin.site.register(models.Technical)
 admin.site.register(models.ChatMessage)
+admin.site.register(models.Basket)
 admin.site.register(models.Webinar)
+admin.site.register(models.Filter)
 admin.site.register(models.Fundamental)
 admin.site.register(models.Bazaar)
 admin.site.register(models.Chart)

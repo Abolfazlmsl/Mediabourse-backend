@@ -7,6 +7,7 @@ app_name = 'user-panel'
 router = routers.DefaultRouter()
 router.register('watch-list', views.WatchListViewSet)
 router.register('watch-list-item', views.WatchListItemViewSet)
+router.register('basket', views.BasketViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
