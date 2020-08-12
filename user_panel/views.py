@@ -26,6 +26,7 @@ class UserInfoView(RetrieveUpdateAPIView):
     """Show detailed of user"""
     serializer_class = serializers.UserUpdateSerializer
     authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         """Retrieve and return authenticated user"""
