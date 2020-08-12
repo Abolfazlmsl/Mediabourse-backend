@@ -1,5 +1,3 @@
-from abc import ABC, ABCMeta
-
 from rest_framework import serializers, validators
 
 from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket, UserTechnical, UserComment
