@@ -13,8 +13,8 @@ router.register('user-comment', views.UserCommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('info/', views.UserInfoView.as_view(), name='user_create'),
-    path('signup/', views.SignUpAPIView.as_view(), name='user_signup'),
-    path('verify-user/', views.UserPhoneRegisterAPIView.as_view(), name='verifyUser'),
+    path('info/', views.UserInfoView.as_view(), name='user-info'),
+    path('signup/', views.SignUpAPIView.as_view(), name='user-signup'),
+    path('verify-user/', views.UserPhoneRegisterAPIView.as_view(), name='verify-user'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
 ]
