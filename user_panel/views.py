@@ -2,8 +2,9 @@ from random import randint
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from kavenegar import KavenegarAPI, APIException, HTTPException
-from rest_framework import status, viewsets, mixins
+from rest_framework import status, viewsets, mixins, filters
 from rest_framework.generics import (
     DestroyAPIView,
     ListAPIView,
@@ -16,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
-from bourse.models import User, WatchList, WatchListItem, Basket
+from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
@@ -146,6 +147,9 @@ class WatchListViewSet(viewsets.ModelViewSet):
         else:
             return self.serializer_class
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class WatchListItemViewSet(viewsets.GenericViewSet,
                            mixins.ListModelMixin,
@@ -168,14 +172,14 @@ class WatchListItemViewSet(viewsets.GenericViewSet,
         else:
             return self.serializer_class
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
 
 class BasketViewSet(viewsets.GenericViewSet,
                     mixins.CreateModelMixin,
                     mixins.ListModelMixin,
                     mixins.DestroyModelMixin):
+    """
+        User Basket API
+    """
     serializer_class = serializers.BasketCreateSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = Basket.objects.all()
@@ -192,3 +196,42 @@ class BasketViewSet(viewsets.GenericViewSet,
             return serializers.BasketSerializer
         else:
             return self.serializer_class
+
+
+class UserTechnicalViewSet(viewsets.GenericViewSet,
+                           mixins.ListModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.DestroyModelMixin):
+    """
+        user technical analytics API
+    """
+    serializer_class = serializers.BasketCreateSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = UserTechnical.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return UserTechnical.objects.filter(user=self.request.user)
+
+
+class UserCommentViewSet(viewsets.GenericViewSet,
+                         mixins.ListModelMixin,
+                         mixins.RetrieveModelMixin,
+                         mixins.DestroyModelMixin):
+    """
+        user comments API
+    """
+    serializer_class = serializers.UserCommentSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = UserComment.objects.all()
+    permission_classes = (IsAuthenticated,)
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['comment_for']
+    ordering_fields = ['created_on']
+
+    def get_queryset(self):
+        return UserComment.objects.filter(user=self.request.user)

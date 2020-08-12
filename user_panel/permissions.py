@@ -24,6 +24,6 @@ class IsWatchListOwner(permissions.BasePermission):
         if request.POST:
             watch_list_id = request.POST.get('watch_list')
             user = request.user
-            watch_list_object = WatchList.objects.filter(user=user).exists()
+            watch_list_object = WatchList.objects.filter(id=watch_list_id, user=user).exists()
             return watch_list_object
         return True

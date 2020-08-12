@@ -8,6 +8,8 @@ router = routers.DefaultRouter()
 router.register('watch-list', views.WatchListViewSet)
 router.register('watch-list-item', views.WatchListItemViewSet)
 router.register('basket', views.BasketViewSet)
+router.register('user-technical', views.UserTechnicalViewSet)
+router.register('user-comment', views.UserCommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

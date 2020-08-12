@@ -6,7 +6,7 @@ from . import views
 router = DefaultRouter()
 router.register('company', views.CompanyListRetrieveApiView)
 router.register('news', views.NewsListRetrieveApiView)
-router.register('technical-user', views.TechnicalUserListRetrieveApiView)
+router.register('user-technical', views.UserTechnicalListRetrieveApiView)
 router.register('technical', views.TechnicalListRetrieveApiView)
 router.register('webinar', views.WebinarListRetrieveApiView)
 router.register('fundamental', views.FundamentalListRetrieveApiView)

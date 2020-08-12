@@ -4,7 +4,6 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from PIL import Image
 
 
 def validate_phone_number(value):
@@ -56,7 +55,7 @@ class UserManager(BaseUserManager):
                 len(phone_number) == 11:
             pass
         else:
-            raise ValueError('Phone number is invalid!')
+            raise ValueError('شماره موبایل معتبر نسیت.')
         if email:
             email = self.normalize_email(email)
         user = self.model(
@@ -80,8 +79,15 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """Custom user model that support phone number instead of username"""
-    name = models.CharField(max_length=255, blank=True, null=True)
+    """
+    Custom user model that support phone number instead of username
+    """
+
+    name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
     phone_number = models.CharField(
         validators=[validate_phone_number],
         max_length=11,
@@ -97,9 +103,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
-    picture = models.ImageField(upload_to='uploads/image/user', null=True, blank=True, validators=[validate_image])
-    national_code = models.IntegerField(null=True, blank=True)
-    father_name = models.CharField(max_length=128, null=True, blank=True)
+    picture = models.ImageField(
+        upload_to='uploads/image/user',
+        null=True,
+        blank=True,
+        validators=[validate_image]
+    )
+    national_code = models.IntegerField(
+        null=True,
+        blank=True
+    )
+    father_name = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True
+    )
     birth_date = models.DateField(null=True, blank=True)
     postal_code = models.IntegerField(null=True, blank=True)
     address = models.TextField(null=True, blank=True)
@@ -204,10 +222,18 @@ class Company(models.Model):
     )
     created_on = models.DateField(auto_now_add=True)
     tse = models.URLField(help_text='لینک tse')
-    site = models.URLField(null=True, blank=True, help_text='وبسایت')
+    site = models.URLField(
+        null=True,
+        blank=True,
+        help_text='وبسایت'
+    )
     # isTarget = models.BooleanField(default=False, help_text='تحت نظر')
     hit_count = models.BigIntegerField(default=0)
-    description = models.TextField(null=True, blank=True, help_text='توضیحات')
+    description = models.TextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.symbol
@@ -274,18 +300,23 @@ class WatchListItem(models.Model):
         on_delete=models.CASCADE
     )
 
+    class Meta:
+        unique_together = ('watch_list', 'company',)
+
     def __str__(self):
         return f'{self.watch_list.name}, {self.company.symbol}'
 
 
 class Basket(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    company = models.ForeignKey(Company,
-                                on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('user', 'company',)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        unique=True
+    )
 
     def __str__(self):
         return f'{self.user}, {self.company.name}'
@@ -337,8 +368,14 @@ class News(models.Model):
         blank=True,
         help_text='برچسب'
     )
-    is_approved = models.BooleanField(default=False, help_text='تایید خبر')
-    is_important = models.BooleanField(default=False, help_text='خبر مهم')
+    is_approved = models.BooleanField(
+        default=False,
+        help_text='تایید خبر'
+    )
+    is_important = models.BooleanField(
+        default=False,
+        help_text='خبر مهم'
+    )
     hit_count = models.BigIntegerField(default=0)
     short_description = models.TextField(
         help_text='توضیحات کوتاه'
@@ -352,10 +389,19 @@ class News(models.Model):
 
 
 class Filter(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    name = models.CharField(max_length=255, null=False, blank=False)
-    filter_content = models.TextField(null=False, blank=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False
+    )
+    filter_content = models.TextField(
+        null=False,
+        blank=False
+    )
 
     def __str__(self):
         return f'{self.user}, {self.name}'
@@ -404,7 +450,11 @@ class Technical(models.Model):
         help_text='کد امبد آپارات'
     )
     hit_count = models.BigIntegerField(default=0)
-    description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.company.symbol
@@ -505,7 +555,10 @@ class Fundamental(models.Model):
         on_delete=models.CASCADE,
         help_text='نماد'
     )
-    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
     image = models.ImageField(
         upload_to='uploads/image/fundamental',
         null=True,
@@ -517,7 +570,11 @@ class Fundamental(models.Model):
         help_text='عنوان'
     )
     hit_count = models.BigIntegerField(default=0)
-    description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.company.symbol
@@ -554,7 +611,11 @@ class Bazaar(models.Model):
         help_text='کد امبد آپارات'
     )
     hit_count = models.BigIntegerField(default=0)
-    description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
 
     def __str__(self):
         return self.company.symbol
@@ -577,7 +638,10 @@ class Chart(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
     last_candle_date = models.DateField(help_text='تاریخ ایجاد')
     company = models.ForeignKey(
         Company,
@@ -601,13 +665,16 @@ class Chart(models.Model):
         return self.company.symbol
 
 
-class TechnicalUser(models.Model):
+class UserTechnical(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    created_on = models.DateField(
+        auto_now_add=True,
+        help_text='تاریخ ایجاد'
+    )
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
@@ -618,7 +685,6 @@ class TechnicalUser(models.Model):
         help_text='نام فایل'
     )
     is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاری')
-    # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
     data = models.TextField(help_text='فایل متنی شده json')
 
     def __str__(self):
@@ -635,7 +701,11 @@ class TutorialCategory(models.Model):
         max_length=255,
         help_text='عنوان'
     )
-    description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
     image = models.ImageField(
         'uploads/image/tutorial-category',
@@ -663,8 +733,15 @@ class TutorialSubCategory(models.Model):
         on_delete=models.CASCADE,
         help_text='دسته بندی'
     )
-    title = models.CharField(max_length=255, help_text='عنوان')
-    description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    title = models.CharField(
+        max_length=255,
+        help_text='عنوان'
+     )
+    description = RichTextField(
+        null=True,
+        blank=True,
+        help_text='توضیحات'
+    )
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
     category_level = models.CharField(
         max_length=20,
@@ -800,6 +877,64 @@ class CompanyFinancial(models.Model):
         return self.company.symbol
 
 
+class UserComment(models.Model):
+    COMMENT_FOR = (
+        ('0', 'تحلیل تکنیکال'),
+        ('1', 'تحلیل بنیادی'),
+        ('2', 'وبینار'),
+        ('3', 'اخبار'),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    parent = models.ForeignKey(
+        'UserComment',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    technical = models.ForeignKey(
+        Technical,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    fundamental = models.ForeignKey(
+        Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    webinar = models.ForeignKey(
+        Webinar,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    news = models.ForeignKey(
+        News,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    comment_for = models.CharField(
+        max_length=128,
+        null=False,
+        blank=False,
+        choices=COMMENT_FOR
+    )
+    text = models.TextField(
+        null=False,
+        blank=False
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user}, {self.text}, {self.comment_for}'
+
+
 class FileRepository(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -812,7 +947,11 @@ class FileRepository(models.Model):
         blank=True
     )
     created_on = models.DateTimeField(auto_now_add=True)
-    file_tag = models.CharField(max_length=255, null=True, blank=True)
+    file_tag = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):

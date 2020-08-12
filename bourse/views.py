@@ -8,7 +8,7 @@ from .serializers import \
     CompanySerializer, \
     NewsListSerializer, \
     NewsRetrieveSerializer, \
-    TechnicalUserSerializer, \
+    UserTechnicalSerializer, \
     TechnicalSerializer, \
     WebinarSerializer, \
     FundamentalSerializer, \
@@ -16,7 +16,7 @@ from .serializers import \
 
 from .models import Company, \
     News, \
-    TechnicalUser, \
+    UserTechnical, \
     Technical, \
     Webinar, \
     HitCount, \
@@ -123,13 +123,13 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
         return self.queryset
 
 
-class TechnicalUserListRetrieveApiView(viewsets.GenericViewSet,
+class UserTechnicalListRetrieveApiView(viewsets.GenericViewSet,
                                        mixins.ListModelMixin,
                                        mixins.RetrieveModelMixin):
     """List and retrieve technical user"""
 
-    serializer_class = TechnicalUserSerializer
-    queryset = TechnicalUser.objects.all()
+    serializer_class = UserTechnicalSerializer
+    queryset = UserTechnical.objects.all()
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,

@@ -1,8 +1,8 @@
 from abc import ABC, ABCMeta
 
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
-from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket
+from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket, UserTechnical, UserComment
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -108,6 +108,12 @@ class WatchListItemSerializer(serializers.ModelSerializer):
         model = WatchListItem
         exclude = ['id', 'watch_list']
         depth = 1
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=WatchListItem.objects.all(),
+                fields=('watch_list', 'company')
+            )
+        ]
 
 
 class WatchListRetrieveSerializer(serializers.ModelSerializer):
@@ -124,7 +130,7 @@ class WatchListItemCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WatchListItem
         fields = '__all__'
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'user')
 
 
 class WatchListItemListRetrieveSerializer(serializers.ModelSerializer):
@@ -149,3 +155,19 @@ class BasketSerializer(serializers.ModelSerializer):
         model = Basket
         fields = '__all__'
 
+
+class UserTechnicalSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(many=False)
+
+    class Meta:
+        model = UserTechnical
+        exclude = ('is_share',)
+
+
+class UserCommentSerializer(serializers.ModelSerializer):
+    user = UserUpdateSerializer(many=False)
+
+    class Meta:
+        model = UserComment
+        fields = '__all__'
+        depth = 1

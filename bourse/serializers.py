@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from .models import Company, \
     News, \
-    TechnicalUser, \
+    UserTechnical, \
     Technical, \
     Webinar, \
     Category, \
@@ -69,12 +69,12 @@ class NewsRetrieveSerializer(NewsListSerializer):
         fields = '__all__'
 
 
-class TechnicalUserSerializer(serializers.ModelSerializer):
+class UserTechnicalSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     company = CompanySerializer(many=False)
 
     class Meta:
-        model = TechnicalUser
+        model = UserTechnical
         fields = '__all__'
 
 
