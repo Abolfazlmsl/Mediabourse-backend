@@ -280,3 +280,20 @@ class BookmarkViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         return Bookmark.objects.filter(user=self.request.user)
+
+
+class CompanySearchListAPIView(ListAPIView):
+    """
+        Company search
+    """
+    serializer_class = serializers.CompanySerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = Note.objects.all()
+    permission_classes = (IsAuthenticated,)
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['category__name']
+    search_fields = ['symbol', 'name']
