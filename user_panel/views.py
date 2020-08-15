@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
-from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark
+from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
@@ -286,14 +286,13 @@ class CompanySearchListAPIView(ListAPIView):
     """
         Company search
     """
-    serializer_class = serializers.CompanySerializer
+    serializer_class = serializers.CompanySearchSerializer
     authentication_classes = (JWTAuthentication,)
-    queryset = Note.objects.all()
+    queryset = Company.objects.all()
     permission_classes = (IsAuthenticated,)
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
-        filters.OrderingFilter
     ]
-    filterset_fields = ['category__name']
+    filterset_fields = ['category']
     search_fields = ['symbol', 'name']

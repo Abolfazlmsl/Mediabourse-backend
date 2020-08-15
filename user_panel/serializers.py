@@ -188,3 +188,21 @@ class BookmarkSerializer(serializers.ModelSerializer):
         model = Bookmark
         fields = '__all__'
         depth = 1
+
+
+class CompanySearchSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+
+    class Meta:
+        model = Company
+        fields = [
+            'id',
+            'category',
+            'symbol',
+            'name',
+            'type',
+            'bourse_type',
+            'image',
+            'tse',
+            'site',
+        ]
