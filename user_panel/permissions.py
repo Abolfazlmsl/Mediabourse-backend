@@ -1,7 +1,9 @@
+import os
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
 
 from bourse.models import WatchList
 

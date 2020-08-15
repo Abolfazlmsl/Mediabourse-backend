@@ -46,7 +46,11 @@ INSTALLED_APPS = [
     'user_panel.apps.UserPanelConfig',
     'trader_demo.apps.TraderDemoConfig',
     'rest_framework_swagger',
+    'private_storage',
 ]
+
+PRIVATE_STORAGE_ROOT = '/uploads/private/'
+PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_owner'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

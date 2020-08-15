@@ -5,6 +5,8 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from private_storage.fields import PrivateFileField
+
 
 def validate_phone_number(value):
     if value and is_number(value) and \
@@ -766,10 +768,6 @@ class Tutorial(models.Model):
         help_text='کاربر'
     )
     created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
-    file = models.FileField(
-        upload_to='uploads/file/tutorial',
-        help_text='فایل'
-    )
     title = models.CharField(max_length=255, help_text='عنوان')
     sub_category = models.ForeignKey(
         TutorialSubCategory,
@@ -791,6 +789,28 @@ class Tutorial(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TutorialFile(models.Model):
+    tutorial = models.ForeignKey(Tutorial, on_delete=models.CASCADE)
+    file = PrivateFileField("File")
+
+    def __str__(self):
+        return self.tutorial.title
+
+
+class TutorialOwner(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    tutorial = models.ForeignKey(
+        Tutorial,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f'{self.user}, {self.tutorial.title}'
 
 
 class CompanyFinancial(models.Model):

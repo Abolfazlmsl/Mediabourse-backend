@@ -17,7 +17,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
-from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company
+from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company, \
+    Tutorial
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
