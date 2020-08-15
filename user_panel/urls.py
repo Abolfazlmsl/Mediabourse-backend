@@ -19,4 +19,5 @@ urlpatterns = [
     path('signup/', views.SignUpAPIView.as_view(), name='user-signup'),
     path('verify-user/', views.UserPhoneRegisterAPIView.as_view(), name='verify-user'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('company-search/', views.CompanySearchListAPIView.as_view(), name='company-search'),
 ]
