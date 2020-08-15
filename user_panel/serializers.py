@@ -1,6 +1,7 @@
 from rest_framework import serializers, validators
 
-from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket, UserTechnical, UserComment
+from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket, UserTechnical, UserComment, \
+    Note, Bookmark
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -167,5 +168,23 @@ class UserCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserComment
+        fields = '__all__'
+        depth = 1
+
+
+class NoteSerializer(serializers.ModelSerializer):
+    user = UserUpdateSerializer(many=False)
+
+    class Meta:
+        model = Note
+        fields = '__all__'
+        depth = 1
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    user = UserUpdateSerializer(many=False)
+
+    class Meta:
+        model = Bookmark
         fields = '__all__'
         depth = 1

@@ -315,7 +315,6 @@ class Basket(models.Model):
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
-        unique=True
     )
 
     def __str__(self):
@@ -956,6 +955,80 @@ class FileRepository(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+
+class Note(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    technical = models.ForeignKey(
+        Technical,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    fundamental = models.ForeignKey(
+        Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    webinar = models.ForeignKey(
+        Webinar,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    news = models.ForeignKey(
+        News,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    text = models.TextField(
+        null=False,
+        blank=False
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user}, {self.text}'
+
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    technical = models.ForeignKey(
+        Technical,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    fundamental = models.ForeignKey(
+        Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    webinar = models.ForeignKey(
+        Webinar,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    news = models.ForeignKey(
+        News,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user}'
 
 
 class HitCount(models.Model):

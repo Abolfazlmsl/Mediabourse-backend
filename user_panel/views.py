@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
-from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment
+from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
@@ -236,3 +236,47 @@ class UserCommentViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         return UserComment.objects.filter(user=self.request.user)
+
+
+class NoteViewSet(viewsets.GenericViewSet,
+                  mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
+                  mixins.DestroyModelMixin):
+    """
+        Note API
+    """
+    serializer_class = serializers.NoteSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = Note.objects.all()
+    permission_classes = (IsAuthenticated,)
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    ordering_fields = ['created_on']
+
+    def get_queryset(self):
+        return Note.objects.filter(user=self.request.user)
+
+
+class BookmarkViewSet(viewsets.GenericViewSet,
+                      mixins.ListModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.DestroyModelMixin):
+    """
+        user comments API
+    """
+    serializer_class = serializers.BookmarkSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = Bookmark.objects.all()
+    permission_classes = (IsAuthenticated,)
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    ordering_fields = ['created_on']
+
+    def get_queryset(self):
+        return Bookmark.objects.filter(user=self.request.user)
