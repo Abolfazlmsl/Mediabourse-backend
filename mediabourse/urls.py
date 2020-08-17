@@ -7,7 +7,9 @@ from django.conf.urls.static import static
 
 from mediabourse import settings
 
-schema_view = get_swagger_view(title='KIR API')
+import private_storage.urls
+
+schema_view = get_swagger_view(title='MediaBourse API')
 
 
 urlpatterns = [
@@ -19,6 +21,7 @@ urlpatterns = [
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
-    path('', schema_view)
+    path('', schema_view),
 
+    path('private-media/', include(private_storage.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
