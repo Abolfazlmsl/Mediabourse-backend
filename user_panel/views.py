@@ -50,8 +50,7 @@ class SignUpAPIView(APIView):
                 params = {'sender': '1000596446', 'receptor': serializer.validated_data['phone_number'],
                           'message': 'کالا نگار\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
                 response = api.sms_send(params)
-                return Response({"user": "signed up successfully",
-                                 "generated token": serializer.data['generated_token']})
+                return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 
             except APIException:
                 return Response(
