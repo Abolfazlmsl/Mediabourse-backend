@@ -19,7 +19,7 @@ news_list = []
 
 for news in news_elements:
     a_classes = news.find_all('a', {"class": "news"})
-    title = a_classes[0].find('b').string
+    title = a_classes[0].find('b').get_text()
     text = a_classes[1].get_text()
     href = news.find('a', href=True).get('href')
     date = news.find('span', {'class': 'date-news'}).get_text()
@@ -44,3 +44,16 @@ for news in news_elements:
 # print(news_list)
 with open('data.json', 'w', encoding='utf-8') as f:
     json.dump(news_list, f, ensure_ascii=False)
+
+
+def get_news_text(news_url):
+    page = urlopen(news_url)
+
+    html_bytes = page.read()
+    html = html_bytes
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    title = soup.find('h4',  {'class': ['subtitle, kicker']}).find('a').get_text()
+    summary = soup.find('p',  {'class': ['summary, introtext']}).get_text()
+    body = soup.find('div',  {'class': 'item-body'}).find('div', {'class': 'item-text'}).find_all('p')
