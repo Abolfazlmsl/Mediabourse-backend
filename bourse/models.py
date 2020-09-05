@@ -959,6 +959,11 @@ class UserComment(models.Model):
 
 
 class FileRepository(models.Model):
+    TYPE_CHOICES = (
+        ('1', 'آموزش'),
+        ('2', 'وبینار'),
+        ('3', 'تبلیغات'),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -975,6 +980,7 @@ class FileRepository(models.Model):
         null=True,
         blank=True
     )
+    type = models.CharField(null=False, choices=TYPE_CHOICES, max_length=128)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):

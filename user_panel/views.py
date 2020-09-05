@@ -137,6 +137,7 @@ class WatchListViewSet(viewsets.ModelViewSet):
     """
     serializer_class = serializers.WatchListSerializer
     authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
     queryset = WatchList.objects.all()
 
     def get_queryset(self):
