@@ -12,7 +12,7 @@ from .serializers import \
     TechnicalSerializer, \
     WebinarSerializer, \
     FundamentalSerializer, \
-    BazaarSerializer, TutorialSerializer
+    BazaarSerializer, TutorialSerializer, FileRepositorySerializer
 
 from .models import Company, \
     News, \
@@ -21,7 +21,7 @@ from .models import Company, \
     Webinar, \
     HitCount, \
     Fundamental, \
-    Bazaar, Tutorial
+    Bazaar, Tutorial, FileRepository
 
 
 def get_client_ip(request):
@@ -349,3 +349,16 @@ class TutorialListRetrieveApiView(viewsets.GenericViewSet,
 
         return self.queryset
 
+
+class FileRepositoryViewSet(viewsets.GenericViewSet,
+                            mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin):
+    serializer_class = FileRepositorySerializer
+    queryset = FileRepository.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['type']
+    ordering_fields = ['created_on']
+    ordering = ['-created_on']

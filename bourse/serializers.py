@@ -8,10 +8,10 @@ from .models import Company, \
     Webinar, \
     Category, \
     Fundamental, \
-    Bazaar,\
-    Tutorial,\
-    TutorialCategory,\
-    TutorialSubCategory
+    Bazaar, \
+    Tutorial, \
+    TutorialCategory, \
+    TutorialSubCategory, FileRepository
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -144,3 +144,9 @@ class TutorialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tutorial
         fields = '__all__'
+
+
+class FileRepositorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileRepository
+        exclude = ['user']

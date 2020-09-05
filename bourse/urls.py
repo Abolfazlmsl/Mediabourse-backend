@@ -12,6 +12,7 @@ router.register('webinar', views.WebinarListRetrieveApiView)
 router.register('fundamental', views.FundamentalListRetrieveApiView)
 router.register('bazaar', views.BazaarListRetrieveApiView)
 router.register('tutorial', views.TutorialListRetrieveApiView)
+router.register('file-repository', views.FileRepositoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
