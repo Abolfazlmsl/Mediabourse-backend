@@ -8,10 +8,10 @@ from .models import Company, \
     Webinar, \
     Category, \
     Fundamental, \
-    Bazaar,\
-    Tutorial,\
-    TutorialCategory,\
-    TutorialSubCategory
+    Bazaar, \
+    Tutorial, \
+    TutorialCategory, \
+    TutorialSubCategory, TutorialFile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -133,14 +133,32 @@ class TutorialSubCategorySerializer(serializers.ModelSerializer):
             'id',
             'category',
             'title',
-            'category_level'
+            'category_level',
         )
+
+
+class TutorialFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TutorialFile
+        fields = '__all__'
 
 
 class TutorialSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     sub_category = TutorialSubCategorySerializer(many=False)
-
+    tutorial_files = TutorialFileSerializer(many=True)
+    
     class Meta:
         model = Tutorial
-        fields = '__all__'
+        fields = (
+            'id',
+            'user',
+            'created_on',
+            'title',
+            'sub_category',
+            'external_link',
+            'aparat_embed_code',
+            'hit_count',
+            'description',
+            'tutorial_files'
+        )

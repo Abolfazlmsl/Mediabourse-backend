@@ -787,6 +787,10 @@ class Tutorial(models.Model):
     hit_count = models.BigIntegerField(default=0)
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
 
+    @property
+    def tutorial_files(self):
+        return self.tutorialfile_set.all()
+
     def __str__(self):
         return self.title
 
