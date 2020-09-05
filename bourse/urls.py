@@ -16,4 +16,9 @@ router.register('file-repository', views.FileRepositoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path(
+        'forget-password/',
+        views.ForgetPasswordAPIView.as_view(),
+        name='forget-password'
+    ),
 ]

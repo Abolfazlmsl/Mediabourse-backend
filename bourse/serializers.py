@@ -11,7 +11,7 @@ from .models import Company, \
     Bazaar, \
     Tutorial, \
     TutorialCategory, \
-    TutorialSubCategory, FileRepository
+    TutorialSubCategory, FileRepository, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -150,3 +150,10 @@ class FileRepositorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FileRepository
         exclude = ['user']
+
+
+class UserForgetSerializer(serializers.Serializer):
+    phone_number = serializers.IntegerField()
+
+    class Meta:
+        model = User

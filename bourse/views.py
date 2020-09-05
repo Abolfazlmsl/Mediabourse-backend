@@ -1,9 +1,15 @@
 import datetime
+import secrets
+import string
 
+from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
+from kavenegar import KavenegarAPI, APIException, HTTPException
+from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
+from rest_framework.response import Response
 
+from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
     CompanySerializer, \
     NewsListSerializer, \
@@ -12,7 +18,7 @@ from .serializers import \
     TechnicalSerializer, \
     WebinarSerializer, \
     FundamentalSerializer, \
-    BazaarSerializer, TutorialSerializer, FileRepositorySerializer
+    BazaarSerializer, TutorialSerializer, FileRepositorySerializer, UserForgetSerializer
 
 from .models import Company, \
     News, \
@@ -21,7 +27,7 @@ from .models import Company, \
     Webinar, \
     HitCount, \
     Fundamental, \
-    Bazaar, Tutorial, FileRepository
+    Bazaar, Tutorial, FileRepository, User
 
 
 def get_client_ip(request):
@@ -362,3 +368,51 @@ class FileRepositoryViewSet(viewsets.GenericViewSet,
     filterset_fields = ['type']
     ordering_fields = ['created_on']
     ordering = ['-created_on']
+
+
+class ForgetPasswordAPIView(generics.CreateAPIView):
+    serializer_class = UserForgetSerializer
+    queryset = User.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        phone_number = self.request.POST.get('phone_number')
+        alphabet = string.ascii_letters + string.digits
+        password = ''.join(secrets.choice(alphabet) for i in range(8))
+        try:
+            user = get_user_model().objects.get(phone_number=phone_number)
+        except get_user_model().DoesNotExist:
+            return Response(
+                {
+                    'message': 'شماره مورد نظر یافت نشد',
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        user.set_password(password)
+        user.save()
+        try:
+            api = KavenegarAPI(KAVENEGAR_APIKEY)
+            params = {'sender': '1000596446', 'receptor': phone_number,
+                      'message': 'کالا نگار\n' + 'رمزعبور جدید شما:' + password}
+            api.sms_send(params)
+            return Response(
+                {
+                    'message': 'رمز عبور به شماره موبایل وارد شده ارسال گردید',
+                },
+                status=status.HTTP_200_OK
+            )
+        except APIException:
+            return Response(
+                {
+                    'error': 'ارسال رمز عبور با مشکل مواجه شده است',
+                    'type': 'APIException'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except HTTPException:
+            return Response(
+                {
+                    'error': 'ارسال رمز عبور با مشکل مواجه شده است',
+                    'type': 'HTTPException'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
