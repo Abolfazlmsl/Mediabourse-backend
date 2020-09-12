@@ -2,13 +2,28 @@ import base64
 
 import requests
 
-url = "https://v1.db.api.mabnadp.com/exchange/instruments"
-access_token = b'd19573a3602e9c3c320bd8b3b737f28f'
+index = 0
+while True:
 
-header_value = base64.b64encode(access_token + b':')
+    url = f"https://v1.db.api.mabnadp.com/exchange/instruments?_expand=market,board,group,stock&_count=100&_skip={100 * index}"
+    access_token = b'd19573a3602e9c3c320bd8b3b737f28f'
 
-headers = {'Authorization': b'Basic ' + header_value}
+    header_value = base64.b64encode(access_token + b':')
 
-req = requests.get(url, headers=headers)
+    headers = {'Authorization': b'Basic ' + header_value}
 
-print(req.text)
+    req = requests.get(url, headers=headers)
+
+    # text_file = open("Output.txt", "a")
+    # text_file.write(req.text)
+    # text_file.close()
+
+    index += 1
+    # print(req.json())
+
+    data_list = req.json()['data']
+    for data in data_list:
+        print(data)
+        break
+
+    break
