@@ -685,6 +685,12 @@ class UserTechnical(models.Model):
         max_length=255,
         help_text='نام فایل'
     )
+    poster = models.ImageField(
+        'uploads/image/user-technical',
+        null=True,
+        blank=True,
+        help_text='تصویر'
+    )
     is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاری')
     data = models.TextField(help_text='فایل متنی شده json')
 
