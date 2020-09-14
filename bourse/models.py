@@ -85,7 +85,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     Custom user model that support phone number instead of username
     """
 
-    name = models.CharField(
+    first_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    last_name = models.CharField(
         max_length=255,
         blank=True,
         null=True
