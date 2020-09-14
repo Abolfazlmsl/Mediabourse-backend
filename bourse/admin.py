@@ -8,14 +8,15 @@ from . import models
 
 class UserAdmin(UserAdminBase):
     ordering = ['id']
-    list_display = ['phone_number', 'name']
+    list_display = ['phone_number', 'first_name', 'last_name']
     fieldsets = (
         (None, {'fields': ('phone_number', 'password')}),
         (
             _('Personal Info'),
             {
                 'fields': (
-                    'name',
+                    'first_name',
+                    'last_name',
                     'email',
                     'generated_token',
                     'is_verified',
