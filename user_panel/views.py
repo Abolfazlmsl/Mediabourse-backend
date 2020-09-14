@@ -47,7 +47,7 @@ class SignUpAPIView(APIView):
             serializer.save()
             try:
                 api = KavenegarAPI(KAVENEGAR_APIKEY)
-                params = {'sender': '1000596446', 'receptor': serializer.validated_data['phone_number'],
+                params = {'sender': '10008445', 'receptor': serializer.validated_data['phone_number'],
                           'message': 'کالا نگار\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
                 response = api.sms_send(params)
                 return Response({"message": "کاربر با موفقیت ثبت نام شد."})
