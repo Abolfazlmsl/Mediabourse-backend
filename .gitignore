@@ -1,8 +1,11 @@
 # ignore an entire directory   
 /.idea/
+/mediabourse/__pycache__/
 /bourseapp/__pycache__/
 /bourse/__pycache__/
+/bourse/migrations/
 /bourseapp/migrations/
+/static/
 /.venv/*
 /.venv
 /venv/
