@@ -164,6 +164,52 @@ class Category(models.Model):
         return self.title
 
 
+class Meta(models.Model):
+    version = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text='نسخه فیلد'
+    )
+    state = models.TextField(
+        null=True,
+        blank=True,
+        help_text='وضعیت'
+    )
+    insert_date_time = models.TextField(
+        null=True,
+        blank=True,
+        help_text='تاریخ درج اطلاعات'
+    )
+    update_date_time = models.TextField(
+        null=True,
+        blank=True,
+        help_text='تاریخ به روز رسانی'
+    )
+    type = models.TextField(
+        null=True,
+        blank=True,
+        help_text='نوع'
+    )
+
+    def __str__(self):
+        return self.version
+
+# شاخص ها
+class Index(models.Model):
+    meta = models.ForeignKey( Meta, on_delete=models.CASCADE, null=True,  blank=True, help_text='meta info.' )
+    code = models.TextField( null=True, blank=True, help_text='کد شاخص' )
+    name = models.TextField( null=True,  blank=True, help_text='نام فارسی' )
+    english_name = models.TextField( null=True,  blank=True, help_text='نام انگلیسی' )
+    short_name = models.TextField( null=True,  blank=True, help_text='نام فارسی خلاصه' )
+    english_short_name = models.TextField( null=True,  blank=True, help_text='نام انگلیسی خلاصه' )
+    fingilish_name = models.TextField( null=True,  blank=True, help_text='نام فینگلیش' )
+    fingilish_short_name = models.TextField( null=True,  blank=True, help_text='نام فینگلیش خلاصه' )
+    id = models.TextField( null=True,  blank=True, help_text='شماره یکتا' )
+
+    def __str__(self):
+        return self.english_name
+
+
 class Company(models.Model):
     SYMBOL_TYPE_CHOICES = (
         ('0', "شاخص کل"),
