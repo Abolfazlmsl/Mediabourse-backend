@@ -1,6 +1,9 @@
 import datetime
 import secrets
 import string
+import base64
+import requests
+import json
 
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +11,7 @@ from kavenegar import KavenegarAPI, APIException, HTTPException
 from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
 from rest_framework.response import Response
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
@@ -37,9 +40,31 @@ def fill_data(request):
     print("data test")
 
     feed.feed_index()
-    feed.test_index()
 
-    return HttpResponse("Text only, please.", content_type="text/plain")
+    return HttpResponse(("Text only, please."), content_type="text/plain")
+
+
+def test_data(request):
+    print("tes test")
+
+    url = request.GET.get('url')
+    print(url)
+
+    url = url.replace("@", "&")
+    # url = 'https://v1.db.api.mabnadp.com/exchange/indexes?_sort=meta.version&meta.version=4736142543&meta.version_op=gt&_count=100&_skip=0'
+    # if version is not None:
+    #     url = url + '&_sort=meta.version&meta.version='+version+'&meta.version_op=gt'
+    access_token = b'd19573a3602e9c3c320bd8b3b737f28f'
+    header_value = base64.b64encode(access_token + b':')
+    headers = {'Authorization': b'Basic ' + header_value}
+    req = requests.get(url, headers=headers)
+    data = req.json()
+    # print(req)
+
+    # return HttpResponse(("test only, please." ), content_type="text/plain")
+    # return JsonResponse(data, safe=False)
+    return HttpResponse(json.dumps(data, ensure_ascii=False),
+             content_type="application/json")
 
 
 def get_client_ip(request):
