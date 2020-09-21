@@ -30,29 +30,14 @@ from .models import Company, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index
 
-import json
+from . import feed
 
 
 def fill_data(request):
     print("data test")
 
-    json_data = open('D:/projects/mediabourse/git_projects/mbna-api data/index.json', encoding='utf-8')
-    data1 = json.load(json_data)  # deserialises it
-    data2 = json.dumps(data1)  # json formatted string
-
-    # data_list = data2['data']
-    print(data1['data'][0])
-    print(data1['data'][0]['name'])
-
-    for data in data1['data']:
-        print(data['meta']['version'])
-        obj_meta = Meta(version=int(data['meta']['version']), state=data['meta']['state'], insert_date_time=data['meta']['insert_date_time'], update_date_time=data['meta']['update_date_time'], type=data['meta']['type'])
-        obj_meta.save()
-        obj_index = Index(meta=obj_meta, code=data['code'], name=data['name'], english_name=data['english_name'], short_name=data['short_name'], english_short_name=data['english_short_name'], fingilish_name=data['fingilish_name'], fingilish_short_name=data['fingilish_short_name'], id=data['id'])
-        obj_index.save()
-        break
-
-    json_data.close()
+    feed.feed_index()
+    feed.test_index()
 
     return HttpResponse("Text only, please.", content_type="text/plain")
 

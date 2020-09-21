@@ -165,7 +165,7 @@ class Category(models.Model):
 
 
 class Meta(models.Model):
-    version = models.IntegerField(primary_key=True, help_text='نسخه فیلد' )
+    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد' )
     state = models.CharField(max_length=255, null=True, blank=True, help_text='وضعیت' )
     insert_date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ درج اطلاعات' )
     update_date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ به روز رسانی')
