@@ -644,11 +644,7 @@ class Chart(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    created_on = models.DateField(
-        auto_now_add=True,
-        help_text='تاریخ ایجاد'
-    )
-    last_candle_date = models.DateField(help_text='تاریخ ایجاد')
+    last_candle_date = models.DateTimeField(help_text='تاریخ ایجاد')
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
