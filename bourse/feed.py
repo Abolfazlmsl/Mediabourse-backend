@@ -1,4 +1,3 @@
-
 import base64
 import requests
 import json
@@ -6,61 +5,69 @@ from .models import Meta, Index
 
 
 def feed_index():
-    # json_data = open('D:/projects/mediabourse/git_projects/mbna-api data/index.json', encoding='utf-8')
-    # data1 = json.load(json_data)  # deserialises it
-    # data2 = json.dumps(data1)  # json formatted string
+    offset = 0
+    step = 50
+    is_has_next = True
 
-    url = 'https://v1.db.api.mabnadp.com/exchange/indexes?_count=100&_skip=0'
+    #  check model is empty or not
+    if Index.objects.count() > 0:
+        last_index_meta_version = Index.objects.latest('meta__version')
+        print(last_index_meta_version.meta.version)
+        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/indexes?' + \
+                   '_sort=meta.version&meta.version=' + str(
+            last_index_meta_version.meta.version) + '&meta.version_op=gt&'
+    else:
+        print('empty')
+        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/indexes?'
 
-    access_token = b'd19573a3602e9c3c320bd8b3b737f28f'
-    header_value = base64.b64encode(access_token + b':')
-    headers = {'Authorization': b'Basic ' + header_value}
-    req = requests.get(url, headers=headers)
-    data1 = req.json()
+    # iterate for collect pagination data
+    while is_has_next:
 
-    # data_list = data2['data']
-    print(data1['data'][0])
-    print(data1['data'][0]['name'])
+        print('--------------- ', offset, ' ------------------------- ', offset)
+        get_data2 = get_data + '_count=' + str(step) + '&_skip=' + str(offset) + ''
 
-    for data in data1['data']:
-        print(data)
-        print('check: ' , int(data['meta']['version']))
-        obj_meta = Meta(version=int(data['meta']['version']), state=data['meta']['state'], insert_date_time=data['meta']['insert_date_time'], type=data['meta']['type'])
-        if 'update_date_time' in data['meta']:
-            obj_meta.update_date_time = data['meta']['update_date_time']
+        print("check update ", get_data)
 
-        ch = Meta.objects.filter(version=obj_meta.version)
-        print("ch," , len(ch))
-        if len(ch) > 0:
-            print('duplicate')
-            print(ch[0].version)
+        get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
 
-        print(obj_meta.version)
-        obj_meta.save()
-        obj_index = Index(meta=obj_meta, code=data['code'], name=data['name'], english_name=data['english_name'], short_name=data['short_name'], english_short_name=data['english_short_name'], fingilish_name=data['fingilish_name'], fingilish_short_name=data['fingilish_short_name'], id=data['id'])
-        obj_index.save()
-        print('saved ', obj_meta.version)
-        # break
+        req = requests.get(get_data2)
+        print(req)
+        data1 = req.json()
+        print(data1)
 
-    # json_data.close()
+        # print(len(data1['data']))
+        #  check next pagination
+        if len(data1['data']) == step:
+            offset = offset + step
+            print("offset: ", offset)
+        else:
+            is_has_next = False
 
-
-def test_index():
-    json_data = open('D:/projects/mediabourse/git_projects/mbna-api data/index.json', encoding='utf-8')
-    data1 = json.load(json_data)  # deserialises it
-
-    cntr = 0
-    for data in data1['data']:
-        obj = Index.objects.get(id=data['id'])
-        if obj.meta.version != int(data['meta']['version']):
+        # print(data1['data'])
+        for data in data1['data']:
             print(data)
-            print(obj.meta.version , '??' , int(data['meta']['version']))
-            print("false------")
-            cntr = cntr + 1
-    print("false count = " , cntr)
+        # return
 
-    json_data.close()
+        for data in data1['data']:
+            print(data)
+            print('check: ', int(data['meta']['version']))
+            obj_meta = Meta(version=int(data['meta']['version']), state=data['meta']['state'],
+                            insert_date_time=data['meta']['insert_date_time'], type=data['meta']['type'])
+            if 'update_date_time' in data['meta']:
+                obj_meta.update_date_time = data['meta']['update_date_time']
 
+            ch = Meta.objects.filter(version=obj_meta.version)
+            print("ch,", len(ch))
+            if len(ch) > 0:
+                print('duplicate')
+                print(ch[0].version)
 
-def check_update_index():
-    pass
+            # print(obj_meta.version)
+            obj_meta.save()
+            obj_index = Index(meta=obj_meta, code=data['code'], name=data['name'], english_name=data['english_name'],
+                              short_name=data['short_name'], english_short_name=data['english_short_name'],
+                              fingilish_name=data['fingilish_name'], fingilish_short_name=data['fingilish_short_name'],
+                              id=data['id'])
+            obj_index.save()
+            # print('saved ', obj_meta.version)
+            # break

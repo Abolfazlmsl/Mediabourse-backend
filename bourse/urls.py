@@ -21,5 +21,6 @@ urlpatterns = [
         views.ForgetPasswordAPIView.as_view(),
         name='forget-password'
     ),
-    path(  'fillData/',  views.fill_data, name='fill-data' ),
+    path('fillData/',  views.fill_data, name='fill-data'),
+    path('api-test/',  views.test_data, name='test-data'),
 ]
