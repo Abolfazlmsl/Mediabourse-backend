@@ -1,8 +1,15 @@
 # ignore an entire directory   
 /.idea/
+/mediabourse/__pycache__/
 /bourseapp/__pycache__/
 /bourse/__pycache__/
+/user_panel/__pycache__/
+/staff_panel/__pycache__/
+/trader_demo/__pycache__/
+/__pycache__/
+/bourse/migrations/
 /bourseapp/migrations/
+/static/
 /.venv/*
 /.venv
 /venv/
@@ -20,3 +27,5 @@ mediabourse/mediabourse/__pycache__/
 mediabourse/bourse/rest_api/__pycache__/
 mediabourse/mediabourse/__pycache__/*
 mediabourse/bourse/rest_api/__pycache__/*
+*.json
+/mediabourse/settings.py

@@ -8,6 +8,7 @@ from kavenegar import KavenegarAPI, APIException, HTTPException
 from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
 from rest_framework.response import Response
+from django.http import HttpResponse
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
@@ -27,7 +28,18 @@ from .models import Company, \
     Webinar, \
     HitCount, \
     Fundamental, \
-    Bazaar, Tutorial, FileRepository, User
+    Bazaar, Tutorial, FileRepository, User, Meta, Index
+
+from . import feed
+
+
+def fill_data(request):
+    print("data test")
+
+    feed.feed_index()
+    feed.test_index()
+
+    return HttpResponse("Text only, please.", content_type="text/plain")
 
 
 def get_client_ip(request):

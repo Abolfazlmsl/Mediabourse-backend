@@ -50,6 +50,11 @@ class UserAdmin(UserAdminBase):
     )
 
 
+@admin.register(models.Index)
+class IndexAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "meta")
+    list_filter = ("name", "meta")
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Company)
 admin.site.register(models.Category)
@@ -76,3 +81,5 @@ admin.site.register(models.TutorialOwner)
 admin.site.register(models.Note)
 admin.site.register(models.Bookmark)
 admin.site.register(models.TutorialFile)
+admin.site.register(models.Meta)
+# admin.site.register(models.Index)
