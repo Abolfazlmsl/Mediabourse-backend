@@ -55,6 +55,109 @@ class IndexAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "meta")
     list_filter = ("name", "meta")
 
+
+@admin.register(models.Exchange)
+class ExchangeAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Market)
+class MarketAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Board)
+class BoardAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Instrumentgroup)
+class InstrumentgroupAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "code", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Instrumentexchangestate)
+class InstrumentexchangestateAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Assettype)
+class AssettypeAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "code", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Assetstate)
+class AssetstateAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "english_title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Companiestate)
+class CompaniestateAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "meta")
+    list_filter = ("title", "meta")
+
+
+@admin.register(models.Fund)
+class FundAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "short_name", "state", "meta")
+    list_filter = ("state", "meta")
+
+
+@admin.register(models.Categorie)
+class CategorieAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "parent_id", "code", "meta")
+    list_filter = ("parent_id",)
+
+
+@admin.register(models.Companie)
+class CompanieAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "trade_symbol", "state", "english_trade_symbol", "description", "meta")
+    list_filter = ("state",)
+
+
+@admin.register(models.Asset)
+class AssetAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "trade_symbol",  "state", "meta")
+    list_filter = ("state", "assetType", "exchange", "categories",)
+
+
+@admin.register(models.Instrument)
+class InstrumentAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "short_name", "type", "exchange", "exchange_state", "market", "group", "board", "index", "asset", "stock",)
+    list_filter = ("type", "market", "board", "group", "exchange", "exchange_state", "index", "group", "board",)
+
+
+@admin.register(models.Instrumentsel)
+class InstrumentselAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "short_name", "type", "exchange", "exchange_state", "market", "group", "board", "index", "asset", "stock",)
+    list_filter = ("type", "market", "board", "group", "exchange", "exchange_state", "index", "group", "board",)
+
+
+@admin.register(models.Trade)
+class TradeAdmin(admin.ModelAdmin):
+    list_display = ("id", "instrument_name", "date_time",  "volume", "trade_count")
+    list_filter = ("date_time",)
+
+    def instrument_name(self, obj):
+        return obj.instrument.name
+
+
+@admin.register(models.Tradedetail)
+class TradedetailAdmin(admin.ModelAdmin):
+    list_display = ("version", "instrument_name", "date_time",  "value")
+    list_filter = ("instrument", "date_time",)
+
+    def instrument_name(self, obj):
+        return obj.instrument.short_name
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Company)
 admin.site.register(models.Category)

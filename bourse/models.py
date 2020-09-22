@@ -165,29 +165,352 @@ class Category(models.Model):
 
 
 class Meta(models.Model):
-    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد' )
-    state = models.CharField(max_length=255, null=True, blank=True, help_text='وضعیت' )
-    insert_date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ درج اطلاعات' )
+    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
+    state = models.CharField(max_length=255, null=True, blank=True, help_text='وضعیت')
+    insert_date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ درج اطلاعات')
     update_date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ به روز رسانی')
     type = models.CharField(max_length=255, null=True, blank=True, help_text='نوع')
 
     def __str__(self):
         return str(self.version)
 
+
+#   انواع وضعیت دارایی‌ها
+class Assetstate(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+#  انواع دارایی
+class Assettype(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+# دسته بندی‌های اوراق مشارکت
+class Categorie(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    parent_id = models.CharField(max_length=255, null=True, blank=True, help_text='دسته بندی مادر')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد دسته بندی')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی دسته بندی')
+
+    def __str__(self):
+        return self.name
+
+
 # شاخص ها
 class Index(models.Model):
-    meta = models.ForeignKey( Meta, on_delete=models.CASCADE, null=True,  blank=True, help_text='meta info.' )
-    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص' )
-    name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام فارسی' )
-    english_name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام انگلیسی' )
-    short_name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام فارسی خلاصه' )
-    english_short_name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام انگلیسی خلاصه' )
-    fingilish_name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام فینگلیش' )
-    fingilish_short_name = models.CharField(max_length=255, null=True,  blank=True, help_text='نام فینگلیش خلاصه' )
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام فارسی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام فارسی خلاصه')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی خلاصه')
+    fingilish_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام فینگلیش')
+    fingilish_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام فینگلیش خلاصه')
     id = models.CharField(max_length=255, primary_key=True)
 
     def __str__(self):
         return self.name
+
+
+#  بازارها
+class Exchange(models.Model):
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    id = models.CharField(max_length=255, primary_key=True)
+
+    def __str__(self):
+        return self.title
+
+
+#  صندوق‌های سرمایه گذاری
+class Fund(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد صندوق')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام صندوق')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی صندوق')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه صندوق')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی صندوق')
+    trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نماد معاملاتی')
+    website = models.CharField(max_length=255, null=True, blank=True, help_text='وبسایت')
+    inception_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ شروع به کار صندوق')
+    manager_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام مدیر صندوق')
+    manager_english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی مدیر صندوق')
+    investment_manager_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام مدیر سرمایه گذاری صندوق')
+    investment_manager_english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی مدیر سرمایه گذاری صندوق')
+    custodian_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام متولی صندوق')
+    custodian_english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی متولی صندوق')
+    liquidity_guarantor_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام ضامن نقد شوندگی صندوق')
+    liquidity_guarantor_english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی ضامن نقد شوندگی صندوق')
+
+    state = models.ForeignKey(Assetstate, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.name
+
+
+#   انواع وضعیت شرکت ها
+class Companiestate(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+# دسته بندی‌های اوراق مشارکت
+class Companie(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
+    trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نماد معاملاتی')
+    english_trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نماد معاملاتی انگلیسی')
+    description = models.TextField(null=True, blank=True, help_text='توصیحات')
+    fiscalyear = models.CharField(max_length=255, null=True, blank=True, help_text='سال مالی')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    state = models.ForeignKey(Companiestate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت شرکت')
+    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+
+    def __str__(self):
+        return self.name
+
+
+# دارایی‌ها
+class Asset(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نماد معاملاتی')
+    english_trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نماد معاملاتی انگلیسی')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
+    fingilish_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام فینگیلیش')
+    fingilish_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه فینگیلیش')
+    fingilish_trade_symbol = models.CharField(max_length=255, null=True, blank=True, help_text='نام نماد معاملاتی فینگیلیش')
+    state_change_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ اعمال وضعیت')
+    state_description = models.TextField(null=True, blank=True, help_text='دلایل تغییر وضعیت')
+    english_state_description = models.TextField(null=True, blank=True, help_text='دلایل تغییر وضعیت انگلیسی')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    assetType = models.ForeignKey(Assettype, on_delete=models.CASCADE, null=True, blank=True, help_text='نوع دارایی')
+    state = models.ForeignKey(Assetstate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت دارایی')
+    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+    # stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='سهام')
+    entity = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='موجودی')
+    fund = models.ForeignKey(Fund, on_delete=models.CASCADE, null=True, blank=True, help_text='صندوق')
+    categories = models.ForeignKey(Categorie, on_delete=models.CASCADE, null=True, blank=True, help_text='گروه‌ها')
+
+    def __str__(self):
+        return self.name
+
+
+#  مارکت
+class Market(models.Model):
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    id = models.CharField(max_length=255, primary_key=True)
+
+    def __str__(self):
+        return self.title
+
+
+#  تابلو
+class Board(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+#  گروه‌های نماد
+class Instrumentgroup(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد شاخص')
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    english_title = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+#  انواع گروه‌های نماد
+class Instrumentexchangestate(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
+
+    def __str__(self):
+        return self.title
+
+
+# نمادها
+class Instrument(models.Model):
+    id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد بورسی')
+    bbs_code = models.CharField(max_length=255, null=True, blank=True, help_text='کد BBS')
+    isin = models.CharField(max_length=255, null=True, blank=True, help_text='کد ISIN')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
+    # share: سهام
+    # warrant: حق تقدم
+    # index: شاخص
+    # bond: اوراق مشارکت
+    # future: آتی
+    # option: اختیار فروش تبعی
+    # energy: انرژی
+    # energy2: انرژی۲
+    # intellectual_property: دارایی فکری
+    # commodity: کالا
+    # currency: ارز
+    type = models.CharField(max_length=255, null=True, blank=True, help_text='نوع نماد')
+    # price: ریالی
+    # percent: درصدی
+    value_type = models.CharField(max_length=255, null=True, blank=True, help_text='نوع قیمت نماد')
+    base_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم مبنای نماد')
+    nominal_price = models.DecimalField(max_digits=10, decimal_places=1, null=True, blank=True, help_text='قیمت اسمی نماد')
+    price_tick = models.IntegerField(null=True, blank=True, help_text='حداقل تغییر قیمت نماد')
+    trade_tick = models.IntegerField(null=True, blank=True, help_text='حداقل تغییر معاملات نماد')
+    payment_delay = models.IntegerField(null=True, blank=True, help_text='دوره زمانی تسویه معاملات نماد')
+    minimum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداقل حجم معاملات نماد در یک سفارش')
+    maximum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداکثر حجم معاملات نماد در یک سفارش')
+    listing_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ ایجاد نماد')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+    exchange_state = models.ForeignKey(Instrumentexchangestate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت نماد در بورس')
+    market = models.ForeignKey(Market, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار')
+    group = models.ForeignKey(Instrumentgroup, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار')
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, help_text='تابلوی معاملاتی نماد')
+    index = models.ForeignKey(Index, on_delete=models.CASCADE, null=True, blank=True, help_text='شاخص')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True, blank=True, help_text='دارایی')
+    stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
+
+    def __str__(self):
+        return self.name
+
+
+# نمادهای منتخب
+class Instrumentsel(models.Model):
+    id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+    code = models.CharField(max_length=255, null=True, blank=True, help_text='کد بورسی')
+    bbs_code = models.CharField(max_length=255, null=True, blank=True, help_text='کد BBS')
+    isin = models.CharField(max_length=255, null=True, blank=True, help_text='کد ISIN')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
+    short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
+    english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
+    # share: سهام
+    # warrant: حق تقدم
+    # index: شاخص
+    # bond: اوراق مشارکت
+    # future: آتی
+    # option: اختیار فروش تبعی
+    # energy: انرژی
+    # energy2: انرژی۲
+    # intellectual_property: دارایی فکری
+    # commodity: کالا
+    # currency: ارز
+    type = models.CharField(max_length=255, null=True, blank=True, help_text='نوع نماد')
+    # price: ریالی
+    # percent: درصدی
+    value_type = models.CharField(max_length=255, null=True, blank=True, help_text='نوع قیمت نماد')
+    base_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم مبنای نماد')
+    nominal_price = models.DecimalField(max_digits=10, decimal_places=1, null=True, blank=True, help_text='قیمت اسمی نماد')
+    price_tick = models.IntegerField(null=True, blank=True, help_text='حداقل تغییر قیمت نماد')
+    trade_tick = models.IntegerField(null=True, blank=True, help_text='حداقل تغییر معاملات نماد')
+    payment_delay = models.IntegerField(null=True, blank=True, help_text='دوره زمانی تسویه معاملات نماد')
+    minimum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداقل حجم معاملات نماد در یک سفارش')
+    maximum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداکثر حجم معاملات نماد در یک سفارش')
+    listing_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ ایجاد نماد')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+    exchange_state = models.ForeignKey(Instrumentexchangestate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت نماد در بورس')
+    market = models.ForeignKey(Market, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار')
+    group = models.ForeignKey(Instrumentgroup, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار')
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, help_text='تابلوی معاملاتی نماد')
+    index = models.ForeignKey(Index, on_delete=models.CASCADE, null=True, blank=True, help_text='شاخص')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True, blank=True, help_text='دارایی')
+    stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
+
+    def __str__(self):
+        if self.short_name is not None:
+            return self.short_name
+        return self.meta.version
+
+
+# معاملات روزانه
+class Trade(models.Model):
+    id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    open_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='اولین قیمت معاملاتی')
+    high_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='بیشترین قیمت معاملاتی')
+    low_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='کمترین قیمت معاملاتی')
+    close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='آخرین قیمت معاملاتی')
+    close_price_change = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='تفاوت آخرین قیمت با قیمت پایانی روز قبل')
+    real_close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='قیمت پایانی معاملات با احتساب حجم مبنا')
+    real_close_price_change = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='تغییر قیمت پایانی نسبت به قیمت پایانی روز قبل')
+    value = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='ارزش ریالی معاملات')
+    buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران')
+    volume = models.BigIntegerField(null=True, blank=True, help_text='تعداد معامله شده')
+    trade_count = models.IntegerField(null=True, blank=True, help_text='تعداد معامله')
+    adjusted_close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+
+    def __str__(self):
+        return self.instrument.name
+
+
+# جزعیات معاملات روزانه
+class Tradedetail(models.Model):
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    #  open_price, high_price, low_price, close_price, close_price_change, real_close_price
+    #  , real_close_price_change, buyer_count, trade_count, volume, value
+    #  person_buyer_count, company_buyer_count, person_buy_volume, company_buy_volume, person_seller_count
+    #  , company_seller_count, person_sell_volume, company_sell_volume
+    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
+    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
+
+    def __str__(self):
+        if self.instrument is not None:
+            return self.instrument.name
+        return self.version
 
 
 class Company(models.Model):
@@ -329,7 +652,7 @@ class WatchListItem(models.Model):
         validators=(validate_watchlist_items,)
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE
     )
 
@@ -337,7 +660,10 @@ class WatchListItem(models.Model):
         unique_together = ('watch_list', 'company',)
 
     def __str__(self):
-        return f'{self.watch_list.name}, {self.company.symbol}'
+        return f'{self.watch_list.name}, {self.company.short_name}'
+
+    def get_short_name(self):
+        return self.company.short_name
 
 
 class Basket(models.Model):
@@ -774,7 +1100,7 @@ class TutorialSubCategory(models.Model):
     title = models.CharField(
         max_length=255,
         help_text='عنوان'
-     )
+    )
     description = RichTextField(
         null=True,
         blank=True,
