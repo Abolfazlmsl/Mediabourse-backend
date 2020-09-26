@@ -11,7 +11,7 @@ from .models import Company, \
     Bazaar, \
     Tutorial, \
     TutorialCategory, \
-    TutorialSubCategory, FileRepository, User
+    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,6 +24,51 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name'
         )
+
+
+class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm
+
+    class Meta:
+        model = WatchList
+        fields = [
+            'id',
+            'user',
+            'name',
+        ]
+        read_only_fields = ['id', 'user']
+
+    def validate_name(self, value):
+        qs = WatchList.objects.filter(name__iexact=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("This WatchList name has already been used")
+        return value
+
+
+class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
+    company_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = WatchListItem
+        fields = [
+            'id',
+            'watch_list',
+            'company',
+            'company_name',
+        ]
+        read_only_fields = ['id', 'company_name']
+
+    def get_company_name(self, obj):
+        return obj.get_short_name()
+
+    def validate_title(self, value):
+        qs = WatchListItem.objects.filter(company=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("This company has already been used")
+        return value
 
 
 class CategorySerializer(serializers.ModelSerializer):
