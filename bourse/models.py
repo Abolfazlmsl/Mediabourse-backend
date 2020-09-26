@@ -836,6 +836,14 @@ class TutorialFile(models.Model):
         return self.tutorial.title
 
 
+class TutorialFreeFile(models.Model):
+    tutorial = models.ForeignKey(Tutorial, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='uploads/file/free-tutorial')
+
+    def __str__(self):
+        return self.tutorial.title
+
+
 class TutorialOwner(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
