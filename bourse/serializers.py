@@ -124,7 +124,20 @@ class UserTechnicalSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TechnicalSerializer(serializers.ModelSerializer):
+class TechnicalListSerializer(serializers.ModelSerializer):
+    """Technical list serializer"""
+
+    class Meta:
+        model = Technical
+        fields = (
+            'id',
+            'title',
+            'thumbnail'
+        )
+
+
+class TechnicalRetrieveSerializer(serializers.ModelSerializer):
+    """Technical retrieve serializer"""
     user = UserSerializer(many=False)
     company = CompanySerializer(many=False)
 
@@ -183,9 +196,26 @@ class TutorialSubCategorySerializer(serializers.ModelSerializer):
         )
 
 
-class TutorialSerializer(serializers.ModelSerializer):
+class TutorialFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    file = serializers.FileField()
+
+
+class TutorialListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tutorial
+        fields = (
+            'id',
+            'title',
+            'thumbnail'
+        )
+
+
+class TutorialRetrieveSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     sub_category = TutorialSubCategorySerializer(many=False)
+    tutorial_files = TutorialFileSerializer(many=True)
 
     class Meta:
         model = Tutorial

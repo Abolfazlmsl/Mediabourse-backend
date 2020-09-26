@@ -21,11 +21,17 @@ from .serializers import \
     NewsListSerializer, \
     NewsRetrieveSerializer, \
     UserTechnicalSerializer, \
-    TechnicalSerializer, \
+    TechnicalListSerializer, \
+    TechnicalRetrieveSerializer,\
     WebinarSerializer, \
     FundamentalSerializer, \
-    BazaarSerializer, TutorialSerializer, FileRepositorySerializer, UserForgetSerializer, \
-    WatchListSerializer, WatchListItemSerializer
+    BazaarSerializer,\
+    TutorialListSerializer,\
+    TutorialRetrieveSerializer,\
+    FileRepositorySerializer,\
+    UserForgetSerializer, \
+    WatchListSerializer,\
+    WatchListItemSerializer
 
 from .models import Company, \
     News, \
@@ -336,7 +342,7 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
                                    mixins.RetrieveModelMixin):
     """List and retrieve technical"""
 
-    serializer_class = TechnicalSerializer
+    serializer_class = TechnicalListSerializer
     queryset = Technical.objects.all()
     filter_backends = [
         DjangoFilterBackend,
@@ -370,6 +376,11 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
                 pass
 
         return self.queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TechnicalRetrieveSerializer
+        return self.serializer_class
 
 
 class WebinarListRetrieveApiView(viewsets.GenericViewSet,
@@ -498,10 +509,48 @@ class BazaarListRetrieveApiView(viewsets.GenericViewSet,
 class TutorialListRetrieveApiView(viewsets.GenericViewSet,
                                   mixins.ListModelMixin,
                                   mixins.RetrieveModelMixin):
-    """List and retrieve bazaar"""
+    """List and retrieve tutorial"""
 
-    serializer_class = TutorialSerializer
-    queryset = Tutorial.objects.all()
+    serializer_class = TutorialListSerializer
+    queryset = Tutorial.objects.filter(free=False)
+
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            customer_ip = get_client_ip(self.request)
+            try:
+                current_tutorial = Tutorial.objects.get(id=self.kwargs['pk'])
+                try:
+                    HitCount.objects.get(
+                        ip=customer_ip,
+                        tutorial_id=self.kwargs['pk']
+                    )
+                except HitCount.DoesNotExist:
+                    current_tutorial.hit_count = current_tutorial.hit_count + 1
+                    current_tutorial.save()
+                    HitCount.objects.create(
+                        ip=customer_ip,
+                        tutorial_id=self.kwargs['pk'],
+                        date=datetime.date.today()
+                    )
+            except Tutorial.DoesNotExist:
+                pass
+
+        return self.queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TutorialRetrieveSerializer
+        return self.serializer_class
+
+
+class FreeTutorialListRetrieveApiView(viewsets.GenericViewSet,
+                                      mixins.ListModelMixin,
+                                      mixins.RetrieveModelMixin):
+    """List and retrieve free tutorial"""
+
+    serializer_class = TutorialListSerializer
+    queryset = Tutorial.objects.filter(free=True)
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -535,6 +584,11 @@ class TutorialListRetrieveApiView(viewsets.GenericViewSet,
                 pass
 
         return self.queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TutorialRetrieveSerializer
+        return self.serializer_class
 
 
 class FileRepositoryViewSet(viewsets.GenericViewSet,

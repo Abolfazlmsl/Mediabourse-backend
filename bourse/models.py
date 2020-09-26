@@ -813,6 +813,10 @@ class Technical(models.Model):
         blank=True,
         help_text='توضیحات'
     )
+    thumbnail = models.ImageField(
+        upload_to='upload/thumbnail/technical',
+        help_text='تصویر'
+    )
 
     def __str__(self):
         return self.company.symbol
@@ -1144,11 +1148,18 @@ class Tutorial(models.Model):
         help_text='کد امبد آپارات'
     )
     hit_count = models.BigIntegerField(default=0)
+    free = models.BooleanField(default=True)
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    thumbnail = models.ImageField(
+        upload_to='uploads/thumbnail/tutorial',
+        help_text='تصویر'
+    )
 
     @property
     def tutorial_files(self):
-        return self.tutorialfile_set.all()
+        if self.free:
+            return self.tutorialfreefile_set.all()
+        return self.tutorialfile_set
 
     def __str__(self):
         return self.title
