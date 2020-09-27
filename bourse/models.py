@@ -606,7 +606,7 @@ class RequestSymbol(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -672,7 +672,7 @@ class Basket(models.Model):
         on_delete=models.CASCADE
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
     )
 
@@ -694,7 +694,7 @@ class News(models.Model):
         help_text='در صورت اختصاص خبر برای گروه انتخاب شود'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         null=True,
         blank=True,
         on_delete=models.CASCADE,
@@ -772,7 +772,7 @@ class Technical(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -860,7 +860,7 @@ class Webinar(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -913,7 +913,7 @@ class Fundamental(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -949,7 +949,7 @@ class Bazaar(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1002,7 +1002,7 @@ class Chart(models.Model):
     )
     last_candle_date = models.DateTimeField(help_text='تاریخ ایجاد')
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1034,7 +1034,7 @@ class UserTechnical(models.Model):
         help_text='تاریخ ایجاد'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1202,7 +1202,7 @@ class CompanyFinancial(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1442,7 +1442,7 @@ class Bookmark(models.Model):
 class HitCount(models.Model):
     ip = models.CharField(max_length=255)
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
         blank=True
