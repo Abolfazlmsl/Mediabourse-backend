@@ -147,7 +147,7 @@ class Category(models.Model):
         max_length=255,
         help_text='گروه بورسی'
     )
-    created_on = models.DateField(auto_now_add=True, )
+    created_on = models.DateField(auto_now_add=True)
     logo = models.ImageField(
         upload_to='uploads/images/category/',
         null=True,
@@ -1291,6 +1291,7 @@ class UserComment(models.Model):
         ('1', 'تحلیل بنیادی'),
         ('2', 'وبینار'),
         ('3', 'اخبار'),
+        ('4', 'نماد')
     )
 
     user = models.ForeignKey(
@@ -1311,6 +1312,12 @@ class UserComment(models.Model):
     )
     fundamental = models.ForeignKey(
         Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    company = models.ForeignKey(
+        Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
         blank=True
@@ -1338,6 +1345,7 @@ class UserComment(models.Model):
         blank=False
     )
     created_on = models.DateTimeField(auto_now_add=True)
+    like = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f'{self.user}, {self.text}, {self.comment_for}'
@@ -1494,3 +1502,29 @@ class HitCount(models.Model):
 
     def __str__(self):
         return self.ip
+
+
+class Notification(models.Model):
+    title = models.CharField(max_length=255)
+    text = RichTextField()
+    company = models.ForeignKey(
+        Instrumentsel,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    thumbnail = models.ImageField(
+        upload_to='upload/thumbnail/notification',
+        help_text='تصویر'
+    )
+    created_on = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.id}, {self.title}'
+
+    @property
+    def company_name(self):
+        if self.company:
+            return self.company.name
+        else:
+            return ''
