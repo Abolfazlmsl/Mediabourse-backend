@@ -513,6 +513,13 @@ class Tradedetail(models.Model):
         return self.version
 
 
+class Trademidday(models.Model):
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    company = models.ForeignKey(Companie, on_delete=models.CASCADE)
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
+    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
+    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
+
 class Company(models.Model):
     SYMBOL_TYPE_CHOICES = (
         ('0', "شاخص کل"),
