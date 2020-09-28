@@ -11,7 +11,7 @@ from .models import Company, \
     Bazaar, \
     Tutorial, \
     TutorialCategory, \
-    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel
+    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -233,3 +233,54 @@ class UserForgetSerializer(serializers.Serializer):
 
     class Meta:
         model = User
+
+
+class InstrumentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Instrumentsel
+        fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Serializer for comment model"""
+
+    class Meta:
+        model = UserComment
+        fields = (
+            'id',
+            'parent',
+            'text',
+            'comment_for',
+            'like',
+            'created_on'
+        )
+
+
+class NotificationListSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField()
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id',
+            'title',
+            'company_name',
+            'thumbnail',
+            'created_on'
+        )
+
+
+class NotificationDetailSerializer(NotificationListSerializer):
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id',
+            'title',
+            'text',
+            'company',
+            'thumbnail',
+            'created_on'
+        )
+        depth = 1
