@@ -1070,7 +1070,7 @@ def feed_instrument():
 
 
 def feed_instrumentsel():
-    models.Instrumentsel.objects.all().delete()
+    # models.Instrumentsel.objects.all().delete()
 
     feed_instrument()
     sel_obj = models.Instrument.objects.filter(Q(type='share')
@@ -1337,7 +1337,7 @@ def feed_trademidday(company_id):
             last_index_meta_version = model.objects.filter(company=company_id).latest('version')
 
             # check last recived item is meta.state == deleted ?
-            print(last_version_from_delete , last_version_from_delete != -1)
+            print(last_version_from_delete, last_version_from_delete != -1)
             if last_version_from_delete != -1:
                 last_index_meta_version.version = last_version_from_delete
                 print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
@@ -1352,8 +1352,7 @@ def feed_trademidday(company_id):
                        'instrument.stock.company.id=' + company_id + '&' + \
                        'date_time=' + today_date + timee + '&' + 'date_time_op=gt'
 
-
-        get_data2 = get_data #+ '_count=' + str(step) + '&_skip=' + str(offset) + '&_expand=trade'
+        get_data2 = get_data + '&_count=' + str(step) + '&_skip=' + str(offset)
         get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
         print(get_data2)
         req = requests.get(get_data2)
@@ -1384,7 +1383,9 @@ def feed_trademidday(company_id):
 
             obj_trade = models.Trademidday(version=int(data['meta']['version']), date_time=data['date_time'])
             obj_instrument = models.Instrumentsel.objects.get(id=data['instrument']['id'])
+            obj_company = models.Companie.objects.get(id=company_id)
             obj_trade.instrument = obj_instrument
+            obj_trade.company = obj_company
             val = ''
 
             if 'open_price' in data['trade']:
