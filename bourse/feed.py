@@ -1313,6 +1313,7 @@ def feed_tradedaily(instrument_id):
 
 
 def feed_trademidday(company_id):
+
     offset = 0
     step = 100
     is_has_next = True
@@ -1331,7 +1332,6 @@ def feed_trademidday(company_id):
 
     # iterate for collect pagination data
     while is_has_next:
-
         #  check model is empty or not
         if model.objects.filter(company=company_id).count() > 0:
             last_index_meta_version = model.objects.filter(company=company_id).latest('version')
@@ -1345,18 +1345,17 @@ def feed_trademidday(company_id):
             # print(last_index_meta_version.meta.version)
             get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
                        'instrument.stock.company.id=' + company_id + '&' + \
-                       'date_time=' + today_date + timee + '&meta.version=' + str(
+                       'date_time=' + today_date + timee + '&_sort=meta.version=' + str(
                 last_index_meta_version.version) + '&date_time_op=gt'
         else:
             get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
                        'instrument.stock.company.id=' + company_id + '&' + \
                        'date_time=' + today_date + timee + '&' + 'date_time_op=gt'
+            # print(get_data)
 
         get_data2 = get_data + '&_count=' + str(step) + '&_skip=' + str(offset)
         get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
-        print(get_data2)
         req = requests.get(get_data2)
-        print(req.text)
         data1 = req.json()
 
         if 'error' in data1:
@@ -1366,8 +1365,10 @@ def feed_trademidday(company_id):
 
         #  check next pagination
         if len(data1['data']) == step:
+            print(1)
             offset = offset + step
         else:
+            print(2)
             is_has_next = False
 
         for data in data1['data']:
