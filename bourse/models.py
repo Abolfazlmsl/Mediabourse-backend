@@ -672,6 +672,9 @@ class WatchListItem(models.Model):
     def get_short_name(self):
         return self.company.short_name
 
+    def get_short_english_name(self):
+        return self.company.english_short_name
+
 
 class Basket(models.Model):
     user = models.ForeignKey(
