@@ -1,7 +1,7 @@
 from rest_framework import serializers, validators
 
 from bourse.models import User, WatchList, WatchListItem, Company, Category, News, Basket, UserTechnical, UserComment, \
-    Note, Bookmark
+    Note, Bookmark, RequestSymbol, Instrumentsel
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -76,22 +76,14 @@ class NewsSerializer(serializers.ModelSerializer):
 
 
 class CompanySerializer(serializers.ModelSerializer):
-    category = CategorySerializer(many=False)
-    news = NewsSerializer(many=True)
 
     class Meta:
-        model = Company
+        model = Instrumentsel
         fields = [
             'id',
-            'category',
-            'symbol',
+            'code',
             'name',
-            'type',
-            'bourse_type',
-            'image',
-            'tse',
-            'site',
-            'news',
+            'short_name',
         ]
 
 
@@ -208,3 +200,18 @@ class CompanySearchSerializer(serializers.ModelSerializer):
             'tse',
             'site',
         ]
+
+
+class RequestSymbolCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestSymbol
+        fields = '__all__'
+        read_only_fields = ('id', 'user', 'is_analyzed')
+
+
+class RequestSymbolSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(many=False)
+
+    class Meta:
+        model = RequestSymbol
+        fields = "__all__"
