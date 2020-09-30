@@ -354,6 +354,7 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
     ordering = ['-created_on']
 
     def get_queryset(self):
+        queryset = self.queryset
         if self.action == 'retrieve':
             HitCount.objects.filter(date__lt=datetime.date.today()).delete()
             customer_ip = get_client_ip(self.request)
@@ -375,7 +376,13 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
             except Technical.DoesNotExist:
                 pass
 
-        return self.queryset
+        video = self.request.GET.get('video')
+        if video == 'true':
+            queryset = queryset.exclude(video__exact='')
+        elif video == 'false':
+            queryset = queryset.filter(video__exact='')
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
