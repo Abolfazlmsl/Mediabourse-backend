@@ -147,7 +147,7 @@ class Category(models.Model):
         max_length=255,
         help_text='گروه بورسی'
     )
-    created_on = models.DateField(auto_now_add=True, )
+    created_on = models.DateField(auto_now_add=True)
     logo = models.ImageField(
         upload_to='uploads/images/category/',
         null=True,
@@ -513,6 +513,13 @@ class Tradedetail(models.Model):
         return self.version
 
 
+class Trademidday(models.Model):
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    company = models.ForeignKey(Companie, on_delete=models.CASCADE)
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
+    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
+    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
+
 class Company(models.Model):
     SYMBOL_TYPE_CHOICES = (
         ('0', "شاخص کل"),
@@ -606,7 +613,7 @@ class RequestSymbol(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -665,6 +672,9 @@ class WatchListItem(models.Model):
     def get_short_name(self):
         return self.company.short_name
 
+    def get_short_english_name(self):
+        return self.company.english_short_name
+
 
 class Basket(models.Model):
     user = models.ForeignKey(
@@ -672,7 +682,7 @@ class Basket(models.Model):
         on_delete=models.CASCADE
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
     )
 
@@ -694,7 +704,7 @@ class News(models.Model):
         help_text='در صورت اختصاص خبر برای گروه انتخاب شود'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         null=True,
         blank=True,
         on_delete=models.CASCADE,
@@ -772,7 +782,7 @@ class Technical(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -812,6 +822,10 @@ class Technical(models.Model):
         null=True,
         blank=True,
         help_text='توضیحات'
+    )
+    thumbnail = models.ImageField(
+        upload_to='upload/thumbnail/technical',
+        help_text='تصویر'
     )
 
     def __str__(self):
@@ -856,7 +870,7 @@ class Webinar(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -909,7 +923,7 @@ class Fundamental(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -945,7 +959,7 @@ class Bazaar(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -996,13 +1010,9 @@ class Chart(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    created_on = models.DateField(
-        auto_now_add=True,
-        help_text='تاریخ ایجاد'
-    )
-    last_candle_date = models.DateField(help_text='تاریخ ایجاد')
+    last_candle_date = models.DateTimeField(help_text='تاریخ ایجاد')
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1034,7 +1044,7 @@ class UserTechnical(models.Model):
         help_text='تاریخ ایجاد'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1148,11 +1158,18 @@ class Tutorial(models.Model):
         help_text='کد امبد آپارات'
     )
     hit_count = models.BigIntegerField(default=0)
+    free = models.BooleanField(default=True)
     description = RichTextField(null=True, blank=True, help_text='توضیحات')
+    thumbnail = models.ImageField(
+        upload_to='uploads/thumbnail/tutorial',
+        help_text='تصویر'
+    )
 
     @property
     def tutorial_files(self):
-        return self.tutorialfile_set.all()
+        if self.free:
+            return self.tutorialfreefile_set.all()
+        return self.tutorialfile_set
 
     def __str__(self):
         return self.title
@@ -1161,6 +1178,14 @@ class Tutorial(models.Model):
 class TutorialFile(models.Model):
     tutorial = models.ForeignKey(Tutorial, on_delete=models.CASCADE)
     file = PrivateFileField("File")
+
+    def __str__(self):
+        return self.tutorial.title
+
+
+class TutorialFreeFile(models.Model):
+    tutorial = models.ForeignKey(Tutorial, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='uploads/file/free-tutorial')
 
     def __str__(self):
         return self.tutorial.title
@@ -1187,7 +1212,7 @@ class CompanyFinancial(models.Model):
         help_text='کاربر'
     )
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
     )
@@ -1269,6 +1294,7 @@ class UserComment(models.Model):
         ('1', 'تحلیل بنیادی'),
         ('2', 'وبینار'),
         ('3', 'اخبار'),
+        ('4', 'نماد')
     )
 
     user = models.ForeignKey(
@@ -1289,6 +1315,12 @@ class UserComment(models.Model):
     )
     fundamental = models.ForeignKey(
         Fundamental,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    company = models.ForeignKey(
+        Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
         blank=True
@@ -1316,6 +1348,7 @@ class UserComment(models.Model):
         blank=False
     )
     created_on = models.DateTimeField(auto_now_add=True)
+    like = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f'{self.user}, {self.text}, {self.comment_for}'
@@ -1427,7 +1460,7 @@ class Bookmark(models.Model):
 class HitCount(models.Model):
     ip = models.CharField(max_length=255)
     company = models.ForeignKey(
-        Company,
+        Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
         blank=True
@@ -1472,3 +1505,29 @@ class HitCount(models.Model):
 
     def __str__(self):
         return self.ip
+
+
+class Notification(models.Model):
+    title = models.CharField(max_length=255)
+    text = RichTextField()
+    company = models.ForeignKey(
+        Instrumentsel,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    thumbnail = models.ImageField(
+        upload_to='upload/thumbnail/notification',
+        help_text='تصویر'
+    )
+    created_on = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.id}, {self.title}'
+
+    @property
+    def company_name(self):
+        if self.company:
+            return self.company.name
+        else:
+            return ''

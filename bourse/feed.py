@@ -3,6 +3,7 @@ import requests
 import json
 
 from django.db.models import Q
+import jdatetime
 
 from .models import Meta, Index, Exchange
 from . import models
@@ -1069,7 +1070,7 @@ def feed_instrument():
 
 
 def feed_instrumentsel():
-    models.Instrumentsel.objects.all().delete()
+    # models.Instrumentsel.objects.all().delete()
 
     feed_instrument()
     sel_obj = models.Instrument.objects.filter(Q(type='share')
@@ -1310,3 +1311,144 @@ def feed_tradedaily(instrument_id):
             obj_trade.value = val
             obj_trade.save()
 
+
+def feed_trademidday(company_id):
+
+    offset = 0
+    step = 100
+    is_has_next = True
+
+    today_date = str(jdatetime.date.today())
+    today_date = today_date.replace('-', '')
+    timee = "090000"
+
+
+
+    model = models.Trademidday
+    # model.objects.all().delete()
+    api_url = 'https://v1.db.api.mabnadp.com/exchange/intradaytrades?'
+
+    last_version_from_delete = -1
+
+    # iterate for collect pagination data
+    while is_has_next:
+        #  check model is empty or not
+        if model.objects.filter(company=company_id).count() > 0:
+            last_index_meta_version = model.objects.filter(company=company_id).latest('version')
+
+            # check last recived item is meta.state == deleted ?
+            print(last_version_from_delete, last_version_from_delete != -1)
+            if last_version_from_delete != -1:
+                last_index_meta_version.version = last_version_from_delete
+                print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
+
+            # print(last_index_meta_version.meta.version)
+            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+                       'instrument.stock.company.id=' + company_id + '&' + \
+                       'date_time=' + today_date + timee + '&_sort=meta.version=' + str(
+                last_index_meta_version.version) + '&date_time_op=gt'
+        else:
+            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+                       'instrument.stock.company.id=' + company_id + '&' + \
+                       'date_time=' + today_date + timee + '&' + 'date_time_op=gt'
+            # print(get_data)
+
+        get_data2 = get_data + '&_count=' + str(step) + '&_skip=' + str(offset)
+        get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
+        req = requests.get(get_data2)
+        data1 = req.json()
+
+        if 'error' in data1:
+            print(data1['error']['code'] + ' - ' + data1['error']['message'])
+            is_error_expand = True
+            continue #break
+
+        #  check next pagination
+        if len(data1['data']) == step:
+            print(1)
+            offset = offset + step
+        else:
+            print(2)
+            is_has_next = False
+
+        for data in data1['data']:
+
+            #  ignore deleted items
+            if data['meta']['state'] == 'deleted':
+                last_version_from_delete = int(data['meta']['version'])
+                print('------------- set delete ' + str(last_version_from_delete))
+                continue
+
+            last_version_from_delete = -1  # clear delete version
+            # print(data)
+
+            obj_trade = models.Trademidday(version=int(data['meta']['version']), date_time=data['date_time'])
+            obj_instrument = models.Instrumentsel.objects.get(id=data['instrument']['id'])
+            obj_company = models.Companie.objects.get(id=company_id)
+            obj_trade.instrument = obj_instrument
+            obj_trade.company = obj_company
+            val = ''
+
+            if 'open_price' in data['trade']:
+                val = val + str(data['trade']['open_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'high_price' in data['trade']:
+                val = val + str(data['trade']['high_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'low_price' in data['trade']:
+                val = val + str(data['trade']['low_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price' in data['trade']:
+                val = val + str(data['trade']['close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price_change' in data['trade']:
+                val = val + str(data['trade']['close_price_change']) + ','
+            else:
+                val = val + '-1,'
+            if 'real_close_price' in data['trade']:
+                val = val + str(data['trade']['real_close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'buyer_count' in data['trade']:
+                val = val + str(data['trade']['buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'trade_count' in data['trade']:
+                val = val + str(data['trade']['trade_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'volume' in data['trade']:
+                val = val + str(data['trade']['volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'value' in data['trade']:
+                val = val + str(data['trade']['value']) + ','
+            else:
+                val = val + '-1,'
+            if 'id' in data:
+                val = val + str(data['id']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price' in data:
+                val = val + str(data['close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'real_close_price' in data:
+                val = val + str(data['real_close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'volume' in data:
+                val = val + str(data['volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'value' in data:
+                val = val + str(data['value']) + ','
+            else:
+                val = val + '-1,'
+
+            obj_trade.value = val
+            obj_trade.save()
