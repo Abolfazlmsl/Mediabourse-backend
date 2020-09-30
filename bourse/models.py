@@ -834,7 +834,7 @@ class Technical(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.id
 
 
 class ChatMessage(models.Model):
