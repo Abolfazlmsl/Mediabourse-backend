@@ -13,7 +13,9 @@ router.register('webinar', views.WebinarListRetrieveApiView)
 router.register('fundamental', views.FundamentalListRetrieveApiView)
 router.register('bazaar', views.BazaarListRetrieveApiView)
 router.register('tutorial', views.TutorialListRetrieveApiView)
-router.register('file-repository', views.FileRepositoryViewSet)
+router.register('free-tutorial', views.FreeTutorialListRetrieveApiView)
+router.register('instrument', views.InstrumentListRetrieveViewSet)
+router.register('notification', views.NotificationListRetrieveViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -22,6 +24,8 @@ urlpatterns = [
         views.ForgetPasswordAPIView.as_view(),
         name='forget-password'
     ),
+    path('comment/',  views.UserCommentListApiView.as_view(), name='comment'),
+
     path('fillData/',  views.fill_data, name='fill-data'),
     path('api-test/',  views.test_data, name='test-data'),
     path('trade-daily/',  views.trade_daily, name='trade-daily'),
