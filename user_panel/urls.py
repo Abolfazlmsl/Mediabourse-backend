@@ -12,6 +12,7 @@ router.register('user-technical', views.UserTechnicalViewSet)
 router.register('user-comment', views.UserCommentViewSet)
 router.register('note', views.NoteViewSet)
 router.register('bookmark', views.BookmarkViewSet)
+router.register('request-symbol', views.RequestSymbolViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
