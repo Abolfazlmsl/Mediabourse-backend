@@ -11,7 +11,7 @@ from .models import Company, \
     Bazaar, \
     Tutorial, \
     TutorialCategory, \
-    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel
+    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,6 +48,7 @@ class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm
 
 class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
     company_name = serializers.SerializerMethodField(read_only=True)
+    company_english_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = WatchListItem
@@ -56,11 +57,15 @@ class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
             'watch_list',
             'company',
             'company_name',
+            'company_english_name',
         ]
         read_only_fields = ['id', 'company_name']
 
     def get_company_name(self, obj):
         return obj.get_short_name()
+
+    def get_company_english_name(self, obj):
+        return obj.get_short_english_name()
 
     def validate_title(self, value):
         qs = WatchListItem.objects.filter(company=value)
@@ -233,3 +238,54 @@ class UserForgetSerializer(serializers.Serializer):
 
     class Meta:
         model = User
+
+
+class InstrumentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Instrumentsel
+        fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Serializer for comment model"""
+
+    class Meta:
+        model = UserComment
+        fields = (
+            'id',
+            'parent',
+            'text',
+            'comment_for',
+            'like',
+            'created_on'
+        )
+
+
+class NotificationListSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField()
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id',
+            'title',
+            'company_name',
+            'thumbnail',
+            'created_on'
+        )
+
+
+class NotificationDetailSerializer(NotificationListSerializer):
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id',
+            'title',
+            'text',
+            'company',
+            'thumbnail',
+            'created_on'
+        )
+        depth = 1

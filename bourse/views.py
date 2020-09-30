@@ -22,16 +22,17 @@ from .serializers import \
     NewsRetrieveSerializer, \
     UserTechnicalSerializer, \
     TechnicalListSerializer, \
-    TechnicalRetrieveSerializer,\
+    TechnicalRetrieveSerializer, \
     WebinarSerializer, \
     FundamentalSerializer, \
-    BazaarSerializer,\
-    TutorialListSerializer,\
-    TutorialRetrieveSerializer,\
-    FileRepositorySerializer,\
+    BazaarSerializer, \
+    TutorialListSerializer, \
+    TutorialRetrieveSerializer, \
+    FileRepositorySerializer, \
     UserForgetSerializer, \
-    WatchListSerializer,\
-    WatchListItemSerializer
+    WatchListSerializer, \
+    WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
+    NotificationDetailSerializer
 
 from .models import Company, \
     News, \
@@ -41,7 +42,7 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification
 
 from . import models
 
@@ -63,8 +64,8 @@ def fill_data(request):
     # feed.feed_categorie()
     # feed.feed_asset()
     # feed.feed_instrument()
-    feed.feed_instrumentsel()
-
+    # feed.feed_instrumentsel()
+    feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
@@ -280,7 +281,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['category', 'is_important']
+    filterset_fields = ['category', 'is_important', 'company']
     search_fields = ['company__name', 'title', 'tag']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
@@ -349,6 +350,7 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
+    filterset_fields = ['company']
     search_fields = ['company__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
@@ -658,3 +660,68 @@ class ForgetPasswordAPIView(generics.CreateAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class UserCommentListApiView(generics.ListAPIView):
+    """
+        List user comment
+    """
+    serializer_class = CommentSerializer
+    queryset = UserComment.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = [
+        'technical',
+        'fundamental',
+        'company',
+        'webinar',
+        'news'
+    ]
+    ordering_fields = ['created_on', 'like']
+    ordering = ['-created_on']
+
+
+class InstrumentListRetrieveViewSet(viewsets.GenericViewSet,
+                                    mixins.ListModelMixin,
+                                    mixins.RetrieveModelMixin):
+    """
+        List and retrieve instruments
+    """
+
+    serializer_class = InstrumentSerializer
+    queryset = Instrumentsel.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['market', 'group']
+    search_fields = ['name']
+    ordering_fields = ['created_on', 'hit_count']
+
+
+class NotificationListRetrieveViewSet(viewsets.GenericViewSet,
+                                      mixins.ListModelMixin,
+                                      mixins.RetrieveModelMixin):
+    """
+        List and retrieve notification
+    """
+    serializer_class = NotificationListSerializer
+    queryset = Notification.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['company']
+    search_fields = ['title']
+    ordering_fields = ['created_on']
+    ordering = ['-created_on']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return NotificationDetailSerializer
+        return self.serializer_class
