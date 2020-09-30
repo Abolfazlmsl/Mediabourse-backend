@@ -520,6 +520,11 @@ class Trademidday(models.Model):
     value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
     version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
 
+    def __str__(self):
+        if self.company is not None:
+            return self.company.name
+        return self.version
+
 class Company(models.Model):
     SYMBOL_TYPE_CHOICES = (
         ('0', "شاخص کل"),
