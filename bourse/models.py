@@ -714,7 +714,7 @@ class News(models.Model):
         on_delete=models.CASCADE,
         help_text='در صورت اختصاص خبر برای گروه انتخاب شود'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         null=True,
         blank=True,

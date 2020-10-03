@@ -62,9 +62,10 @@ def fill_data(request):
     # feed.feed_fund()
     # feed.feed_categorie()
     # feed.feed_asset()
+    feed.feed_companie()
     # feed.feed_instrument()
     # feed.feed_instrumentsel()
-    feed.feed_trademidday("164")
+    # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
