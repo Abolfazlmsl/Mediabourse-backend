@@ -59,7 +59,7 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = [
             'id',
-            'title',
+            'name',
         ]
 
 
@@ -75,7 +75,7 @@ class NewsSerializer(serializers.ModelSerializer):
         ]
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class InstrumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Instrumentsel
@@ -84,6 +84,10 @@ class CompanySerializer(serializers.ModelSerializer):
             'code',
             'name',
             'short_name',
+            'exchange',
+            'isin',
+            'stock',
+            'exchange',
         ]
 
 
@@ -127,7 +131,7 @@ class WatchListItemCreateSerializer(serializers.ModelSerializer):
 
 
 class WatchListItemListRetrieveSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = WatchListItem
@@ -142,7 +146,7 @@ class BasketCreateSerializer(serializers.ModelSerializer):
 
 
 class BasketSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = Basket
@@ -150,7 +154,7 @@ class BasketSerializer(serializers.ModelSerializer):
 
 
 class UserTechnicalSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = UserTechnical
@@ -184,21 +188,19 @@ class BookmarkSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class CompanySearchSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(many=False)
+class InstrumentSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Company
+        model = Instrumentsel
         fields = [
             'id',
-            'category',
-            'symbol',
+            'code',
             'name',
-            'type',
-            'bourse_type',
-            'image',
-            'tse',
-            'site',
+            'short_name',
+            'exchange',
+            'isin',
+            'stock',
+            'exchange',
         ]
 
 
@@ -210,7 +212,7 @@ class RequestSymbolCreateSerializer(serializers.ModelSerializer):
 
 
 class RequestSymbolSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = RequestSymbol
