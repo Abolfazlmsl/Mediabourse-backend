@@ -158,6 +158,14 @@ class TradedetailAdmin(admin.ModelAdmin):
         return obj.instrument.short_name
 
 
+
+@admin.register(models.TechnicalJSONUser)
+class TechnicalJSONUserAdmin(admin.ModelAdmin):
+    list_display = ("user", "title", "instrument", "created_on", "isShare")
+    list_filter = ("user", "instrument", "isShare", )
+
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.WatchList)
 admin.site.register(models.RequestSymbol)

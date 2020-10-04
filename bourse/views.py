@@ -31,7 +31,7 @@ from .serializers import \
     UserForgetSerializer, \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
-    NotificationDetailSerializer
+    NotificationDetailSerializer, TechnicalJSONUserSerializer
 
 from .models import Company, \
     News, \
@@ -41,7 +41,7 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser
 
 from . import models
 
@@ -99,7 +99,7 @@ def trade_daily(request):
     version = request.GET.get('version')
     print(instrument, version)
 
-    feed.feed_tradedaily(instrument)
+    # feed.feed_tradedaily(instrument)
 
     trade = models.Tradedetail.objects.filter(instrument=instrument).order_by('date_time').values()
 
@@ -196,6 +196,54 @@ class WatchlistRudView(generics.RetrieveUpdateDestroyAPIView):
 
 
 """
+-- User Json Technical class --
+"""
+
+
+class UserJsonTechnicalAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = TechnicalJSONUser.objects.filter(user=self.request.user)
+        query = self.request.GET.get("q")
+        query_instrument = self.request.GET.get("instrument")
+        query_share = self.request.GET.get("share")
+        if query is not None:
+            qs = qs.filter(Q(name__icontains=query)).distinct()
+        # fetch global share files
+        if query_share is not None:
+            qs = TechnicalJSONUser.objects.all()
+            flag = True
+            if query_share is "false":
+                flag = False
+            qs = qs.filter(Q(isShare=flag)).distinct()
+        if query_instrument is not None:
+            qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return TechnicalJSONUser.objects.filter(user=self.request.user)
+
+
+
+"""
 -- Watchlist item class --
 """
 
@@ -224,7 +272,7 @@ class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return WatchListItem.objects.all()
+        return WatchListItem.objects.filter(watch_list__user=self.request.user)
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
