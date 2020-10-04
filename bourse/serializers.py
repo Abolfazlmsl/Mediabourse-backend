@@ -82,21 +82,20 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = (
             'id',
-            'title'
+            'name'
         )
 
 
-class CompanySerializer(serializers.ModelSerializer):
-    category = CategorySerializer(many=False)
+class InstrumentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Company
-        exclude = ['created_on', 'user']
+        model = Instrumentsel
+        fields = '__all__'
 
 
 class NewsListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=False)
-    company = CompanySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
     user = UserSerializer(many=False)
 
     class Meta:
@@ -104,7 +103,7 @@ class NewsListSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'category',
-            'company',
+            'instrument',
             'user',
             'title',
             'created_on',
@@ -122,7 +121,7 @@ class NewsRetrieveSerializer(NewsListSerializer):
 
 class UserTechnicalSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
-    company = CompanySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
 
     class Meta:
         model = UserTechnical
@@ -137,14 +136,15 @@ class TechnicalListSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'title',
-            'thumbnail'
+            'thumbnail',
+            'instrument'
         )
 
 
 class TechnicalRetrieveSerializer(serializers.ModelSerializer):
     """Technical retrieve serializer"""
     user = UserSerializer(many=False)
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = Technical
@@ -153,7 +153,7 @@ class TechnicalRetrieveSerializer(serializers.ModelSerializer):
 
 class WebinarSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
-    company = CompanySerializer(many=False)
+    company = InstrumentSerializer(many=False)
 
     class Meta:
         model = Webinar
@@ -162,7 +162,7 @@ class WebinarSerializer(serializers.ModelSerializer):
 
 class FundamentalSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
-    company = CompanySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
 
     class Meta:
         model = Fundamental
@@ -171,7 +171,7 @@ class FundamentalSerializer(serializers.ModelSerializer):
 
 class BazaarSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
-    company = CompanySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
 
     class Meta:
         model = Bazaar
@@ -238,13 +238,6 @@ class UserForgetSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-
-
-class InstrumentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Instrumentsel
-        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):

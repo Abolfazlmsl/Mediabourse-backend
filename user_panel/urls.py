@@ -12,6 +12,7 @@ router.register('user-technical', views.UserTechnicalViewSet)
 router.register('user-comment', views.UserCommentViewSet)
 router.register('note', views.NoteViewSet)
 router.register('bookmark', views.BookmarkViewSet)
+router.register('request-symbol', views.RequestSymbolViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('signup/', views.SignUpAPIView.as_view(), name='user-signup'),
     path('verify-user/', views.UserPhoneRegisterAPIView.as_view(), name='verify-user'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('instrument/', views.InstrumentSearchListAPIView.as_view(), name='instrument-search')
 ]

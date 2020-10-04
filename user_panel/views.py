@@ -18,7 +18,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company, \
-    Tutorial
+    Tutorial, RequestSymbol
 from . import serializers
 from .permissions import IsOwner, IsWatchListOwner
 
@@ -48,7 +48,7 @@ class SignUpAPIView(APIView):
             try:
                 api = KavenegarAPI(KAVENEGAR_APIKEY)
                 params = {'sender': '10008445', 'receptor': serializer.validated_data['phone_number'],
-                          'message': 'کالا نگار\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
+                          'message': 'مدیابورس\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
                 response = api.sms_send(params)
                 return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 
@@ -77,6 +77,7 @@ class UserPhoneRegisterAPIView(APIView):
     """
     User verification via sms
     """
+
     def put(self, request):
         data = request.data
         user = get_object_or_404(get_user_model(), phone_number=data['phone_number'])
@@ -283,11 +284,11 @@ class BookmarkViewSet(viewsets.GenericViewSet,
         return Bookmark.objects.filter(user=self.request.user)
 
 
-class CompanySearchListAPIView(ListAPIView):
+class InstrumentSearchListAPIView(ListAPIView):
     """
-        Company search
+        Instrument search
     """
-    serializer_class = serializers.CompanySearchSerializer
+    serializer_class = serializers.InstrumentSearchSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = Company.objects.all()
     permission_classes = (IsAuthenticated,)
@@ -295,5 +296,30 @@ class CompanySearchListAPIView(ListAPIView):
         DjangoFilterBackend,
         filters.SearchFilter,
     ]
-    filterset_fields = ['category']
-    search_fields = ['symbol', 'name']
+    filterset_fields = ['name', 'id']
+    search_fields = ['name']
+
+
+class RequestSymbolViewSet(viewsets.GenericViewSet,
+                           mixins.CreateModelMixin,
+                           mixins.ListModelMixin,
+                           mixins.DestroyModelMixin):
+    """
+        User Request Symbol API
+    """
+    serializer_class = serializers.RequestSymbolCreateSerializer
+    authentication_classes = (JWTAuthentication,)
+    queryset = RequestSymbol.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return RequestSymbol.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.RequestSymbolSerializer
+        else:
+            return self.serializer_class

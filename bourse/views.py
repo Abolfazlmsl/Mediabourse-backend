@@ -17,7 +17,6 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
-    CompanySerializer, \
     NewsListSerializer, \
     NewsRetrieveSerializer, \
     UserTechnicalSerializer, \
@@ -63,9 +62,10 @@ def fill_data(request):
     # feed.feed_fund()
     # feed.feed_categorie()
     # feed.feed_asset()
+    feed.feed_companie()
     # feed.feed_instrument()
     # feed.feed_instrumentsel()
-    feed.feed_trademidday("164")
+    # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
@@ -232,15 +232,15 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
                                  mixins.RetrieveModelMixin):
     """List and retrieve company"""
 
-    serializer_class = CompanySerializer
+    serializer_class = InstrumentSerializer
     queryset = Company.objects.all()
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['type', 'bourse_type']
-    search_fields = ['name', 'alias', 'symbol']
+    filterset_fields = ['name']
+    search_fields = ['name', 'short_name', 'short_english_name']
     ordering_fields = ['hit_count']
     ordering = ['-hit_count']
 
@@ -249,21 +249,21 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
             HitCount.objects.filter(date__lt=datetime.date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
-                current_company = Company.objects.get(id=self.kwargs['pk'])
+                current_instrument = Instrumentsel.objects.get(id=self.kwargs['pk'])
                 try:
                     HitCount.objects.get(
                         ip=customer_ip,
-                        company_id=self.kwargs['pk']
+                        instrument_id=self.kwargs['pk']
                     )
                 except HitCount.DoesNotExist:
-                    current_company.hit_count = current_company.hit_count + 1
-                    current_company.save()
+                    current_instrument.hit_count = current_instrument.hit_count + 1
+                    current_instrument.save()
                     HitCount.objects.create(
                         ip=customer_ip,
                         company_id=self.kwargs['pk'],
                         date=datetime.date.today()
                     )
-            except Company.DoesNotExist:
+            except Instrumentsel.DoesNotExist:
                 pass
 
         return self.queryset
@@ -281,8 +281,8 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['category', 'is_important', 'company']
-    search_fields = ['company__name', 'title', 'tag']
+    filterset_fields = ['category', 'is_important', 'instrument']
+    search_fields = ['instrument__name', 'title', 'tag']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -329,8 +329,8 @@ class UserTechnicalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['company']
-    search_fields = ['company__name', 'title']
+    filterset_fields = ['instrument']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on']
     ordering = ['-created_on']
 
@@ -350,8 +350,8 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['company']
-    search_fields = ['company__name', 'title']
+    filterset_fields = ['instrument']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -404,7 +404,7 @@ class WebinarListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -445,7 +445,7 @@ class FundamentalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -486,7 +486,7 @@ class BazaarListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -636,7 +636,7 @@ class ForgetPasswordAPIView(generics.CreateAPIView):
         try:
             api = KavenegarAPI(KAVENEGAR_APIKEY)
             params = {'sender': '10008445', 'receptor': phone_number,
-                      'message': 'کالا نگار\n' + 'رمزعبور جدید شما:' + password}
+                      'message': 'مدیابورس\n' + 'رمزعبور جدید شما:' + password}
             api.sms_send(params)
             return Response(
                 {
