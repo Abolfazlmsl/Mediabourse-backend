@@ -131,7 +131,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
 
     objects = UserManager()
 

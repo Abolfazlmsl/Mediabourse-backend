@@ -19,7 +19,6 @@ class UserAdmin(UserAdminBase):
                     'last_name',
                     'email',
                     'generated_token',
-                    'is_verified',
                     'picture',
                     'national_code',
                     'father_name',

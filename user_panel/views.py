@@ -81,16 +81,19 @@ class UserPhoneRegisterAPIView(APIView):
     def put(self, request):
         data = request.data
         user = get_object_or_404(get_user_model(), phone_number=data['phone_number'])
+        print(user)
         if user:
             serializer = serializers.UserPhoneRegisterSerializer(user, data=data)
             if serializer.is_valid():
                 if serializer.data['generated_token'] == int(data.get("generated_token")):
-                    user.is_verified = True
+                    user.is_active = True
                     user.save()
                     return Response({"user": "verified successfully"})
                 else:
                     return Response(
-                        {'error': 'The entered token is invalid'},
+                        {
+                            'error': 'The entered token is invalid'
+                        },
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
