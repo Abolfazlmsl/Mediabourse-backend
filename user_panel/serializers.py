@@ -25,6 +25,9 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
+        read_only_fields = (
+            'generated_token',
+        )
 
     def create(self, validated_data):
         phone_number = self.validated_data['phone_number']
