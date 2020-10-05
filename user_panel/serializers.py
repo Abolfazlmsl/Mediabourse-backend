@@ -34,6 +34,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             generated_token=generated_token,
         )
         password = self.validated_data['password']
+        user.is_active = False
         user.set_password(password)
         user.save()
         return user
