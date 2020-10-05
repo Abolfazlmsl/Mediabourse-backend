@@ -17,7 +17,6 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
-    CompanySerializer, \
     NewsListSerializer, \
     NewsRetrieveSerializer, \
     UserTechnicalSerializer, \
@@ -32,7 +31,7 @@ from .serializers import \
     UserForgetSerializer, \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
-    NotificationDetailSerializer
+    NotificationDetailSerializer, TechnicalJSONUserSerializer
 
 from .models import Company, \
     News, \
@@ -42,7 +41,7 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser
 
 from . import models
 
@@ -63,9 +62,10 @@ def fill_data(request):
     # feed.feed_fund()
     # feed.feed_categorie()
     # feed.feed_asset()
+    feed.feed_companie()
     # feed.feed_instrument()
     # feed.feed_instrumentsel()
-    feed.feed_trademidday("164")
+    # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
@@ -99,7 +99,7 @@ def trade_daily(request):
     version = request.GET.get('version')
     print(instrument, version)
 
-    feed.feed_tradedaily(instrument)
+    # feed.feed_tradedaily(instrument)
 
     trade = models.Tradedetail.objects.filter(instrument=instrument).order_by('date_time').values()
 
@@ -196,6 +196,54 @@ class WatchlistRudView(generics.RetrieveUpdateDestroyAPIView):
 
 
 """
+-- User Json Technical class --
+"""
+
+
+class UserJsonTechnicalAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = TechnicalJSONUser.objects.filter(user=self.request.user)
+        query = self.request.GET.get("q")
+        query_instrument = self.request.GET.get("instrument")
+        query_share = self.request.GET.get("share")
+        if query is not None:
+            qs = qs.filter(Q(name__icontains=query)).distinct()
+        # fetch global share files
+        if query_share is not None:
+            qs = TechnicalJSONUser.objects.all()
+            flag = True
+            if query_share is "false":
+                flag = False
+            qs = qs.filter(Q(isShare=flag)).distinct()
+        if query_instrument is not None:
+            qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return TechnicalJSONUser.objects.filter(user=self.request.user)
+
+
+
+"""
 -- Watchlist item class --
 """
 
@@ -224,7 +272,7 @@ class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return WatchListItem.objects.all()
+        return WatchListItem.objects.filter(watch_list__user=self.request.user)
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
@@ -232,15 +280,15 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
                                  mixins.RetrieveModelMixin):
     """List and retrieve company"""
 
-    serializer_class = CompanySerializer
+    serializer_class = InstrumentSerializer
     queryset = Company.objects.all()
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['type', 'bourse_type']
-    search_fields = ['name', 'alias', 'symbol']
+    filterset_fields = ['name']
+    search_fields = ['name', 'short_name', 'short_english_name']
     ordering_fields = ['hit_count']
     ordering = ['-hit_count']
 
@@ -249,21 +297,21 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
             HitCount.objects.filter(date__lt=datetime.date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
-                current_company = Company.objects.get(id=self.kwargs['pk'])
+                current_instrument = Instrumentsel.objects.get(id=self.kwargs['pk'])
                 try:
                     HitCount.objects.get(
                         ip=customer_ip,
-                        company_id=self.kwargs['pk']
+                        instrument_id=self.kwargs['pk']
                     )
                 except HitCount.DoesNotExist:
-                    current_company.hit_count = current_company.hit_count + 1
-                    current_company.save()
+                    current_instrument.hit_count = current_instrument.hit_count + 1
+                    current_instrument.save()
                     HitCount.objects.create(
                         ip=customer_ip,
                         company_id=self.kwargs['pk'],
                         date=datetime.date.today()
                     )
-            except Company.DoesNotExist:
+            except Instrumentsel.DoesNotExist:
                 pass
 
         return self.queryset
@@ -281,8 +329,8 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['category', 'is_important', 'company']
-    search_fields = ['company__name', 'title', 'tag']
+    filterset_fields = ['category', 'is_important', 'instrument']
+    search_fields = ['instrument__name', 'title', 'tag']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -329,8 +377,8 @@ class UserTechnicalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['company']
-    search_fields = ['company__name', 'title']
+    filterset_fields = ['instrument']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on']
     ordering = ['-created_on']
 
@@ -350,8 +398,8 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    filterset_fields = ['company']
-    search_fields = ['company__name', 'title']
+    filterset_fields = ['instrument']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -404,7 +452,7 @@ class WebinarListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -445,7 +493,7 @@ class FundamentalListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 
@@ -486,7 +534,7 @@ class BazaarListRetrieveApiView(viewsets.GenericViewSet,
         filters.SearchFilter,
         filters.OrderingFilter
     ]
-    search_fields = ['company__name', 'title']
+    search_fields = ['instrument__name', 'title']
     ordering_fields = ['created_on', 'hit_count']
     ordering = ['-created_on']
 

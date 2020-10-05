@@ -7,6 +7,10 @@ import jdatetime
 
 from .models import Meta, Index, Exchange
 from . import models
+import logging
+import threading
+import time
+import concurrent.futures
 
 
 def feed_index():
@@ -672,7 +676,7 @@ def feed_categorie():
     step = 100
     is_has_next = True
 
-    model = models.Categorie
+    model = models.Category
     api_url = 'https://v1.db.api.mabnadp.com/exchange/categories?'
 
     #  check model is empty or not
@@ -739,7 +743,7 @@ def feed_companie():
     step = 100
     is_has_next = True
 
-    model = models.Companie
+    model = models.Company
     api_url = 'https://v1.db.api.mabnadp.com/stock/companies?'  # state.id=1
 
     #  check model is empty or not
@@ -778,7 +782,7 @@ def feed_companie():
                             type=data['meta']['type'])
 
             # check company state
-            company_state_list = models.Companiestate.objects.filter(id=data['state']['id'])
+            company_state_list = models.Companystate.objects.filter(id=data['state']['id'])
             if len(company_state_list) > 0:
                 obj_state = company_state_list[0]
             else:
@@ -790,7 +794,7 @@ def feed_companie():
                 if 'insert_date_time' in data['state']['meta']:
                     obj_company_meta.insert_date_time = data['state']['meta']['insert_date_time']
                 obj_company_meta.save()
-                obj_state = models.Companiestate(id=data['state']['id'], meta=obj_company_meta,
+                obj_state = models.Companystate(id=data['state']['id'], meta=obj_company_meta,
                                                  title=data['state']['title'])
                 obj_state.save()
 
@@ -1109,10 +1113,10 @@ def feed_instrumentsel():
         obj.save()
 
 
-def feed_tradedaily(instrument_id):
+def feed_tradedaily(instrument_id, index):
     offset = 0
     step = 50
-    is_has_next = True
+    # is_has_next = True
 
     model = models.Tradedetail
     # model.objects.all().delete()
@@ -1122,195 +1126,190 @@ def feed_tradedaily(instrument_id):
     last_version_from_delete = -1
     is_error_expand = False
 
-    # iterate for collect pagination data
-    while is_has_next:
+    #  check model is empty or not
+    if model.objects.filter(instrument=instrument_id).count() > 0:
+        last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
 
-        #  check model is empty or not
-        if model.objects.filter(instrument=instrument_id).count() > 0:
-            last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
+        # check last recived item is meta.state == deleted ?
+        print(last_version_from_delete , last_version_from_delete != -1)
+        if last_version_from_delete != -1:
+            last_index_meta_version.version = last_version_from_delete
+            print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
 
-            # check last recived item is meta.state == deleted ?
-            print(last_version_from_delete , last_version_from_delete != -1)
-            if last_version_from_delete != -1:
-                last_index_meta_version.version = last_version_from_delete
-                print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
+        # print(last_index_meta_version.meta.version)
+        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+                   'instrument.id=' + instrument_id + '&' + \
+                   '_sort=meta.version&meta.version=' + str(
+            last_index_meta_version.version) + '&meta.version_op=gt'
+        if is_error_expand is False:
+            get_data = get_data + '@_expand=trade'
+    else:
+        # print('empty')
+        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+                   'instrument.id=' + instrument_id + '&_sort=meta.version'
+        if is_error_expand is False:
+            get_data = get_data + '@_expand=trade'
 
-            # print(last_index_meta_version.meta.version)
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
-                       'instrument.id=' + instrument_id + '&' + \
-                       '_sort=meta.version&meta.version=' + str(
-                last_index_meta_version.version) + '&meta.version_op=gt'
-            if is_error_expand is False:
-                get_data = get_data + '@_expand=trade'
+
+    get_data2 = get_data #+ '_count=' + str(step) + '&_skip=' + str(offset) + '&_expand=trade'
+    get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
+    print(get_data2)
+    req = requests.get(get_data2)
+    print(req.text)
+    data1 = req.json()
+
+    if 'error' in data1:
+        print(data1['error']['code'] + ' - ' + data1['error']['message'])
+        is_error_expand = True
+
+    #  check next pagination
+    if len(data1['data']) == step:
+        offset = offset + step
+    else:
+        is_has_next = False
+
+    for data in data1['data']:
+
+        #  ignore deleted items
+        if data['meta']['state'] == 'deleted':
+            last_version_from_delete = int(data['meta']['version'])
+            print('------------- set delete ' + str(last_version_from_delete))
+            continue
+
+        last_version_from_delete = -1  # clear delete version
+        # print(data)
+
+        obj_trade = models.Tradedetail(version=int(data['meta']['version']), date_time=data['date_time'])
+        obj_instrument = models.Instrumentsel.objects.get(id=data['instrument']['id'])
+        obj_trade.instrument = obj_instrument
+        val = ''
+
+        # if get trade alone
+        if is_error_expand is True:
+            is_error_expand = False
+            url_trade = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/trades?id=' + data['trade']['id']
+            req_trade = requests.get(url_trade)
+            obj_trade_single_t = req_trade.json()
+            obj_trade_single = obj_trade_single_t['data'][0]
+
+            if 'open_price' in obj_trade_single:
+                val = val + str(obj_trade_single['open_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'high_price' in obj_trade_single:
+                val = val + str(obj_trade_single['high_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'low_price' in obj_trade_single:
+                val = val + str(obj_trade_single['low_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price' in obj_trade_single:
+                val = val + str(obj_trade_single['close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price_change' in obj_trade_single:
+                val = val + str(obj_trade_single['close_price_change']) + ','
+            else:
+                val = val + '-1,'
+            if 'real_close_price' in obj_trade_single:
+                val = val + str(obj_trade_single['real_close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'buyer_count' in obj_trade_single:
+                val = val + str(obj_trade_single['buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'trade_count' in obj_trade_single:
+                val = val + str(obj_trade_single['trade_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'volume' in obj_trade_single:
+                val = val + str(obj_trade_single['volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'value' in obj_trade_single:
+                val = val + str(obj_trade_single['value']) + ','
+            else:
+                val = val + '-1,'
         else:
-            # print('empty')
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
-                       'instrument.id=' + instrument_id + '&_sort=meta.version'
-            if is_error_expand is False:
-                get_data = get_data + '@_expand=trade'
 
+            if 'open_price' in data['trade']:
+                val = val + str(data['trade']['open_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'high_price' in data['trade']:
+                val = val + str(data['trade']['high_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'low_price' in data['trade']:
+                val = val + str(data['trade']['low_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price' in data['trade']:
+                val = val + str(data['trade']['close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price_change' in data['trade']:
+                val = val + str(data['trade']['close_price_change']) + ','
+            else:
+                val = val + '-1,'
+            if 'real_close_price' in data['trade']:
+                val = val + str(data['trade']['real_close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'buyer_count' in data['trade']:
+                val = val + str(data['trade']['buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'trade_count' in data['trade']:
+                val = val + str(data['trade']['trade_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'volume' in data['trade']:
+                val = val + str(data['trade']['volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'value' in data['trade']:
+                val = val + str(data['trade']['value']) + ','
+            else:
+                val = val + '-1,'
 
-        get_data2 = get_data #+ '_count=' + str(step) + '&_skip=' + str(offset) + '&_expand=trade'
-        get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
-        print(get_data2)
-        req = requests.get(get_data2)
-        print(req.text)
-        data1 = req.json()
-
-        if 'error' in data1:
-            print(data1['error']['code'] + ' - ' + data1['error']['message'])
-            is_error_expand = True
-            continue #break
-
-        #  check next pagination
-        if len(data1['data']) == step:
-            offset = offset + step
+        if 'person_buyer_count' in data:
+            val = val + str(data['person_buyer_count']) + ','
         else:
-            is_has_next = False
+            val = val + '-1,'
+        if 'company_buyer_count' in data:
+            val = val + str(data['company_buyer_count']) + ','
+        else:
+            val = val + '-1,'
+        if 'person_buy_volume' in data:
+            val = val + str(data['person_buy_volume']) + ','
+        else:
+            val = val + '-1,'
+        if 'company_buy_volume' in data:
+            val = val + str(data['company_buy_volume']) + ','
+        else:
+            val = val + '-1,'
+        if 'person_seller_count' in data:
+            val = val + str(data['person_seller_count']) + ','
+        else:
+            val = val + '-1,'
+        if 'company_seller_count' in data:
+            val = val + str(data['company_seller_count']) + ','
+        else:
+            val = val + '-1,'
+        if 'person_sell_volume' in data:
+            val = val + str(data['person_sell_volume']) + ','
+        else:
+            val = val + '-1,'
+        if 'company_sell_volume' in data:
+            val = val + str(data['company_sell_volume']) + ','
+        else:
+            val = val + '-1,'
 
-        for data in data1['data']:
-
-            #  ignore deleted items
-            if data['meta']['state'] == 'deleted':
-                last_version_from_delete = int(data['meta']['version'])
-                print('------------- set delete ' + str(last_version_from_delete))
-                continue
-
-            last_version_from_delete = -1  # clear delete version
-            # print(data)
-
-            obj_trade = models.Tradedetail(version=int(data['meta']['version']), date_time=data['date_time'])
-            obj_instrument = models.Instrumentsel.objects.get(id=data['instrument']['id'])
-            obj_trade.instrument = obj_instrument
-            val = ''
-
-            # if get trade alone
-            if is_error_expand is True:
-                is_error_expand = False
-                url_trade = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/trades?id=' + data['trade']['id']
-                req_trade = requests.get(url_trade)
-                obj_trade_single_t = req_trade.json()
-                obj_trade_single = obj_trade_single_t['data'][0]
-
-                if 'open_price' in obj_trade_single:
-                    val = val + str(obj_trade_single['open_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'high_price' in obj_trade_single:
-                    val = val + str(obj_trade_single['high_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'low_price' in obj_trade_single:
-                    val = val + str(obj_trade_single['low_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'close_price' in obj_trade_single:
-                    val = val + str(obj_trade_single['close_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'close_price_change' in obj_trade_single:
-                    val = val + str(obj_trade_single['close_price_change']) + ','
-                else:
-                    val = val + '-1,'
-                if 'real_close_price' in obj_trade_single:
-                    val = val + str(obj_trade_single['real_close_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'buyer_count' in obj_trade_single:
-                    val = val + str(obj_trade_single['buyer_count']) + ','
-                else:
-                    val = val + '-1,'
-                if 'trade_count' in obj_trade_single:
-                    val = val + str(obj_trade_single['trade_count']) + ','
-                else:
-                    val = val + '-1,'
-                if 'volume' in obj_trade_single:
-                    val = val + str(obj_trade_single['volume']) + ','
-                else:
-                    val = val + '-1,'
-                if 'value' in obj_trade_single:
-                    val = val + str(obj_trade_single['value']) + ','
-                else:
-                    val = val + '-1,'
-            else:
-
-                if 'open_price' in data['trade']:
-                    val = val + str(data['trade']['open_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'high_price' in data['trade']:
-                    val = val + str(data['trade']['high_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'low_price' in data['trade']:
-                    val = val + str(data['trade']['low_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'close_price' in data['trade']:
-                    val = val + str(data['trade']['close_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'close_price_change' in data['trade']:
-                    val = val + str(data['trade']['close_price_change']) + ','
-                else:
-                    val = val + '-1,'
-                if 'real_close_price' in data['trade']:
-                    val = val + str(data['trade']['real_close_price']) + ','
-                else:
-                    val = val + '-1,'
-                if 'buyer_count' in data['trade']:
-                    val = val + str(data['trade']['buyer_count']) + ','
-                else:
-                    val = val + '-1,'
-                if 'trade_count' in data['trade']:
-                    val = val + str(data['trade']['trade_count']) + ','
-                else:
-                    val = val + '-1,'
-                if 'volume' in data['trade']:
-                    val = val + str(data['trade']['volume']) + ','
-                else:
-                    val = val + '-1,'
-                if 'value' in data['trade']:
-                    val = val + str(data['trade']['value']) + ','
-                else:
-                    val = val + '-1,'
-
-            if 'person_buyer_count' in data:
-                val = val + str(data['person_buyer_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_buyer_count' in data:
-                val = val + str(data['company_buyer_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_buy_volume' in data:
-                val = val + str(data['person_buy_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_buy_volume' in data:
-                val = val + str(data['company_buy_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_seller_count' in data:
-                val = val + str(data['person_seller_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_seller_count' in data:
-                val = val + str(data['company_seller_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_sell_volume' in data:
-                val = val + str(data['person_sell_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_sell_volume' in data:
-                val = val + str(data['company_sell_volume']) + ','
-            else:
-                val = val + '-1,'
-
-            obj_trade.value = val
-            obj_trade.save()
-
+        obj_trade.value = val
+        obj_trade.save()
 
 def feed_trademidday(company_id):
 

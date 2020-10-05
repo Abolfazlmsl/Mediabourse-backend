@@ -98,8 +98,8 @@ class AssetstateAdmin(admin.ModelAdmin):
     list_filter = ("title", "meta")
 
 
-@admin.register(models.Companiestate)
-class CompaniestateAdmin(admin.ModelAdmin):
+@admin.register(models.Companystate)
+class CompanystateAdmin(admin.ModelAdmin):
     list_display = ("id", "title", "meta")
     list_filter = ("title", "meta")
 
@@ -110,14 +110,14 @@ class FundAdmin(admin.ModelAdmin):
     list_filter = ("state", "meta")
 
 
-@admin.register(models.Categorie)
-class CategorieAdmin(admin.ModelAdmin):
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "parent_id", "code", "meta")
     list_filter = ("parent_id",)
 
 
-@admin.register(models.Companie)
-class CompanieAdmin(admin.ModelAdmin):
+@admin.register(models.Company)
+class CompanyAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "trade_symbol", "state", "english_trade_symbol", "description", "meta")
     list_filter = ("state",)
 
@@ -158,9 +158,15 @@ class TradedetailAdmin(admin.ModelAdmin):
         return obj.instrument.short_name
 
 
+
+@admin.register(models.TechnicalJSONUser)
+class TechnicalJSONUserAdmin(admin.ModelAdmin):
+    list_display = ("user", "title", "instrument", "created_on", "isShare")
+    list_filter = ("user", "instrument", "isShare", )
+
+
+
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Company)
-admin.site.register(models.Category)
 admin.site.register(models.WatchList)
 admin.site.register(models.RequestSymbol)
 admin.site.register(models.WatchListItem)

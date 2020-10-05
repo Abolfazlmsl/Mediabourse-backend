@@ -284,11 +284,11 @@ class BookmarkViewSet(viewsets.GenericViewSet,
         return Bookmark.objects.filter(user=self.request.user)
 
 
-class CompanySearchListAPIView(ListAPIView):
+class InstrumentSearchListAPIView(ListAPIView):
     """
-        Company search
+        Instrument search
     """
-    serializer_class = serializers.CompanySearchSerializer
+    serializer_class = serializers.InstrumentSearchSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = Company.objects.all()
     permission_classes = (IsAuthenticated,)
@@ -296,8 +296,8 @@ class CompanySearchListAPIView(ListAPIView):
         DjangoFilterBackend,
         filters.SearchFilter,
     ]
-    filterset_fields = ['category']
-    search_fields = ['symbol', 'name']
+    filterset_fields = ['name', 'id']
+    search_fields = ['name']
 
 
 class RequestSymbolViewSet(viewsets.GenericViewSet,

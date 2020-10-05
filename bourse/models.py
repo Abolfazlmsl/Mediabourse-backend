@@ -4,6 +4,7 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+import jsonfield
 
 from private_storage.fields import PrivateFileField
 
@@ -137,31 +138,31 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'phone_number'
 
 
-class Category(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text='کاربر'
-    )
-    title = models.CharField(
-        max_length=255,
-        help_text='گروه بورسی'
-    )
-    created_on = models.DateField(auto_now_add=True)
-    logo = models.ImageField(
-        upload_to='uploads/images/category/',
-        null=True,
-        blank=True,
-        help_text='تصویر'
-    )
-    description = models.TextField(
-        null=True,
-        blank=True,
-        help_text='توضیحات'
-    )
-
-    def __str__(self):
-        return self.title
+# class Category(models.Model):
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         help_text='کاربر'
+#     )
+#     title = models.CharField(
+#         max_length=255,
+#         help_text='گروه بورسی'
+#     )
+#     created_on = models.DateField(auto_now_add=True)
+#     logo = models.ImageField(
+#         upload_to='uploads/images/category/',
+#         null=True,
+#         blank=True,
+#         help_text='تصویر'
+#     )
+#     description = models.TextField(
+#         null=True,
+#         blank=True,
+#         help_text='توضیحات'
+#     )
+# 
+#     def __str__(self):
+#         return self.title
 
 
 class Meta(models.Model):
@@ -199,7 +200,7 @@ class Assettype(models.Model):
 
 
 # دسته بندی‌های اوراق مشارکت
-class Categorie(models.Model):
+class Category(models.Model):
     id = models.CharField(max_length=255, primary_key=True)
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
     parent_id = models.CharField(max_length=255, null=True, blank=True, help_text='دسته بندی مادر')
@@ -270,7 +271,7 @@ class Fund(models.Model):
 
 
 #   انواع وضعیت شرکت ها
-class Companiestate(models.Model):
+class Companystate(models.Model):
     id = models.CharField(max_length=255, primary_key=True)
     title = models.CharField(max_length=255, null=True, blank=True, help_text='نام')
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='meta info.')
@@ -280,9 +281,9 @@ class Companiestate(models.Model):
 
 
 # دسته بندی‌های اوراق مشارکت
-class Companie(models.Model):
+class Company(models.Model):
     id = models.CharField(max_length=255, primary_key=True)
-    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    name = models.CharField(max_length=255, null=False, blank=False, help_text='نام دسته بندی')
     english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
     short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
     english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
@@ -292,7 +293,7 @@ class Companie(models.Model):
     fiscalyear = models.CharField(max_length=255, null=True, blank=True, help_text='سال مالی')
 
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
-    state = models.ForeignKey(Companiestate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت شرکت')
+    state = models.ForeignKey(Companystate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت شرکت')
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
 
     def __str__(self):
@@ -319,10 +320,10 @@ class Asset(models.Model):
     assetType = models.ForeignKey(Assettype, on_delete=models.CASCADE, null=True, blank=True, help_text='نوع دارایی')
     state = models.ForeignKey(Assetstate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت دارایی')
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
-    # stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='سهام')
-    entity = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='موجودی')
+    # stock = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, help_text='سهام')
+    entity = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, help_text='موجودی')
     fund = models.ForeignKey(Fund, on_delete=models.CASCADE, null=True, blank=True, help_text='صندوق')
-    categories = models.ForeignKey(Categorie, on_delete=models.CASCADE, null=True, blank=True, help_text='گروه‌ها')
+    categories = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, help_text='گروه‌ها')
 
     def __str__(self):
         return self.name
@@ -407,7 +408,12 @@ class Instrument(models.Model):
     minimum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداقل حجم معاملات نماد در یک سفارش')
     maximum_volume_permit = models.BigIntegerField(null=True, blank=True, help_text='حداکثر حجم معاملات نماد در یک سفارش')
     listing_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ ایجاد نماد')
-
+    image = models.ImageField(
+                upload_to='uploads/images/instrument/',
+                null=True,
+                blank=True,
+                help_text='تصویر'
+    )
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
     exchange_state = models.ForeignKey(Instrumentexchangestate, on_delete=models.CASCADE, null=True, blank=True, help_text='وضعیت نماد در بورس')
@@ -416,7 +422,7 @@ class Instrument(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, help_text='تابلوی معاملاتی نماد')
     index = models.ForeignKey(Index, on_delete=models.CASCADE, null=True, blank=True, help_text='شاخص')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True, blank=True, help_text='دارایی')
-    stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
+    stock = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
 
     def __str__(self):
         return self.name
@@ -464,12 +470,12 @@ class Instrumentsel(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, help_text='تابلوی معاملاتی نماد')
     index = models.ForeignKey(Index, on_delete=models.CASCADE, null=True, blank=True, help_text='شاخص')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True, blank=True, help_text='دارایی')
-    stock = models.ForeignKey(Companie, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
+    stock = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
 
     def __str__(self):
         if self.short_name is not None:
             return self.short_name
-        return self.meta.version
+        return str(self.meta.version)
 
 
 # معاملات روزانه
@@ -499,11 +505,11 @@ class Trade(models.Model):
 # جزعیات معاملات روزانه
 class Tradedetail(models.Model):
     date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
     #  open_price, high_price, low_price, close_price, close_price_change, real_close_price
     #  , real_close_price_change, buyer_count, trade_count, volume, value
     #  person_buyer_count, company_buyer_count, person_buy_volume, company_buy_volume, person_seller_count
     #  , company_seller_count, person_sell_volume, company_sell_volume
-    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
     version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
     instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
 
@@ -515,100 +521,101 @@ class Tradedetail(models.Model):
 
 class Trademidday(models.Model):
     date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
-    company = models.ForeignKey(Companie, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
     value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
     version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
 
     def __str__(self):
         if self.company is not None:
-            return self.company.name
+            return self.instrument.name
         return self.version
 
-class Company(models.Model):
-    SYMBOL_TYPE_CHOICES = (
-        ('0', "شاخص کل"),
-        ('1', "نماد"),
-        ('2', "شاخص صنعت"),
-    )
-    BOURSE_TYPE_CHOICES = (
-        ('0', "تابلو اصلی بازار اول بورس"),
-        ('1', "تابلو فرعی بازار اول بورس"),
-        ('2', "بازار دوم بورس"),
-        ('3', "بازار اول فرابورس"),
-        ('4', "بازار دوم فرابورس"),
-        ('5', "بازار پایه زرد فرابورس"),
-        ('6', "بازار پایه نارنجی فرابورس"),
-        ('7', "بازار پایه قرمز فرابورس"),
-    )
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text='کاربر'
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        help_text='گروه'
-    )
-    symbol = models.CharField(
-        max_length=255,
-        unique=True,
-        help_text='نماد'
-    )
-    name = models.CharField(
-        max_length=255,
-        help_text='نام شرکت'
-    )
-    alias = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text='نام معادل انگلیسی'
-    )
-    type = models.CharField(
-        max_length=255,
-        help_text='نوع نماد',
-        choices=SYMBOL_TYPE_CHOICES,
-        default='1'
-    )
-    bourse_type = models.CharField(
-        max_length=120,
-        null=True,
-        blank=True,
-        choices=BOURSE_TYPE_CHOICES,
-        help_text='بازار بورس'
-    )
-    image = models.ImageField(
-        upload_to='uploads/images/company/',
-        null=True,
-        blank=True,
-        help_text='تصویر'
-    )
-    created_on = models.DateField(auto_now_add=True)
-    tse = models.URLField(help_text='لینک tse')
-    site = models.URLField(
-        null=True,
-        blank=True,
-        help_text='وبسایت'
-    )
-    # isTarget = models.BooleanField(default=False, help_text='تحت نظر')
-    hit_count = models.BigIntegerField(default=0)
-    description = models.TextField(
-        null=True,
-        blank=True,
-        help_text='توضیحات'
-    )
-
-    def __str__(self):
-        return self.symbol
-
-    @property
-    def news(self):
-        return self.news_set.all()
+# class Company(models.Model):
+#     SYMBOL_TYPE_CHOICES = (
+#         ('0', "شاخص کل"),
+#         ('1', "نماد"),
+#         ('2', "شاخص صنعت"),
+#     )
+#     BOURSE_TYPE_CHOICES = (
+#         ('0', "تابلو اصلی بازار اول بورس"),
+#         ('1', "تابلو فرعی بازار اول بورس"),
+#         ('2', "بازار دوم بورس"),
+#         ('3', "بازار اول فرابورس"),
+#         ('4', "بازار دوم فرابورس"),
+#         ('5', "بازار پایه زرد فرابورس"),
+#         ('6', "بازار پایه نارنجی فرابورس"),
+#         ('7', "بازار پایه قرمز فرابورس"),
+#     )
+# 
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         help_text='کاربر'
+#     )
+#     category = models.ForeignKey(
+#         Category,
+#         on_delete=models.CASCADE,
+#         null=True,
+#         blank=True,
+#         help_text='گروه'
+#     )
+#     symbol = models.CharField(
+#         max_length=255,
+#         unique=True,
+#         help_text='نماد'
+#     )
+#     name = models.CharField(
+#         max_length=255,
+#         help_text='نام شرکت'
+#     )
+#     alias = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         help_text='نام معادل انگلیسی'
+#     )
+#     type = models.CharField(
+#         max_length=255,
+#         help_text='نوع نماد',
+#         choices=SYMBOL_TYPE_CHOICES,
+#         default='1'
+#     )
+#     bourse_type = models.CharField(
+#         max_length=120,
+#         null=True,
+#         blank=True,
+#         choices=BOURSE_TYPE_CHOICES,
+#         help_text='بازار بورس'
+#     )
+#     image = models.ImageField(
+#         upload_to='uploads/images/company/',
+#         null=True,
+#         blank=True,
+#         help_text='تصویر'
+#     )
+#     created_on = models.DateField(auto_now_add=True)
+#     tse = models.URLField(help_text='لینک tse')
+#     site = models.URLField(
+#         null=True,
+#         blank=True,
+#         help_text='وبسایت'
+#     )
+#     # isTarget = models.BooleanField(default=False, help_text='تحت نظر')
+#     hit_count = models.BigIntegerField(default=0)
+#     description = models.TextField(
+#         null=True,
+#         blank=True,
+#         help_text='توضیحات'
+#     )
+# 
+#     def __str__(self):
+#         return self.symbol
+# 
+#     @property
+#     def news(self):
+#         return self.news_set.all()
 
 
 class RequestSymbol(models.Model):
@@ -692,7 +699,7 @@ class Basket(models.Model):
     )
 
     def __str__(self):
-        return f'{self.user}, {self.company.name}'
+        return f'{self.user}, {self.instrument.name}'
 
 
 class News(models.Model):
@@ -708,7 +715,7 @@ class News(models.Model):
         on_delete=models.CASCADE,
         help_text='در صورت اختصاص خبر برای گروه انتخاب شود'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         null=True,
         blank=True,
@@ -786,7 +793,7 @@ class Technical(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -834,7 +841,7 @@ class Technical(models.Model):
     )
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class ChatMessage(models.Model):
@@ -874,7 +881,7 @@ class Webinar(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -918,7 +925,7 @@ class Webinar(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
 
 
 class Fundamental(models.Model):
@@ -927,7 +934,7 @@ class Fundamental(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -954,7 +961,7 @@ class Fundamental(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
 
 
 class Bazaar(models.Model):
@@ -963,7 +970,7 @@ class Bazaar(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -995,7 +1002,7 @@ class Bazaar(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
 
 
 class Chart(models.Model):
@@ -1035,7 +1042,7 @@ class Chart(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
 
 
 class UserTechnical(models.Model):
@@ -1048,7 +1055,7 @@ class UserTechnical(models.Model):
         auto_now_add=True,
         help_text='تاریخ ایجاد'
     )
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -1067,7 +1074,28 @@ class UserTechnical(models.Model):
     data = models.TextField(help_text='فایل متنی شده json')
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
+
+
+class TechnicalJSONUser(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                             help_text='کاربر')
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, help_text='نماد')
+    title = models.CharField(max_length=120, null=True, blank=True, help_text='نام فایل')
+    isShare = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
+    # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
+    data = jsonfield.JSONField(help_text='فایل متنی شده json')
+
+    class Meta:
+        ordering = ["-created_on"]
+
+    def __str__(self):
+        return self.instrument.short_name
+
+    @property
+    def owner(self):
+        return self.user
 
 
 class TutorialCategory(models.Model):
@@ -1290,7 +1318,7 @@ class CompanyFinancial(models.Model):
     )
 
     def __str__(self):
-        return self.company.symbol
+        return self.instrument.name
 
 
 class UserComment(models.Model):
@@ -1464,7 +1492,7 @@ class Bookmark(models.Model):
 
 class HitCount(models.Model):
     ip = models.CharField(max_length=255)
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
@@ -1515,7 +1543,7 @@ class HitCount(models.Model):
 class Notification(models.Model):
     title = models.CharField(max_length=255)
     text = RichTextField()
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         null=True,
@@ -1533,6 +1561,6 @@ class Notification(models.Model):
     @property
     def company_name(self):
         if self.company:
-            return self.company.name
+            return self.instrument.name
         else:
             return ''
