@@ -19,7 +19,6 @@ class UserAdmin(UserAdminBase):
                     'last_name',
                     'email',
                     'generated_token',
-                    'is_verified',
                     'picture',
                     'national_code',
                     'father_name',
@@ -156,6 +155,14 @@ class TradedetailAdmin(admin.ModelAdmin):
 
     def instrument_name(self, obj):
         return obj.instrument.short_name
+
+
+
+@admin.register(models.TechnicalJSONUser)
+class TechnicalJSONUserAdmin(admin.ModelAdmin):
+    list_display = ("user", "title", "instrument", "created_on", "isShare")
+    list_filter = ("user", "instrument", "isShare", )
+
 
 
 admin.site.register(models.User, UserAdmin)

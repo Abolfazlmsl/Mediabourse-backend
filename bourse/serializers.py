@@ -11,7 +11,8 @@ from .models import Company, \
     Bazaar, \
     Tutorial, \
     TutorialCategory, \
-    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification
+    TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
+    TechnicalJSONUser
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -126,6 +127,35 @@ class UserTechnicalSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserTechnical
         fields = '__all__'
+
+
+class TechnicalJSONUserSerializer(serializers.ModelSerializer):  # forms.ModelForm
+    user_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = TechnicalJSONUser
+        fields = [
+            'id',
+            'user',
+            'user_name',
+            'created_on',
+            'instrument',
+            'title',
+            'isShare',
+            'data',
+        ]
+        read_only_fields = ['id', 'user', 'user_name']
+
+    def get_user_name(self, obj):
+        return str(obj.user.phone_number)
+
+    def validate_title(self, value):
+        qs = TechnicalJSONUser.objects.filter(title__iexact=value)  # including instance
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("This title has already been used")
+        return value
 
 
 class TechnicalListSerializer(serializers.ModelSerializer):

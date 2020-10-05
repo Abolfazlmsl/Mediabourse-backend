@@ -4,6 +4,7 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+import jsonfield
 
 from private_storage.fields import PrivateFileField
 
@@ -130,7 +131,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -1074,6 +1074,27 @@ class UserTechnical(models.Model):
 
     def __str__(self):
         return self.instrument.name
+
+
+class TechnicalJSONUser(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                             help_text='کاربر')
+    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, help_text='نماد')
+    title = models.CharField(max_length=120, null=True, blank=True, help_text='نام فایل')
+    isShare = models.BooleanField(default=False, help_text='اجازه اشتراک گذاریا')
+    # data = models.TextField(null=True, blank=True, help_text='فایل متنی شده json')
+    data = jsonfield.JSONField(help_text='فایل متنی شده json')
+
+    class Meta:
+        ordering = ["-created_on"]
+
+    def __str__(self):
+        return self.instrument.short_name
+
+    @property
+    def owner(self):
+        return self.user
 
 
 class TutorialCategory(models.Model):
