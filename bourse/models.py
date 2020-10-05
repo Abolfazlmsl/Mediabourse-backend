@@ -1394,6 +1394,12 @@ class FileRepository(models.Model):
         return str(self.pk)
 
 
+class Software(models.Model):
+    software = models.FileField(
+        upload_to='uploads/file/software',
+    )
+
+
 class Note(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
