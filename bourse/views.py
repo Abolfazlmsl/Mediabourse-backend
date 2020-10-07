@@ -1,4 +1,6 @@
+import concurrent
 import datetime
+import logging
 import secrets
 import string
 import base64
@@ -60,11 +62,11 @@ def fill_data(request):
     # feed.feed_assettype()
     # feed.feed_assetstate()
     # feed.feed_fund()
-    # feed.feed_categorie()
+    # feed.feed_category()
     # feed.feed_asset()
-    feed.feed_companie()
+    # feed.feed_company()
     # feed.feed_instrument()
-    # feed.feed_instrumentsel()
+    feed.feed_instrumentsel()
     # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
@@ -100,6 +102,13 @@ def trade_daily(request):
     print(instrument, version)
 
     # feed.feed_tradedaily(instrument)
+
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+    indx = range(750)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=750) as executor:
+        executor.map(feed.feed_tradedaily(instrument, indx))
 
     trade = models.Tradedetail.objects.filter(instrument=instrument).order_by('date_time').values()
 
@@ -242,7 +251,6 @@ class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
         return TechnicalJSONUser.objects.filter(user=self.request.user)
 
 
-
 """
 -- Watchlist item class --
 """
@@ -272,7 +280,7 @@ class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return WatchListItem.objects.filter(watch_list__user=self.request.user)
+        return WatchListItem.objects.all()
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,

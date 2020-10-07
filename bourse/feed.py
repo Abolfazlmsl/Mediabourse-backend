@@ -671,7 +671,7 @@ def feed_fund():
             obj.save()
 
 
-def feed_categorie():
+def feed_category():
     offset = 0
     step = 100
     is_has_next = True
@@ -738,7 +738,7 @@ def feed_categorie():
             obj.save()
 
 
-def feed_companie():
+def feed_company():
     offset = 0
     step = 100
     is_has_next = True
@@ -882,8 +882,8 @@ def feed_asset():
             if 'exchange' in data:
                 obj_exchange = models.Exchange.objects.get(id=data['exchange']['id'])
             if 'entity' in data:
-                # obj_entity = models.Companie.objects.get(id=data['entity']['id'])
-                obj_entity_list = models.Companie.objects.filter(id=data['entity']['id'])
+                # obj_entity = models.Company.objects.get(id=data['entity']['id'])
+                obj_entity_list = models.Company.objects.filter(id=data['entity']['id'])
                 if len(obj_entity_list) == 0:
                     continue
                 obj_entity = obj_entity_list[0]
@@ -894,7 +894,7 @@ def feed_asset():
                     continue
                 obj_fund = obj_fund_list[0]
             if 'categories' in data:
-                obj_categories = models.Categorie.objects.get(id=data['categories'][0]['id'])
+                obj_categories = models.Category.objects.get(id=data['categories'][0]['id'])
 
             if 'update_date_time' in data['meta']:
                 obj_meta.update_date_time = data['meta']['update_date_time']
@@ -1117,7 +1117,8 @@ def feed_tradedaily(instrument_id, index):
     offset = 0
     step = 50
     # is_has_next = True
-
+    print(instrument_id, index)
+    logging.info("Thread %s: starting", index)
     model = models.Tradedetail
     # model.objects.all().delete()
     api_url = 'https://v1.db.api.mabnadp.com/exchange/tradedetails?'
@@ -1130,8 +1131,8 @@ def feed_tradedaily(instrument_id, index):
     if model.objects.filter(instrument=instrument_id).count() > 0:
         last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
 
-        # check last recived item is meta.state == deleted ?
-        print(last_version_from_delete , last_version_from_delete != -1)
+        # check last received item is meta.state == deleted ?
+        print(last_version_from_delete, last_version_from_delete != -1)
         if last_version_from_delete != -1:
             last_index_meta_version.version = last_version_from_delete
             print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
@@ -1140,19 +1141,19 @@ def feed_tradedaily(instrument_id, index):
         get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
                    'instrument.id=' + instrument_id + '&' + \
                    '_sort=meta.version&meta.version=' + str(
-            last_index_meta_version.version) + '&meta.version_op=gt'
+            last_index_meta_version.version) + '&meta.version_op=gt' + '&_count=100&_skip=' + index + '* 100'
         if is_error_expand is False:
             get_data = get_data + '@_expand=trade'
     else:
         # print('empty')
         get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
-                   'instrument.id=' + instrument_id + '&_sort=meta.version'
+                   'instrument.id=' + instrument_id + '&_sort=meta.version' + '&_count=100&_skip=' + index + '* 100'
         if is_error_expand is False:
             get_data = get_data + '@_expand=trade'
 
 
     get_data2 = get_data #+ '_count=' + str(step) + '&_skip=' + str(offset) + '&_expand=trade'
-    get_data2 = get_data2.replace("&", "@")  # replace & with @, becuase of & confilict
+    get_data2 = get_data2.replace("&", "@")  # replace & with @, because of & conflict
     print(get_data2)
     req = requests.get(get_data2)
     print(req.text)
@@ -1163,10 +1164,10 @@ def feed_tradedaily(instrument_id, index):
         is_error_expand = True
 
     #  check next pagination
-    if len(data1['data']) == step:
-        offset = offset + step
-    else:
-        is_has_next = False
+    # if len(data1['data']) == step:
+    #     offset = offset + step
+    # else:
+    #     is_has_next = False
 
     for data in data1['data']:
 
@@ -1310,6 +1311,11 @@ def feed_tradedaily(instrument_id, index):
 
         obj_trade.value = val
         obj_trade.save()
+
+        logging.info("Thread %s: finishing", index)
+
+
+
 
 def feed_trademidday(company_id):
 
