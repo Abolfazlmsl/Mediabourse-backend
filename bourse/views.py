@@ -176,7 +176,7 @@ def get_client_ip(request):
 class WatchlistAPIView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = 'pk'
     serializer_class = WatchListSerializer
-    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated,] # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         # print('watchlist......', self.request.user)
