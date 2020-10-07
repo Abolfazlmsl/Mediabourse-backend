@@ -27,6 +27,7 @@ urlpatterns = [
     path('comment/',  views.UserCommentListApiView.as_view(), name='comment'),
 
     path('fillData/',  views.fill_data, name='fill-data'),
+    path('candle/',  views.save_csv_candle, name='candle'),
     path('api-test/',  views.test_data, name='test-data'),
     path('trade-daily/',  views.trade_daily, name='trade-daily'),
 

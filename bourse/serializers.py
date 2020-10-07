@@ -174,7 +174,7 @@ class TechnicalListSerializer(serializers.ModelSerializer):
 class TechnicalRetrieveSerializer(serializers.ModelSerializer):
     """Technical retrieve serializer"""
     user = UserSerializer(many=False)
-    company = InstrumentSerializer(many=False)
+    # company = InstrumentSerializer(many=False)
 
     class Meta:
         model = Technical
@@ -183,7 +183,7 @@ class TechnicalRetrieveSerializer(serializers.ModelSerializer):
 
 class WebinarSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
-    company = InstrumentSerializer(many=False)
+    # company = InstrumentSerializer(many=False)
 
     class Meta:
         model = Webinar
@@ -286,14 +286,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class NotificationListSerializer(serializers.ModelSerializer):
-    company_name = serializers.CharField()
+    # company_name = serializers.CharField()
 
     class Meta:
         model = Notification
         fields = (
             'id',
             'title',
-            'company_name',
+            # 'company_name',
             'thumbnail',
             'created_on'
         )
@@ -307,7 +307,7 @@ class NotificationDetailSerializer(NotificationListSerializer):
             'id',
             'title',
             'text',
-            'company',
+            # 'company',
             'thumbnail',
             'created_on'
         )

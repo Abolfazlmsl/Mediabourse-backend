@@ -33,7 +33,7 @@ from .serializers import \
     UserForgetSerializer, \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
-    NotificationDetailSerializer
+    NotificationDetailSerializer, TechnicalJSONUserSerializer
 
 from .models import Company, \
     News, \
@@ -43,11 +43,18 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser
 
 from . import models
 
 from . import feed
+
+from . import candle
+
+
+def save_csv_candle(request):
+    candle.feed_candle()
+    return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
 def fill_data(request):
@@ -66,7 +73,7 @@ def fill_data(request):
     # feed.feed_asset()
     # feed.feed_company()
     # feed.feed_instrument()
-    feed.feed_instrumentsel()
+    # feed.feed_instrumentsel()
     # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
@@ -202,6 +209,53 @@ class WatchlistRudView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return WatchList.objects.all()
+
+
+"""
+-- User Json Technical class --
+"""
+
+
+class UserJsonTechnicalAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = TechnicalJSONUser.objects.filter(user=self.request.user)
+        query = self.request.GET.get("q")
+        query_instrument = self.request.GET.get("instrument")
+        query_share = self.request.GET.get("share")
+        if query is not None:
+            qs = qs.filter(Q(name__icontains=query)).distinct()
+        # fetch global share files
+        if query_share is not None:
+            qs = TechnicalJSONUser.objects.all()
+            flag = True
+            if query_share is "false":
+                flag = False
+            qs = qs.filter(Q(isShare=flag)).distinct()
+        if query_instrument is not None:
+            qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = TechnicalJSONUserSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return TechnicalJSONUser.objects.filter(user=self.request.user)
 
 
 """
