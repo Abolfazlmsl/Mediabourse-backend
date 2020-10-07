@@ -49,6 +49,13 @@ from . import models
 
 from . import feed
 
+from . import candle
+
+
+def save_csv_candle(request):
+    candle.feed_candle()
+    return HttpResponse(("Text only, please."), content_type="text/plain")
+
 
 def fill_data(request):
     print("data test")
@@ -66,7 +73,7 @@ def fill_data(request):
     # feed.feed_asset()
     # feed.feed_company()
     # feed.feed_instrument()
-    feed.feed_instrumentsel()
+    # feed.feed_instrumentsel()
     # feed.feed_trademidday("164")
     return HttpResponse(("Text only, please."), content_type="text/plain")
 

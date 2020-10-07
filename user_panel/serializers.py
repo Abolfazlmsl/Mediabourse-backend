@@ -216,7 +216,7 @@ class RequestSymbolCreateSerializer(serializers.ModelSerializer):
 
 
 class RequestSymbolSerializer(serializers.ModelSerializer):
-    company = InstrumentSerializer(many=False)
+    # company = InstrumentSerializer(many=False)
 
     class Meta:
         model = RequestSymbol

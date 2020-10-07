@@ -1019,9 +1019,11 @@ class Chart(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        help_text='کاربر'
+        help_text='کاربر',
+        null=True,
+        blank=True
     )
-    last_candle_date = models.DateTimeField(help_text='تاریخ ایجاد')
+    last_candle_date = models.CharField(max_length=255, help_text='تاریخ ایجاد')
     company = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
@@ -1041,7 +1043,10 @@ class Chart(models.Model):
     )
 
     def __str__(self):
-        return self.instrument.name
+        return self.company.name
+
+    class Meta:
+        unique_together = ('company', 'timeFrame')
 
 
 class UserTechnical(models.Model):
