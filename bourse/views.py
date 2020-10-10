@@ -58,44 +58,46 @@ def save_csv_candle(request):
 
 
 def fill_data(request):
-    table = request.GET.get('table')
-    print(f"feed {table} table")
+    # table = request.GET.get('table')
+    # print(f"feed {table} table")
+    #
+    # if table == "index":
+    #     feed.feed_index()
+    # elif table == "exchange":
+    #     feed.feed_exchange()
+    # elif table == "market":
+    #     feed.feed_market()
+    # elif table == "board":
+    #     feed.feed_board()
+    # elif table == "instrumentgroup":
+    #     feed.feed_instrumentgroup()
+    # elif table == "instrumentexchangestate":
+    #     feed.feed_instrumentexchangestate()
+    # elif table == "assettype":
+    #     feed.feed_assettype()
+    # elif table == "assetstate":
+    #     feed.feed_assetstate()
+    # elif table == "fund":
+    #     feed.feed_fund()
+    # elif table == "category":
+    #     feed.feed_category()
+    # elif table == "asset":
+    #     feed.feed_asset()
+    # elif table == "company":
+    #     feed.feed_company()
+    # elif table == "instrument":
+    #     # feed.feed_instrument()
+    #     feed.feed_instrument_thread()
+    # elif table == "feed_trademidday":
+    #     feed.feed_trademidday("164")
+    # elif table == "instrumentsel":
+    #     feed.feed_instrumentsel()
+    # elif table == "search_rahavard_instruments":
+    #     feed.search_rahavard_instruments()
 
-    if table == "index":
-        feed.feed_index()
-    elif table == "exchange":
-        feed.feed_exchange()
-    elif table == "market":
-        feed.feed_market()
-    elif table == "board":
-        feed.feed_board()
-    elif table == "instrumentgroup":
-        feed.feed_instrumentgroup()
-    elif table == "instrumentexchangestate":
-        feed.feed_instrumentexchangestate()
-    elif table == "assettype":
-        feed.feed_assettype()
-    elif table == "assetstate":
-        feed.feed_assetstate()
-    elif table == "fund":
-        feed.feed_fund()
-    elif table == "category":
-        feed.feed_category()
-    elif table == "asset":
-        feed.feed_asset()
-    elif table == "company":
-        feed.feed_company()
-    elif table == "instrument":
-        # feed.feed_instrument()
-        feed.feed_instrument_thread()
-    elif table == "feed_trademidday":
-        feed.feed_trademidday("164")
-    elif table == "instrumentsel":
-        feed.feed_instrumentsel()
-    elif table == "search_rahavard_instruments":
-        feed.search_rahavard_instruments()
+    feed.second_feed_tradedaily_thread(46978)
 
-    return HttpResponse(f"Table {table} processed", content_type="text/plain")
+    return HttpResponse(f"Table processed", content_type="text/plain")
 
 
 def test_data(request):
