@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 import jdatetime
 import requests
 import time
-
+import pandas as pd
 from .models import Meta, Index, Exchange
 from . import models
 
@@ -1714,88 +1714,66 @@ def feed_tradedaily_thread(instrument_id):
     print(f"Downloaded {len(sites)} in {duration} seconds")
 
 
+candle_list = list()
+
+
 def second_get_instrument(sites):
     with requests.get(sites) as request:
         data1 = request.json()
         # print(data1)
-        print(f"recive data of {sites}, len = {len(data1['data'])}")
+        print(f"receive data of {sites}, len = {len(data1['data'])}")
         for data in data1['data']:
+            val = ''
             print(data)
             #  ignore deleted items
             if data['meta']['state'] == 'deleted':
                 continue
-            if 'open_price' in data['trade']:
-                val = val + str(data['trade']['open_price']) + ','
+            if 'date_time' in data:
+                val = val + str(data['date_time']) + ','
             else:
                 val = val + '-1,'
-            if 'high_price' in data['trade']:
-                val = val + str(data['trade']['high_price']) + ','
+            if 'open_price' in data:
+                val = val + str(data['open_price']) + ','
             else:
                 val = val + '-1,'
-            if 'low_price' in data['trade']:
-                val = val + str(data['trade']['low_price']) + ','
+            if 'high_price' in data:
+                val = val + str(data['high_price']) + ','
             else:
                 val = val + '-1,'
-            if 'close_price' in data['trade']:
-                val = val + str(data['trade']['close_price']) + ','
+            if 'low_price' in data:
+                val = val + str(data['low_price']) + ','
             else:
                 val = val + '-1,'
-            if 'close_price_change' in data['trade']:
-                val = val + str(data['trade']['close_price_change']) + ','
+            if 'close_price' in data:
+                val = val + str(data['close_price']) + ','
             else:
                 val = val + '-1,'
-            if 'real_close_price' in data['trade']:
-                val = val + str(data['trade']['real_close_price']) + ','
+            if 'close_price_change' in data:
+                val = val + str(data['close_price_change']) + ','
             else:
                 val = val + '-1,'
-            if 'buyer_count' in data['trade']:
-                val = val + str(data['trade']['buyer_count']) + ','
+            if 'real_close_price' in data:
+                val = val + str(data['real_close_price']) + ','
             else:
                 val = val + '-1,'
-            if 'trade_count' in data['trade']:
-                val = val + str(data['trade']['trade_count']) + ','
+            if 'buyer_count' in data:
+                val = val + str(data['buyer_count']) + ','
             else:
                 val = val + '-1,'
-            if 'volume' in data['trade']:
-                val = val + str(data['trade']['volume']) + ','
+            if 'trade_count' in data:
+                val = val + str(data['trade_count']) + ','
             else:
                 val = val + '-1,'
-            if 'value' in data['trade']:
-                val = val + str(data['trade']['value']) + ','
+            if 'volume' in data:
+                val = val + str(data['volume']) + ','
             else:
                 val = val + '-1,'
-            if 'person_buyer_count' in data:
-                val = val + str(data['person_buyer_count']) + ','
+            if 'value' in data:
+                val = val + str(data['value']) + ','
             else:
                 val = val + '-1,'
-            if 'company_buyer_count' in data:
-                val = val + str(data['company_buyer_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_buy_volume' in data:
-                val = val + str(data['person_buy_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_buy_volume' in data:
-                val = val + str(data['company_buy_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_seller_count' in data:
-                val = val + str(data['person_seller_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_seller_count' in data:
-                val = val + str(data['company_seller_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'person_sell_volume' in data:
-                val = val + str(data['person_sell_volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'company_sell_volume' in data:
-                val = val + str(data['company_sell_volume']) + ','
-            else:
-                val = val + '-1,'
+            print(val)
+            candle_list.append(val)
 
 
 def second_feed_tradedaily_thread(instrument_id):
@@ -1839,6 +1817,14 @@ def second_feed_tradedaily_thread(instrument_id):
         pool.map(second_get_instrument, sites)
         # audiolists = pool.map(get_audio_link, sites)
     duration = time.time() - start_time
+    print(candle_list)
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data.url
+        print(candle)
+        df = pd.read_csv('http://127.0.0.1:8000/media/uploads/file/chart/%D8%AE%D9%88%D8%AF%D8%B1%D9%88-D1_wy7Tv7f.CSV')
+        print(df.head())
+    except IntegrityError:
+        print('candle nadarim')
     print(f"Downloaded {len(sites)} in {duration} seconds")
 
 
