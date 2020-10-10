@@ -58,24 +58,44 @@ def save_csv_candle(request):
 
 
 def fill_data(request):
-    print("data test")
+    table = request.GET.get('table')
+    print(f"feed {table} table")
 
-    # feed.feed_index()
-    # feed.feed_exchange()
-    # feed.feed_market()
-    # feed.feed_board()
-    # feed.feed_instrumentgroup()
-    # feed.feed_instrumentexchangestate()
-    # feed.feed_assettype()
-    # feed.feed_assetstate()
-    # feed.feed_fund()
-    # feed.feed_category()
-    # feed.feed_asset()
-    # feed.feed_company()
-    # feed.feed_instrument()
-    # feed.feed_instrumentsel()
-    # feed.feed_trademidday("164")
-    return HttpResponse(("Text only, please."), content_type="text/plain")
+    if table == "index":
+        feed.feed_index()
+    elif table == "exchange":
+        feed.feed_exchange()
+    elif table == "market":
+        feed.feed_market()
+    elif table == "board":
+        feed.feed_board()
+    elif table == "instrumentgroup":
+        feed.feed_instrumentgroup()
+    elif table == "instrumentexchangestate":
+        feed.feed_instrumentexchangestate()
+    elif table == "assettype":
+        feed.feed_assettype()
+    elif table == "assetstate":
+        feed.feed_assetstate()
+    elif table == "fund":
+        feed.feed_fund()
+    elif table == "category":
+        feed.feed_category()
+    elif table == "asset":
+        feed.feed_asset()
+    elif table == "company":
+        feed.feed_company()
+    elif table == "instrument":
+        # feed.feed_instrument()
+        feed.feed_instrument_thread()
+    elif table == "feed_trademidday":
+        feed.feed_trademidday("164")
+    elif table == "instrumentsel":
+        feed.feed_instrumentsel()
+    elif table == "search_rahavard_instruments":
+        feed.search_rahavard_instruments()
+
+    return HttpResponse(f"Table {table} processed", content_type="text/plain")
 
 
 def test_data(request):
@@ -104,19 +124,39 @@ def test_data(request):
 def trade_daily(request):
     print("trade_daily")
 
+    # 9975, 15698
+
+    # obj = models.Instrument.objects.filter(short_name__icontains="بین")
+    # print(obj)
+    # for itm in obj:
+    #     print(itm.short_name
+    #           , ' - ', itm.id
+    #           , ' - ', itm.type
+    #           , ' - ', itm.market
+    #           , ' - ', itm.exchange_state
+    #           , ' - ', itm.board)
+    #
+    # return JsonResponse({}, safe=False)
+
+
     instrument = request.GET.get('instrument')
     version = request.GET.get('version')
     print(instrument, version)
 
+    # get index candles whiout thread
     # feed.feed_tradedaily(instrument)
 
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
-    indx = range(750)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=750) as executor:
-        executor.map(feed.feed_tradedaily(instrument, indx))
+    # get selected instrument
+    obj = models.Instrumentsel.objects.get(id=instrument)
 
+    if obj.index is not  None:
+        # threading to get index candles
+        feed.feed_indexdaily_thread(obj.index_id)
+    else:
+        # threading to get instrument candles
+        feed.feed_tradedaily_thread(instrument)
+
+    # get result candles
     trade = models.Tradedetail.objects.filter(instrument=instrument).order_by('date_time').values()
 
     return JsonResponse(list(trade), safe=False)
