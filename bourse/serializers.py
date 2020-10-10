@@ -160,14 +160,17 @@ class TechnicalJSONUserSerializer(serializers.ModelSerializer):  # forms.ModelFo
 
 class TechnicalListSerializer(serializers.ModelSerializer):
     """Technical list serializer"""
+    user = UserSerializer(many=False)
 
     class Meta:
         model = Technical
         fields = (
             'id',
             'title',
+            'user',
             'thumbnail',
-            'instrument'
+            'instrument',
+            'description'
         )
 
 
