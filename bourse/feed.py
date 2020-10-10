@@ -1714,6 +1714,90 @@ def feed_tradedaily_thread(instrument_id):
     print(f"Downloaded {len(sites)} in {duration} seconds")
 
 
+def second_get_instrument(sites):
+    with requests.get(sites) as request:
+        data1 = request.json()
+        # print(data1)
+        print(f"recive data of {sites}, len = {len(data1['data'])}")
+        for data in data1['data']:
+            print(data)
+            #  ignore deleted items
+            if data['meta']['state'] == 'deleted':
+                continue
+            if 'open_price' in data['trade']:
+                val = val + str(data['trade']['open_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'high_price' in data['trade']:
+                val = val + str(data['trade']['high_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'low_price' in data['trade']:
+                val = val + str(data['trade']['low_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price' in data['trade']:
+                val = val + str(data['trade']['close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'close_price_change' in data['trade']:
+                val = val + str(data['trade']['close_price_change']) + ','
+            else:
+                val = val + '-1,'
+            if 'real_close_price' in data['trade']:
+                val = val + str(data['trade']['real_close_price']) + ','
+            else:
+                val = val + '-1,'
+            if 'buyer_count' in data['trade']:
+                val = val + str(data['trade']['buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'trade_count' in data['trade']:
+                val = val + str(data['trade']['trade_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'volume' in data['trade']:
+                val = val + str(data['trade']['volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'value' in data['trade']:
+                val = val + str(data['trade']['value']) + ','
+            else:
+                val = val + '-1,'
+            if 'person_buyer_count' in data:
+                val = val + str(data['person_buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'company_buyer_count' in data:
+                val = val + str(data['company_buyer_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'person_buy_volume' in data:
+                val = val + str(data['person_buy_volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'company_buy_volume' in data:
+                val = val + str(data['company_buy_volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'person_seller_count' in data:
+                val = val + str(data['person_seller_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'company_seller_count' in data:
+                val = val + str(data['company_seller_count']) + ','
+            else:
+                val = val + '-1,'
+            if 'person_sell_volume' in data:
+                val = val + str(data['person_sell_volume']) + ','
+            else:
+                val = val + '-1,'
+            if 'company_sell_volume' in data:
+                val = val + str(data['company_sell_volume']) + ','
+            else:
+                val = val + '-1,'
+
+
 def second_feed_tradedaily_thread(instrument_id):
     num_of_threads = 10
 
@@ -1752,7 +1836,7 @@ def second_feed_tradedaily_thread(instrument_id):
     start_time = time.time()
     # download_all_sites(sites)
     with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
-        pool.map(get_instrument, sites)
+        pool.map(second_get_instrument, sites)
         # audiolists = pool.map(get_audio_link, sites)
     duration = time.time() - start_time
     print(f"Downloaded {len(sites)} in {duration} seconds")
