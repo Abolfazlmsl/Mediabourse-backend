@@ -177,7 +177,7 @@ class TechnicalListSerializer(serializers.ModelSerializer):
 class TechnicalRetrieveSerializer(serializers.ModelSerializer):
     """Technical retrieve serializer"""
     user = UserSerializer(many=False)
-    # company = InstrumentSerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
 
     class Meta:
         model = Technical
