@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
 import jdatetime
@@ -1699,6 +1700,50 @@ def feed_tradedaily_thread(instrument_id):
                   + 'https://v1.db.api.mabnadp.com/exchange/tradedetails?' + \
                   'instrument.id=' + instrument_id + '@_sort=meta.version@meta.version=' + str(
             last_index_meta_version.version) + '@meta.version_op=gt' + '@_expand=trade'
+        sites = [
+            api_url + '@_count=100@_skip=0',
+            api_url + '@_count=100@_skip=100',
+        ]
+
+    start_time = time.time()
+    # download_all_sites(sites)
+    with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
+        pool.map(get_instrument, sites)
+        # audiolists = pool.map(get_audio_link, sites)
+    duration = time.time() - start_time
+    print(f"Downloaded {len(sites)} in {duration} seconds")
+
+
+def second_feed_tradedaily_thread(instrument_id):
+    num_of_threads = 10
+
+    model = models.Tradedetail
+    # model.objects.filter(instrument=instrument_id).delete()
+    # return
+    try:
+        company_id = models.Instrumentsel.objects.get(id=instrument_id)['company__id']
+    except IntegrityError:
+        print('Instrument not found!')
+    x = jdatetime.date.today()
+    print(x.strftime("%Y%m%d"))
+
+    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+              + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+              'instrument.stock.company.id=' + company_id + '@_sort=meta.version'
+
+    sites = []
+
+    for i in range(21):
+        sites.append(f'{api_url}@_count=100@_skip={(i * 100)}')
+
+    #  check model is empty or not
+    if model.objects.filter(instrument=instrument_id).count() > 0:
+        last_candle_date = models.Chart.objects.get(instrument=instrument_id)['last_candle_date']
+        # last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
+        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+                  + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+                  'instrument.stock.company.id=' + company_id + '@datetime=' + last_candle_date + \
+                  '@date_time_op=gt'
         sites = [
             api_url + '@_count=100@_skip=0',
             api_url + '@_count=100@_skip=100',

@@ -1024,7 +1024,7 @@ class Chart(models.Model):
         blank=True
     )
     last_candle_date = models.CharField(max_length=255, help_text='تاریخ ایجاد')
-    company = models.ForeignKey(
+    instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,
         help_text='نماد'
@@ -1043,10 +1043,10 @@ class Chart(models.Model):
     )
 
     def __str__(self):
-        return self.company.name
+        return self.instrument.name
 
     class Meta:
-        unique_together = ('company', 'timeFrame')
+        unique_together = ('instrument', 'timeFrame')
 
 
 class UserTechnical(models.Model):

@@ -211,7 +211,7 @@ class UserTechnicalViewSet(viewsets.GenericViewSet,
     """
         user technical analytics API
     """
-    serializer_class = serializers.BasketCreateSerializer
+    serializer_class = serializers.UserTechnicalSerializer
     authentication_classes = (JWTAuthentication,)
     queryset = UserTechnical.objects.all()
     permission_classes = (IsAuthenticated,)

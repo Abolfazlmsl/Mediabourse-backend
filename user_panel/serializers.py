@@ -158,7 +158,7 @@ class BasketSerializer(serializers.ModelSerializer):
 
 
 class UserTechnicalSerializer(serializers.ModelSerializer):
-    company = InstrumentSerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
 
     class Meta:
         model = UserTechnical
