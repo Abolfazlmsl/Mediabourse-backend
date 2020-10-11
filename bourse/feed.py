@@ -1281,7 +1281,7 @@ def feed_instrument():
 def feed_instrumentsel():
     # models.Instrumentsel.objects.all().delete()
 
-    feed_instrument()
+    # feed_instrument()
     sel_obj = models.Instrument.objects.filter((Q(type='share') | Q(type='warrant') | Q(type='commodity')
                                                 | Q(type='portfoy') | Q(type='index'))
                                                & (Q(market=1) | Q(market=5))
@@ -1582,8 +1582,18 @@ def get_instrument(sites):
     """ return candel info for selected instrument"""
     with requests.get(sites) as request:
         data1 = request.json()
-        # print(data1)
-        print(f"recive data of {sites}, len = {len(data1['data'])}")
+        # print(data1, 'error' in data1)
+        print(f"-recive data of {sites}, len = {len(data1['data'])}")
+        # print('error' in data1)
+
+        if 'error' in data1:
+            print(data1['error']['code'] + ' - ' + data1['error']['message'])
+            is_error_expand = True
+            # req = requests.get(sites)
+            # print('request.url')
+            # print(request.url)
+            return
+
         for data in data1['data']:
 
             #  ignore deleted items
@@ -1687,11 +1697,13 @@ def feed_tradedaily_thread(instrument_id):
               + 'https://v1.db.api.mabnadp.com/exchange/tradedetails?' + \
               'instrument.id=' + instrument_id + '@_sort=meta.version' + '@_expand=trade'
 
+    # sites = [f'{api_url}@_count=100', f'{api_url}@_count=100']
     sites = []
 
     for i in range(21):
         sites.append(f'{api_url}@_count=100@_skip={(i * 100)}')
 
+    #print(sites)
     #  check model is empty or not
     if model.objects.filter(instrument=instrument_id).count() > 0:
         model.objects.filter(date_time__icontains=x.strftime("%Y%m%d")).delete()
