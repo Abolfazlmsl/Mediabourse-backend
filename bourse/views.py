@@ -33,7 +33,7 @@ from .serializers import \
     UserForgetSerializer, \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
-    NotificationDetailSerializer, TechnicalJSONUserSerializer
+    NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer
 
 from .models import Company, \
     News, \
@@ -251,6 +251,45 @@ class WatchlistRudView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return WatchList.objects.all()
+
+
+"""
+-- BugReport class --
+"""
+
+
+class BugReportAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = BugReportSerializer
+    permission_classes = []#[IsOwnerOrReadOnly, IsAuthenticated]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = models.BugReport.objects.all()
+        query = self.request.GET.get("q")
+        query_email = self.request.GET.get("email")
+        if query is not None:
+            qs = qs.filter(Q(text__icontains=query)).distinct()
+        if query_email is not None:
+            qs = qs.filter(Q(email=query_email)).distinct()
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class BugReportRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = BugReportSerializer
+    permission_classes = [ ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return models.BugReport.objects.all()
 
 
 """

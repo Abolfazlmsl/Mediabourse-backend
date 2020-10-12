@@ -12,7 +12,7 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser
+    TechnicalJSONUser, BugReport
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,6 +25,18 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name'
         )
+
+
+class BugReportSerializer(serializers.ModelSerializer):  # forms.ModelForm
+
+    class Meta:
+        model = BugReport
+        fields = [
+            'id',
+            'text',
+            'email',
+        ]
+        read_only_fields = ['id']
 
 
 class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm

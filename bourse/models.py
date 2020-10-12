@@ -1580,3 +1580,32 @@ class Notification(models.Model):
             return self.instrument.name
         else:
             return ''
+
+
+class BugReport(models.Model):
+    STATUS_CHOICES = (
+        ('0', "گزارش شده"),
+        ('1', "در حال بررسی"),
+        ('2', "رفع باگ"),
+    )
+    status = models.CharField(
+        max_length=255,
+        help_text='وضعیت باگ',
+        choices=STATUS_CHOICES,
+        default='0'
+    )
+
+    text = models.TextField(
+        null=False,
+        blank=False
+    )
+    email = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    fixed_on = models.DateTimeField(null=True, blank=True, help_text="زمان رفع باگ")
+
+    def __str__(self):
+        return f'{self.email}, {self.text}'

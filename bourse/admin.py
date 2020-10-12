@@ -164,6 +164,11 @@ class TechnicalJSONUserAdmin(admin.ModelAdmin):
     list_filter = ("user", "instrument", "isShare", )
 
 
+@admin.register(models.BugReport)
+class BugReportAdmin(admin.ModelAdmin):
+    list_display = ("id", "text", "email", "status", "created_on", "fixed_on")
+    list_filter = ("email", "status",)
+
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.WatchList)
