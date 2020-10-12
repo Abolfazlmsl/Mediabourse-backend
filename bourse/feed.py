@@ -1834,11 +1834,15 @@ def second_feed_tradedaily_thread(instrument_id):
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data.url
         print(candle)
         df = pd.read_csv('http://127.0.0.1:8000/media/uploads/file/chart/%D8%AE%D9%88%D8%AF%D8%B1%D9%88-D1_wy7Tv7f.CSV')
+        i = 0
         for item in candle_list:
+            print(i)
+            i+=1
             lst = item.split(",")
             print('sdfsdf', lst)
             print('drgfdhfdrhfdgf', int(float(lst[0][:8])))
-            to_append = ['?????-D1', 'D1', int(float(lst[0][:8])), int(float(lst[0][7:])), int(float(lst[1])), int(float(lst[2])), int(float(lst[3])), int(float(lst[4])), int(float(lst[9])), 0]
+            to_append = ['?????-D1', 'D1', int(float(lst[0][:8])), int(float(lst[0][7:])), int(float(lst[1])),
+                         int(float(lst[2])), int(float(lst[3])), int(float(lst[4])), int(float(lst[9])), 0]
             df.loc[len(df), :] = to_append
         print(df.tail())
         df.to_csv('test.csv')
