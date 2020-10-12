@@ -1075,6 +1075,7 @@ class UserTechnical(models.Model):
         help_text='تصویر'
     )
     is_share = models.BooleanField(default=False, help_text='اجازه اشتراک گذاری')
+    short_description = models.CharField(max_length=255, null=True, blank=True)
     data = models.TextField(help_text='فایل متنی شده json')
 
     def __str__(self):
