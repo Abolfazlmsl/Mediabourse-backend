@@ -61,6 +61,7 @@ class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm
 
 class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
     company_name = serializers.SerializerMethodField(read_only=True)
+    company_full_name = serializers.SerializerMethodField(read_only=True)
     company_english_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -70,12 +71,16 @@ class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
             'watch_list',
             'company',
             'company_name',
+            'company_full_name',
             'company_english_name',
         ]
-        read_only_fields = ['id', 'company_name']
+        read_only_fields = ['id', 'company_name', 'company_full_name', 'company_english_name']
 
     def get_company_name(self, obj):
         return obj.get_short_name()
+
+    def get_company_full_name(self, obj):
+        return obj.get_name()
 
     def get_company_english_name(self, obj):
         return obj.get_short_english_name()

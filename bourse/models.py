@@ -433,7 +433,7 @@ class Instrumentsel(models.Model):
     code = models.CharField(max_length=255, null=True, blank=True, help_text='کد بورسی')
     bbs_code = models.CharField(max_length=255, null=True, blank=True, help_text='کد BBS')
     isin = models.CharField(max_length=255, null=True, blank=True, help_text='کد ISIN')
-    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام دسته بندی')
+    name = models.CharField(max_length=255, null=True, blank=True, help_text='نام ')
     english_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام انگلیسی')
     short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه دسته بندی')
     english_short_name = models.CharField(max_length=255, null=True, blank=True, help_text='نام کوتاه انگلیسی شرکت')
@@ -685,6 +685,9 @@ class WatchListItem(models.Model):
 
     def get_short_english_name(self):
         return self.company.english_short_name
+
+    def get_name(self):
+        return self.company.name
 
 
 class Basket(models.Model):
