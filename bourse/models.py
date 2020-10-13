@@ -1019,14 +1019,7 @@ class Chart(models.Model):
         ('W1', "1 هفته"),
         ('MN1', "1 ماه"),
     )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text='کاربر',
-        null=True,
-        blank=True
-    )
-    last_candle_date = models.CharField(max_length=255, help_text='تاریخ ایجاد')
+    last_candle_date = models.CharField(max_length=255, help_text='تاریخ آخرین کندل')
     instrument = models.ForeignKey(
         Instrumentsel,
         on_delete=models.CASCADE,

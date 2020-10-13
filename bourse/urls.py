@@ -30,6 +30,7 @@ urlpatterns = [
     path('candle/',  views.save_csv_candle, name='candle'),
     path('api-test/',  views.test_data, name='test-data'),
     path('trade-daily/',  views.trade_daily, name='trade-daily'),
+    path('chart_timeframes/',  views.chart_timeframes, name='chart-timeframes'),
 
     path('instrument/',  views.instrument_list, name='instrument-list'),
     path('watchlist2/',  views.watchlist, name='watchlist'),

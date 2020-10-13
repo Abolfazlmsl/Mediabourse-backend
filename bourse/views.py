@@ -15,6 +15,7 @@ from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
 from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
+import pandas as pd
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from mediabourse.settings import KAVENEGAR_APIKEY
@@ -95,7 +96,8 @@ def fill_data(request):
     # elif table == "search_rahavard_instruments":
     #     feed.search_rahavard_instruments()
 
-    feed.second_feed_tradedaily_thread(46978)
+    # feed.second_feed_tradedaily_thread(46978)
+    candle.feed_candle()
 
     return HttpResponse(f"Table processed", content_type="text/plain")
 
@@ -145,6 +147,57 @@ def trade_daily(request):
     version = request.GET.get('version')
     print(instrument, version)
 
+    # get index candles whiout thread
+    # feed.feed_tradedaily(instrument)
+
+    # get selected instrument
+    obj = models.Instrumentsel.objects.get(id=instrument)
+
+    if obj.index is not  None:
+        # threading to get index candles
+        feed.feed_indexdaily_thread(obj.index_id)
+    else:
+        # threading to get instrument candles
+        feed.feed_tradedaily_thread(instrument)
+
+    # get result candles
+    trade = models.Tradedetail.objects.filter(instrument=instrument).order_by('date_time').values()
+
+    return JsonResponse(list(trade), safe=False)
+
+
+def chart_timeframes(request):
+    print("trade_daily")
+
+    instrument = request.GET.get('instrument')
+    last_date = request.GET.get('date')
+    print(instrument, last_date)
+    symbol_timeframes = models.Chart.objects.filter(instrument=instrument)
+    print(symbol_timeframes)
+    res = []
+    for itm in symbol_timeframes:
+        print(itm.instrument, itm.timeFrame)
+        print(itm.instrument, itm.data)
+        df = pd.read_csv('.' + itm.data.url)  # read csv
+        # json_data = df.to_json(r'./New_Products.json')
+
+        if last_date is not None:
+            # df['<DTYYYYMMDD>'] = pd.to_datetime(df['<DTYYYYMMDD>'])
+            mask = (df['<DTYYYYMMDD>'] > int(last_date))
+            # print("ressss")
+            df = df.loc[mask]
+            # print(df.loc[mask])
+
+        json_data = df.to_json(orient='values')
+
+        # return JsonResponse(res, safe=False)
+        res.append({
+            'data': json_data,
+            'timeframe': itm.timeFrame,
+            'instrument': itm.instrument.id
+        })
+
+    return JsonResponse(res, safe=False)
     # get index candles whiout thread
     # feed.feed_tradedaily(instrument)
 

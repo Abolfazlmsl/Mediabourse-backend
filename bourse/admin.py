@@ -133,6 +133,12 @@ class InstrumentAdmin(admin.ModelAdmin):
     list_filter = ("type", "market", "board", "group", "exchange", "exchange_state", "index", "group", "board",)
 
 
+@admin.register(models.Chart)
+class ChartAdmin(admin.ModelAdmin):
+    list_display = ("id", "instrument", "timeFrame", "last_candle_date",)
+    list_filter = ("timeFrame", "instrument",)
+
+
 @admin.register(models.Instrumentsel)
 class InstrumentselAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "short_name", "type", "exchange", "exchange_state", "market", "group", "board", "index", "asset", "stock",)
@@ -182,7 +188,6 @@ admin.site.register(models.Webinar)
 admin.site.register(models.Filter)
 admin.site.register(models.Fundamental)
 admin.site.register(models.Bazaar)
-admin.site.register(models.Chart)
 admin.site.register(models.UserTechnical)
 admin.site.register(models.TutorialCategory)
 admin.site.register(models.TutorialSubCategory)
