@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from ckeditor.fields import RichTextField
@@ -1008,6 +1010,10 @@ class Bazaar(models.Model):
 
 
 class Chart(models.Model):
+
+    def file_path(self, filename):
+        return os.path.join('uploads/file/chart/', str(self.instrument.short_name), filename)
+
     TIME_FRAME_CHOICES = (
         ('M1', "1 دقیقه"),
         ('M5', "5 دقیقه"),
@@ -1032,7 +1038,7 @@ class Chart(models.Model):
         default='D1'
     )
     data = models.FileField(
-        upload_to='uploads/file/chart/',
+        upload_to=file_path,
         null=True,
         blank=True,
         help_text='فایل csv,  prn, txt چارت نماد'
@@ -1040,6 +1046,7 @@ class Chart(models.Model):
 
     def __str__(self):
         return self.instrument.name
+
 
     class Meta:
         unique_together = ('instrument', 'timeFrame')
@@ -1562,7 +1569,7 @@ class Notification(models.Model):
         blank=True
     )
     thumbnail = models.ImageField(
-        upload_to='upload/thumbnail/notification',
+        upload_to='uploads/thumbnail/notification',
         help_text='تصویر'
     )
     created_on = models.DateField(auto_now_add=True)
@@ -1572,7 +1579,7 @@ class Notification(models.Model):
 
     @property
     def company_name(self):
-        if self.company:
+        if self.instrument:
             return self.instrument.name
         else:
             return ''

@@ -751,14 +751,14 @@ def feed_candle():
         print(os.path.isdir(path), directory)
         if os.path.isdir(path):
             print(f'check {directory}')
-            farsi_title = find_farsi_title(directory)
-            print(farsi_title)
-            if farsi_title is None:
-                continue
+            # farsi_title = find_farsi_title(directory)
+            # print(farsi_title)
+            # if farsi_title is None:
+            #     continue
 
             try:
-                # symbol = models.Instrumentsel.objects.get(short_name__contains=directory)
-                symbol = models.Instrumentsel.objects.get(short_name=farsi_title)
+                symbol = models.Instrumentsel.objects.get(short_name=directory)
+                # symbol = models.Instrumentsel.objects.get(short_name=farsi_title)
                 # symbol = models.Instrumentsel.objects.get(id=36094)
             except ObjectDoesNotExist:
                 print('Instrument not found!')
