@@ -16,6 +16,7 @@ from rest_framework import filters
 from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 import pandas as pd
+from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from mediabourse.settings import KAVENEGAR_APIKEY
@@ -167,18 +168,20 @@ def trade_daily(request):
 
 
 def chart_timeframes(request):
-    print("trade_daily")
+    # print("trade_daily")
 
     instrument = request.GET.get('instrument')
     last_date = request.GET.get('date')
-    print(instrument, last_date)
+    # print(instrument, last_date)
     symbol_timeframes = models.Chart.objects.filter(instrument=instrument)
-    print(symbol_timeframes)
+    url = settings.MEDIA_ROOT.replace('\\', '/')
     res = []
     for itm in symbol_timeframes:
-        print(itm.instrument, itm.timeFrame)
-        print(itm.instrument, itm.data)
-        df = pd.read_csv('.' + itm.data.url)  # read csv
+        # print(itm.instrument, itm.timeFrame)
+        # print(itm.instrument, itm.data)
+        url2 = url + itm.data.url
+        url2 = url2.replace('/media//', '/') #diffrenet in server
+        df = pd.read_csv(url2)  # read csv
         # json_data = df.to_json(r'./New_Products.json')
 
         if last_date is not None:

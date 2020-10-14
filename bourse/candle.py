@@ -699,7 +699,7 @@ def find_farsi_title(instrument):
         return 'نکالا'
     elif instrument == 'nBourse':
         return 'نبورس'
-    
+
     elif instrument == '-----':
         return '---'
     elif instrument == '-----':
