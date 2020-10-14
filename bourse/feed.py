@@ -8,6 +8,7 @@ import pandas as pd
 from .models import Meta, Index, Exchange
 from . import models
 from django.conf import settings
+from persiantools.jdatetime import JalaliDate
 
 
 def feed_index():
@@ -1761,28 +1762,8 @@ def second_get_instrument(sites):
                 val = val + str(data['close_price']) + ','
             else:
                 val = val + '-1,'
-            if 'close_price_change' in data:
-                val = val + str(data['close_price_change']) + ','
-            else:
-                val = val + '-1,'
-            if 'real_close_price' in data:
-                val = val + str(data['real_close_price']) + ','
-            else:
-                val = val + '-1,'
-            if 'buyer_count' in data:
-                val = val + str(data['buyer_count']) + ','
-            else:
-                val = val + '-1,'
-            if 'trade_count' in data:
-                val = val + str(data['trade_count']) + ','
-            else:
-                val = val + '-1,'
             if 'volume' in data:
                 val = val + str(data['volume']) + ','
-            else:
-                val = val + '-1,'
-            if 'value' in data:
-                val = val + str(data['value']) + ','
             else:
                 val = val + '-1,'
             print(val)
@@ -1830,29 +1811,53 @@ def second_feed_tradedaily_thread(instrument_id):
         pool.map(second_get_instrument, sites)
         # audiolists = pool.map(get_audio_link, sites)
     duration = time.time() - start_time
-    print(candle_list)
+    print('ghablish eeeeeeeeee', candle_list)
+    print(len(candle_list), 'sdasd')
+    cndl_list = [''] * len(candle_list)
+    for i in range(len(candle_list)):
+        print('shomare', i)
+        if i > 0:
+            lst = candle_list[i].split(",")
+            lst_prv = candle_list[i-1].split(",")
+            if int(float(lst[0][:8])) == int(float(lst_prv[0][:8])):
+                jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+                jalali_date = str(jalali_date).replace('-', '')
+                lstt = [jalali_date, lst_prv[0][8:], lst_prv[1], max(lst_prv[2], lst[2]), min(lst_prv[3], lst[3]), lst[4], lst_prv[5]]
+                str1 = ','.join(lstt)
+                cndl_list[i] = str1
+                cndl_list[i-1] = 'deleted'
+            else:
+                jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+                jalali_date = str(jalali_date).replace('-', '')
+                lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3],
+                        lst[4], lst[5]]
+                str1 = ','.join(lstt)
+                cndl_list[i] = str1
+    new_candle_list = [x for x in cndl_list if x != 'deleted']
+
     try:
-        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data.url
-        print(candle)
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
+        candle_name = str(candle).split('/')[-1]
         url = settings.MEDIA_ROOT.replace('\\', '/')
-        url2 = url + candle
-        url2 = url2.replace('/media//', '/') #diffrenet in server
+        # url2 = url + candle
+        # url2 = url2.replace('/media//', '/') #diffrenet in server
         # df = pd.read_csv(url2)  # read csv
-        print(url2)
+        # print(url2)
         df = pd.read_csv('http://127.0.0.1:8000/media/uploads/file/chart/%D8%AE%D9%88%D8%AF%D8%B1%D9%88-D1_wy7Tv7f.CSV')
+        df = df.drop(columns=['<TICKER>', '<PER>', '<OPENINT>'])
         # df =
         i = 0
-        for item in candle_list:
+        for item in new_candle_list:
             print(i)
             i+=1
             lst = item.split(",")
+            print('sdfsdf', item)
             print('sdfsdf', lst)
-            print('drgfdhfdrhfdgf', int(float(lst[0][:8])))
-            to_append = ['?????-D1', 'D1', int(float(lst[0][:8])), int(float(lst[0][7:])), int(float(lst[1])),
-                         int(float(lst[2])), int(float(lst[3])), int(float(lst[4])), int(float(lst[9])), 0]
+            to_append = [int(float(lst[0])), int(float(lst[1])), int(float(lst[2])),
+                         int(float(lst[3])), int(float(lst[4])), int(float(lst[5])), int(float(lst[6]))]
             df.loc[len(df), :] = to_append
         print(df.tail())
-        df.to_csv('test.csv')
+        df.to_csv(candle_name)
     except IntegrityError:
         print('candle nadarim')
     print(f"Downloaded {len(sites)} in {duration} seconds")
