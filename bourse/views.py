@@ -97,8 +97,8 @@ def fill_data(request):
     # elif table == "search_rahavard_instruments":
     #     feed.search_rahavard_instruments()
 
-    # feed.second_feed_tradedaily_thread(46978)
-    candle.feed_candle()
+    feed.second_feed_tradedaily_thread(46978)
+    # candle.feed_candle()
 
     return HttpResponse(f"Table processed", content_type="text/plain")
 
@@ -173,6 +173,9 @@ def chart_timeframes(request):
     instrument = request.GET.get('instrument')
     last_date = request.GET.get('date')
     # print(instrument, last_date)
+
+
+
     symbol_timeframes = models.Chart.objects.filter(instrument=instrument)
     url = settings.MEDIA_ROOT.replace('\\', '/')
     res = []

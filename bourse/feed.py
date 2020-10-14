@@ -7,6 +7,7 @@ import time
 import pandas as pd
 from .models import Meta, Index, Exchange
 from . import models
+from django.conf import settings
 
 
 def feed_index():
@@ -1833,7 +1834,13 @@ def second_feed_tradedaily_thread(instrument_id):
     try:
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data.url
         print(candle)
+        url = settings.MEDIA_ROOT.replace('\\', '/')
+        url2 = url + candle
+        url2 = url2.replace('/media//', '/') #diffrenet in server
+        # df = pd.read_csv(url2)  # read csv
+        print(url2)
         df = pd.read_csv('http://127.0.0.1:8000/media/uploads/file/chart/%D8%AE%D9%88%D8%AF%D8%B1%D9%88-D1_wy7Tv7f.CSV')
+        # df =
         i = 0
         for item in candle_list:
             print(i)
