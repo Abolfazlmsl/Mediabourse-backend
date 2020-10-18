@@ -7,6 +7,8 @@ from shutil import copy2
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 import pyautogui
+import requests
+
 
 
 def find_farsi_title(instrument):
@@ -191,7 +193,7 @@ def find_farsi_title(instrument):
         return 'شفا'
     elif instrument == 'dloghma':
         return 'دلقما'
-    elif instrument == 'dfara':
+    elif instrument == 'dFara':
         return 'دفرا'
     elif instrument == 'droz':
         return 'دروز'
@@ -269,7 +271,7 @@ def find_farsi_title(instrument):
         return 'آینده'
     elif instrument == 'zfka':
         return 'زفکا'
-    #گروه:سرمايه گذاريها
+    # گروه:سرمايه گذاريها
     elif instrument == 'vsobhan':
         return 'وسبحان'
     elif instrument == 'sba':
@@ -451,6 +453,8 @@ def find_farsi_title(instrument):
         return 'شبصیر'
     elif instrument == 'shgol':
         return 'شگل'
+    elif instrument == 'shsina':
+        return 'شسینا'
     elif instrument == 'shsafha':
         return 'شصفها'
     elif instrument == 'shtoka':
@@ -917,7 +921,7 @@ def find_farsi_title(instrument):
     elif instrument == 'sealond':
         return 'ثالوند'
     elif instrument == 'a_s_p':
-        return 'آ ث پ'
+        return 'آ س پ'
     elif instrument == 'segharb':
         return 'ثغرب'
     elif instrument == 'sejoan':
@@ -948,6 +952,8 @@ def find_farsi_title(instrument):
         return 'ثامید'
     elif instrument == 'seasfa':
         return 'ثاصفا'
+    elif instrument == 'seazhn':
+        return 'ثاژن'
     # گروه:عرضه برق، گاز، بخاروآب گرم
     elif instrument == 'bpiond':
         return 'بپیوند'
@@ -1028,88 +1034,572 @@ def find_farsi_title(instrument):
         return 'تجارت'
     elif instrument == 'baran':
         return 'باران'
+    # گروه:مخابرات
+    elif instrument == 'akhabr':
+        return 'اخابر'
+    elif instrument == 'hamrah':
+        return 'همراه'
+    # گروه:ماشين آلات و دستگاه‌هاي برقي
+    elif instrument == 'bshhab':
+        return 'بشهاب'
+    elif instrument == 'bkam':
+        return 'بکام'
+    elif instrument == 'btrans':
+        return 'بترانس'
+    elif instrument == 'bmoto':
+        return 'بموتو'
+    elif instrument == 'bkab':
+        return 'بکاب'
+    elif instrument == 'bniro':
+        return 'بنیرو'
+    elif instrument == 'bsoich':
+        return 'بسویچ'
+    elif instrument == 'niro':
+        return 'نیرو'
+    elif instrument == 'balbr':
+        return 'بالبر'
+    elif instrument == 'bieka':
+        return 'بایکا'
+    elif instrument == 'btk':
+        return 'بتک'
+    # گروه:پيمانكاري صنعتي
+    elif instrument == 'balas':
+        return 'بالاس'
+    elif instrument == 'khsadra':
+        return 'خصدرا'
+    elif instrument == 'vpsa':
+        return 'وپسا'
+    # گروه:لاستيك و پلاستيك
+    elif instrument == 'pkavir':
+        return 'پکویر'
+    elif instrument == 'pkerman':
+        return 'پکرمان'
+    elif instrument == 'pasa':
+        return 'پاسا'
+    elif instrument == 'ptier':
+        return 'پتایر'
+    elif instrument == 'plask':
+        return 'پلاسک'
+    elif instrument == 'psahand':
+        return 'پسهند'
+    elif instrument == 'pdrakhsh':
+        return 'پدرخش'
+    elif instrument == 'pizd':
+        return 'پیزد'
+    elif instrument == 'ploleh':
+        return 'پلوله'
+    elif instrument == 'parta':
+        return 'پارتا'
+    elif instrument == 'plast':
+        return 'پلاست'
+    elif instrument == 'pshahn':
+        return 'پشاهن'
+    # گروه:خدمات فني و مهندسي
+    elif instrument == 'rmpna':
+        return 'رمپنا'
+    elif instrument == 'rnik':
+        return 'رنیک'
+    elif instrument == 'khfola':
+        return 'خفولا'
+    elif instrument == 'rtko':
+        return 'رتکو'
+    elif instrument == 'tpola':
+        return 'تپولا'
+    elif instrument == 'taba':
+        return 'تابا'
+    # گروه:سيمان، آهك و گچ
+    elif instrument == 'sfars':
+        return 'سفارس'
+    elif instrument == 'stran':
+        return 'ستران'
+    elif instrument == 'sshargh':
+        return 'سشرق'
+    elif instrument == 'sbzoa':
+        return 'سبزوا'
+    elif instrument == 'spaha':
+        return 'سپاها'
+    elif instrument == 'ssofi':
+        return 'سصوفی'
+    elif instrument == 'smazn':
+        return 'سمازن'
+    elif instrument == 'sidko':
+        return 'سیدکو'
+    elif instrument == 'sarab':
+        return 'ساراب'
+    elif instrument == 'sbaghr':
+        return 'سباقر'
+    elif instrument == 'sarom':
+        return 'ساروم'
+    elif instrument == 'skord':
+        return 'سکرد'
+    elif instrument == 'ssafha':
+        return 'سصفها'
+    elif instrument == 'shegmat':
+        return 'سهگمت'
+    elif instrument == 'skhoz':
+        return 'سخوز'
+    elif instrument == 'sdor':
+        return 'سدور'
+    elif instrument == 'sarbil':
+        return 'ساربیل'
+    elif instrument == 'silam':
+        return 'سیلام'
+    elif instrument == 'srod':
+        return 'سرود'
+    elif instrument == 'skhoaf':
+        return 'سخواف'
+    elif instrument == 'skhazar':
+        return 'سخزر'
+    elif instrument == 'sbhan':
+        return 'سبهان'
+    elif instrument == 'sshomal':
+        return 'سشمال'
+    elif instrument == 'skerma':
+        return 'سکرما'
+    elif instrument == 'sfano':
+        return 'سفانو'
+    elif instrument == 'snir':
+        return 'سنیر'
+    elif instrument == 'sgharb':
+        return 'سغرب'
+    elif instrument == 'sjam':
+        return 'سجام'
+    elif instrument == 'sfar':
+        return 'سفار'
+    elif instrument == 'sehormoz':
+        return 'سهرمز'
+    elif instrument == 'sbjno':
+        return 'سبجنو'
+    elif instrument == 'skhash':
+        return 'سخاش'
+    elif instrument == 'skaron':
+        return 'سکارون'
+    elif instrument == 'sghaien':
+        return 'سقاین'
+    elif instrument == 'sdasht':
+        return 'سدشت'
+    elif instrument == 'sita':
+        return 'سیتا'
+    elif instrument == 'saveh':
+        return 'ساوه'
+    elif instrument == 'saroj':
+        return 'ساروج'
+    elif instrument == 'slar':
+        return 'سلار'
+    elif instrument == 'smtaz':
+        return 'سمتاز'
+    # گروه:ساخت محصولات فلزي
+    elif instrument == 'chodan':
+        return 'چدن'
+    elif instrument == 'farak':
+        return 'فاراک'
+    elif instrument == 'fama':
+        return 'فاما'
+    elif instrument == 'fazar':
+        return 'فاذر'
+    elif instrument == 'fjam':
+        return 'فجام'
+    elif instrument == 'flami':
+        return 'فلامی'
+    elif instrument == 'fbstm':
+        return 'فبستم'
+    elif instrument == 'fbira':
+        return 'فبیرا'
+    elif instrument == 'kia':
+        return 'کیا'
+    elif instrument == 'fslir':
+        return 'فسلیر'
+    elif instrument == 'fanarzhi':
+        return 'فنرژی'
+    elif instrument == 'fjosh':
+        return 'فجوش'
+    # گروه:قند و شكر
+    elif instrument == 'ghsabet':
+        return 'قثابت'
+    elif instrument == 'ghazvin':
+        return 'قزوین'
+    elif instrument == 'ghnisha':
+        return 'قنیشا'
+    elif instrument == 'ghsafha':
+        return 'قصفها'
+    elif instrument == 'ghshekar':
+        return 'قشکر'
+    elif instrument == 'ghchar':
+        return 'قچار'
+    elif instrument == 'ghlorest':
+        return 'قلرست'
+    elif instrument == 'ghpira':
+        return 'قپیرا'
+    elif instrument == 'ghshir':
+        return 'قشیر'
+    elif instrument == 'ghhkmt':
+        return 'قهکمت'
+    elif instrument == 'ghshahd':
+        return 'قشهد'
+    elif instrument == 'ghshrin':
+        return 'قشرین'
+    elif instrument == 'ghmro':
+        return 'قمرو'
+    elif instrument == 'ghjam':
+        return 'قجام'
+    elif instrument == 'ghnghsh':
+        return 'قنقش'
+    elif instrument == 'gharom':
+        return 'قاروم'
+    elif instrument == 'ghisto':
+        return 'قیستو'
+    # گروه:كاشي و سراميك
+    elif instrument == 'kehafez':
+        return 'کحافظ'
+    elif instrument == 'ktram':
+        return 'کترام'
+    elif instrument == 'ksady':
+        return 'کسعدی'
+    elif instrument == 'kpars':
+        return 'کپارس'
+    elif instrument == 'kolond':
+        return 'کلوند'
+    elif instrument == 'ksaveh':
+        return 'کساوه'
+    elif instrument == 'khram':
+        return 'کهرام'
+    elif instrument == 'ksdf':
+        return 'کصدف'
+    elif instrument == 'knilo':
+        return 'کنیلو'
+    elif instrument == 'kasfa':
+        return 'کاصفا'
+    elif instrument == 'kchini':
+        return 'کچینی'
+    # گروه:هتل و رستوران
+    elif instrument == 'smga':
+        return 'سمگا'
+    elif instrument == 'gshan':
+        return 'گشان'
+    elif instrument == 'gkoser':
+        return 'گکوثر'
+    elif instrument == 'gdna':
+        return 'گدنا'
+    elif instrument == 'gpars':
+        return 'گپارس'
+    elif instrument == 'gkish':
+        return 'گکیش'
+    # گروه:توليد محصولات كامپيوتري الكترونيكي ونوري
+    elif instrument == 'madyra':
+        return 'مادیرا'
+    # گروه:استخراج ساير معادن
+    elif instrument == 'kmash':
+        return 'کماسه'
+    # گروه:دباغي، پرداخت چرم و ساخت انواع پاپوش
+    elif instrument == 'vmeli':
+        return 'وملی'
+    # گروه:استخراج نفت گاز و خدمات جنبي جز اکتشاف
+    elif instrument == 'hfari':
+        return 'حفاری'
+    elif instrument == 'shsakht':
+        return 'شساخت'
+    elif instrument == 'prshia':
+        return 'پرشیا'
+    # گروه:واسطه‌گري‌هاي مالي و پولي
+    elif instrument == 'vlshargh':
+        return 'ولشرق'
+    elif instrument == 'vsenv':
+        return 'وثنو'
+    elif instrument == 'vars':
+        return 'وارس'
+    elif instrument == 'vlana':
+        return 'ولانا'
+    elif instrument == 'vsevgh':
+        return 'وثوق'
+    elif instrument == 'vahsa':
+        return 'واحصا'
+    elif instrument == 'vsna':
+        return 'وسنا'
+    elif instrument == 'vltjar':
+        return 'ولتجار'
+    elif instrument == 'vatvs':
+        return 'وآتوس'
+    elif instrument == 'vlraz':
+        return 'ولراز'
+    elif instrument == 'vmshan':
+        return 'ومشان'
+    elif instrument == 'vahia':
+        return 'واحیا'
+    elif instrument == 'arian':
+        return 'آریان'
+    elif instrument == 'vkvser':
+        return 'وکوثر'
+    # گروه:ساخت دستگاه‌ها و وسايل ارتباطي
+    elif instrument == 'lpars':
+        return 'لپارس'
+    elif instrument == 'lpiam':
+        return 'لپیام'
+    elif instrument == 'lkma':
+        return 'لکما'
+    # گروه:استخراج زغال سنگ
+    elif instrument == 'kshargh':
+        return 'کشرق'
+    elif instrument == 'ktbs':
+        return 'کطبس'
+    elif instrument == 'kpror':
+        return 'کپرور'
+    # گروه:حمل و نقل آبي
+    elif instrument == 'haria':
+        return 'حاریا'
+    elif instrument == 'hkhazar':
+        return 'حخزر'
+    # گروه:ساير واسطه گريهاي مالي
+    elif instrument == 'vlsapa':
+        return 'ولساپا'
+    elif instrument == 'vliz':
+        return 'ولیز'
+    elif instrument == 'vlbahman':
+        return 'ولبهمن'
+    elif instrument == 'viran':
+        return 'وایران'
+    elif instrument == 'vlghdr':
+        return 'ولغدر'
+    elif instrument == 'vlsanam':
+        return 'ولصنم'
+    elif instrument == 'vlmellat':
+        return 'ولملت'
+    elif instrument == 'vlpars':
+        return 'ولپارس'
+    # گروه:منسوجات
+    elif instrument == 'ntrin':
+        return 'نطرین'
+    elif instrument == 'nmrino':
+        return 'نمرینو'
+    elif instrument == 'ntos':
+        return 'نتوس'
+    # گروه:استخراج کانه هاي فلزي
+    elif instrument == 'kama':
+        return 'کاما'
+    elif instrument == 'kroi':
+        return 'کروی'
+    elif instrument == 'kgol':
+        return 'کگل'
+    elif instrument == 'kchad':
+        return 'کچاد'
+    elif instrument == 'kdama':
+        return 'کدما'
+    elif instrument == 'vmaaden':
+        return 'ومعادن'
+    elif instrument == 'tasiko':
+        return 'تاصیکو'
+    elif instrument == 'kbafgh':
+        return 'کبافق'
+    elif instrument == 'kmangenez':
+        return 'کمنگنز'
+    elif instrument == 'kghr':
+        return 'کگهر'
+    elif instrument == 'tknar':
+        return 'تکنار'
+    elif instrument == 'knor':
+        return 'کنور'
+    # گروه:محصولات چوبي
+    elif instrument == 'chfibr':
+        return 'چفیبر'
+    elif instrument == 'chnopa':
+        return 'چنوپا'
+    # گروه:انتشار، چاپ و تکثير
+    elif instrument == 'chafst':
+        return 'چافست'
+    # گروه:اطلاعات و ارتباطات
+    elif instrument == 'aprdaz':
+        return 'اپرداز'
+    elif instrument == 'hie_web':
+        return 'های وب'
+    elif instrument == 'aoan':
+        return 'اوان'
+    # گروه:فعاليت هاي هنري، سرگرمي و خلاقانه
+    elif instrument == 'vhnr':
+        return 'وهنر'
+    # گروه:تجارت عمده فروشي به جز وسايل نقليه موتور
+    elif instrument == 'bmila':
+        return 'بمیلا'
+    # گروه:فعاليت مهندسي، تجزيه، تحليل و آزمايش فني
+    elif instrument == 'khbazrs':
+        return 'خبازرس'
+    # گروه:ابزارپزشکي، اپتيکي و اندازه‌گيري
+    elif instrument == 'akntor':
+        return 'آکنتور'
+    # شاخص ها
+    elif instrument == 'Bazar_Dovom_FaraBourse6':
+        return 'بازار دوم فرابورس6'
+    elif instrument == 'Shakhes_kol_FaraBourse6':
+        return 'شاخص کل فرابورس6'
+    elif instrument == 'Bazar_Aval_FaraBourse6':
+        return 'بازار اول فرابورس6'
+    elif instrument == '34-Khodro6':
+        return '34-خودرو6'
+    elif instrument == '36-Mobloman6':
+        return '36-مبلمان6'
+    elif instrument == '21-Mahsolat_kaghz6':
+        return '21-محصولات کاغذ6'
+    elif instrument == 'bazdh_nghdy_o_Gheymat6':
+        return 'بازده نقدی و قیمت6'
+    elif instrument == '44-Shimiaee6':
+        return '44-شیمیایی6'
+    elif instrument == '31-Dastgahhie_brghi6':
+        return '31-دستگاههای برقی6'
+    elif instrument == '56-Sarmaye_gzariha6':
+        return '56-سرمایه گذاریها6'
+    elif instrument == '01-Zeraat6':
+        return '01-زراعت6'
+    elif instrument == 'TEPIX':
+        return 'شاخص کل6'
+    elif instrument == '27-Felezat_asasi6':
+        return '27-فلزات اساسی6'
+    elif instrument == '39-Chand_Reshteh_ie_s6':
+        return '39-چند رشته ای ص6'
+    elif instrument == 'Shakhes_Sanat6':
+        return 'شاخص صنعت6'
+    elif instrument == '64-radyoii6':
+        return '64-رادیویی6'
+    elif instrument == '45-pimankari6':
+        return '45-پیمانکاری6'
+    elif instrument == 'Shakhes50Sherkat_Faaltar6':
+        return 'شاخص50شرکت فعالتر6'
+    elif instrument == '74-Fani_Mohandesi6':
+        return '74-فنی مهندسی6'
+    elif instrument == '26-kani_GheyreFelezi6':
+        return '26-کانی غیرفلزی6'
+    elif instrument == '25-lastik6':
+        return '25-لاستیک6'
+    elif instrument == 'Shakhes_azad_Shenavar6':
+        return 'شاخص آزاد شناور6'
+    elif instrument == '33-abzar_Pezeshki6':
+        return '33-ابزار پزشکی6'
+    elif instrument == '65-mali6':
+        return '65-مالی6'
+    elif instrument == '49-kashi_o_sramik6':
+        return '49-کاشی و سرامیک6'
+    elif instrument == '14-Sayere_maaden6':
+        return '14-سایر معادن6'
+    elif instrument == 'Shakhes_Bazar_Aval6':
+        return 'شاخص بازار اول6'
+    elif instrument == '35-Haml_o_Naghl6':
+        return '35-حمل و نقل6'
+    elif instrument == '20-Mahsolat_chobi6':
+        return '20-محصولات چوبی6'
+    elif instrument == '17-Mansojat6':
+        return '17-منسوجات6'
+    elif instrument == '19-Mahsolat_Charmi6':
+        return '19-محصولات چرمی6'
+    elif instrument == 'Shakhes_Gheymat_50_Sherkat6':
+        return 'شاخص قیمت 50 شرکت6'
+    elif instrument == '53-siman6':
+        return '53-سیمان6'
+    elif instrument == 'Shakhes_Bazar_Dovom6':
+        return 'شاخص بازار دوم6'
+    elif instrument == '57-bankha6':
+        return '57-بانکها6'
+    elif instrument == 'Estekhraj_naft_jzkshf6':
+        return 'استخراج نفت جزکشف6'
+    elif instrument == 'bimeh_o_baznshsth666':
+        return 'بیمه و بازنشسته666'
+    elif instrument == 'Shakhes_30_Sherkat_Bozorg6':
+        return 'شاخص قیمت 30 شرکت6'
+    elif instrument == '58-Sayeremali6':
+        return '58-سایرمالی6'
+    elif instrument == '32-Vasayel_Ertebati6':
+        return '32-وسایل ارتباطی6'
+    elif instrument == '60-Haml_o_Naghl6':
+        return '60-حمل و نقل6'
+    elif instrument == '54-kani_GheyreFelezi6':
+        return '54-کانی غیرفلزی6'
+    elif instrument == '10-zghal_sng6':
+        return '10-ذغال سنگ6'
+    elif instrument == '28-Mahsolat_Felezi6':
+        return '28-محصولات فلزی6'
+    elif instrument == '38-Ghand_o_shekar6':
+        return '38-قند و شکر6'
+    elif instrument == '22-Enteshar_o_chap6':
+        return '22-انتشار و چاپ6'
+    elif instrument == '42-Ghazaii_Ghand_Ghand6':
+        return '42-غذایی بجز قند6'
+    elif instrument == '40-tamin_ab،brgh،g6':
+        return '40-تامین آب،برق،گ6'
+    elif instrument == 'Shakhes_kol_(ham_Vazn)6':
+        return 'شاخص کل (هم وزن)6'
+    elif instrument == 'Shakhes_Gheymat6':
+        return 'شاخص قیمت6'
+    elif instrument == 'Shakhes_Gheymat(ham_Vazn6)':
+        return 'شاخص قیمت(هم وزن6)'
 
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
-    elif instrument == '-----':
-        return '-----'
+
     else:
         return None
 
 
 def feed_candle():
+    # instruments = models.Instrumentsel.objects.all().filter(type='warrant')
+    # print(instruments.count())
+    # for itm in instruments:
+    #     print(f'{itm}-{itm.id}')
+    #     print(f'\'{itm}\',')
+    # return
+
+    # check empty instruments
+    instruments_chart = models.Chart.objects.all().values('instrument').distinct()
+    instruments = models.Instrumentsel.objects.all()
+    # instruments = models.Instrumentsel.objects.filter(type='index').distinct()
+    print(instruments_chart.count())
+
+    for itm in instruments:
+        # print(f'{itm}')
+        # continue
+        res = instruments_chart.filter(instrument=itm.id)
+        if res.count() > 0:
+            # print(f'{itm}-{itm.id} exist')
+            pass
+        else:
+            # print(f'{itm}-{itm.id} dose not exist')
+            print(f'{itm}')
+            continue
+            url = f'http://mediadrive.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?instrument.id={itm.id}'
+
+            req = requests.get(url)
+            data1 = req.json()
+            print(len(data1['data']))
+            #  check next pagination
+            if len(data1['data']) == 0:
+                print(f"remove: {itm}")
+                itm.delete()
+    return
+
+    is_haghtaghadom = False  #True #
+
     directories = os.listdir('./helper/')
     for directory in directories:
         path = f'./helper/{directory}/'
-        print(os.path.isdir(path), directory)
+        # print(os.path.isdir(path), directory)
         if os.path.isdir(path):
-            print(f'check {directory}')
-            farsi_title = find_farsi_title(directory)
+            print(f'----------check {directory}')
+            if is_haghtaghadom is True:
+                directory2 = directory[0:len(directory) - 1]
+                # print(f'check2 {directory2}')
+                farsi_title = find_farsi_title(directory2)
+            else:
+                farsi_title = find_farsi_title(directory)
             print(farsi_title)
             if farsi_title is None:
                 continue
 
+            if is_haghtaghadom is True:
+                farsi_title = farsi_title + 'ح'
+                print(farsi_title)
+
             try:
                 # symbol = models.Instrumentsel.objects.get(short_name=directory)
                 symbol = models.Instrumentsel.objects.get(short_name=farsi_title)
-                # symbol = models.Instrumentsel.objects.get(id=15850)
+                # symbol = models.Instrumentsel.objects.get(id=1931)
             except ObjectDoesNotExist:
-                print('Instrument not found!')
+                print(f'{directory}-{farsi_title}- Instrument not found!')
                 continue
             except MultipleObjectsReturned:
-                print('multiple Instrument found!')
+                print(f'{directory}-{farsi_title}- multiple Instrument found!')
                 continue
             print(f'symbol: {symbol}')
 
