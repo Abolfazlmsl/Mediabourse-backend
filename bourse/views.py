@@ -178,8 +178,10 @@ def chart_timeframes(request):
     if instrument is None:
         return JsonResponse({}, safe=False)
 
+    host = request.get_host()
+
     #  update candles
-    feed.second_feed_tradedaily_thread(instrument)
+    feed.second_feed_tradedaily_thread(instrument, host)
 
     symbol_timeframes = models.Chart.objects.filter(instrument=instrument)
     url = settings.MEDIA_ROOT.replace('\\', '/')
@@ -193,6 +195,8 @@ def chart_timeframes(request):
         # url2 = url + itm.data.url
         # url2 = url2.replace('/media//', '/') #diffrenet in server
         url2 = url + itm.data.url
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         df = pd.read_csv(url2)  # read csv
         # json_data = df.to_json(r'./New_Products.json')
 

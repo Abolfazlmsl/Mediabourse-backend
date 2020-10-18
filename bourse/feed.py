@@ -1892,18 +1892,26 @@ def second_get_instrument(sites):
                 val = val + '-1,'
             if 'open_price' in data:
                 val = val + str(data['open_price']) + ','
+            elif 'open_value' in data:
+                val = val + str(data['open_value']) + ','
             else:
                 val = val + '-1,'
             if 'high_price' in data:
                 val = val + str(data['high_price']) + ','
+            elif 'high_value' in data:
+                val = val + str(data['high_value']) + ','
             else:
                 val = val + '-1,'
             if 'low_price' in data:
                 val = val + str(data['low_price']) + ','
+            elif 'low_value' in data:
+                val = val + str(data['low_value']) + ','
             else:
                 val = val + '-1,'
-            if 'close_price' in data:
-                val = val + str(data['close_price']) + ','
+            if 'real_close_price' in data:
+                val = val + str(data['real_close_price']) + ','
+            elif 'close_value' in data:
+                val = val + str(data['close_value']) + ','
             else:
                 val = val + '-1,'
             if 'volume' in data:
@@ -1914,13 +1922,14 @@ def second_get_instrument(sites):
             candle_list.append(val)
 
 
-def second_feed_tradedaily_thread(instrument_id):
+def second_feed_tradedaily_thread(instrument_id, host):
     num_of_threads = 10
 
     model = models.Tradedetail
     # model.objects.filter(instrument=instrument_id).delete()
     try:
-        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        obj = models.Instrumentsel.objects.get(id=instrument_id)
+
     except IntegrityError:
         print('Instrument not found!')
         return
@@ -1932,10 +1941,22 @@ def second_feed_tradedaily_thread(instrument_id):
 
     last_candle_date = models.Chart.objects.get(Q(instrument=instrument_id) & Q(timeFrame='D1')).last_candle_date
     print(f'last_candle_date: {last_candle_date}')
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
-              + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-              'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
-              '@date_time_op=gt'
+
+    api_url = ''
+    if obj.index is None:
+        company_id = obj.stock_id
+        print('company_id: ', company_id)
+        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+                  + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+                  'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
+    else:
+        company_id = obj.index_id
+        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+                  + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
+                  'index.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
+
     sites = [
         api_url + '@_count=100@_skip=0',
         api_url + '@_count=100@_skip=100',
@@ -1960,6 +1981,8 @@ def second_feed_tradedaily_thread(instrument_id):
         parts = parts[:-1]
         url = '/'.join(parts)
         url2 = url + candle.url
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         # read csv file
         df = pd.read_csv(url2, sep=',')
         # iterate new candles and add to csv file
@@ -2012,7 +2035,10 @@ def second_feed_tradedaily_thread(instrument_id):
         week_prior = d_last - timedelta(weeks=1)
         week_next = d_last + timedelta(weeks=1)
         print(week_prior, d_last, week_next)
+        index_week = d_last
         # todo: current day not greater than next week candle
+        # while day_last > index_week + timedelta(weeks=1):
+        #     pass
         if day_last < d_last:
             print('conflict in day and week')
         elif day_last < week_next:
