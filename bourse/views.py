@@ -180,14 +180,19 @@ def chart_timeframes(request):
     url = settings.MEDIA_ROOT.replace('\\', '/')
     res = []
     for itm in symbol_timeframes:
+        # print(itm.instrument, itm.timeFrame)
+        # print(itm.instrument, itm.data)
         url2 = url + itm.data.url
         url2 = url2.replace('/media//', '/') #diffrenet in server
         df = pd.read_csv(url2)  # read csv
         # json_data = df.to_json(r'./New_Products.json')
 
         if last_date is not None:
+            # df['<DTYYYYMMDD>'] = pd.to_datetime(df['<DTYYYYMMDD>'])
             mask = (df['<DTYYYYMMDD>'] > int(last_date))
+            # print("ressss")
             df = df.loc[mask]
+            # print(df.loc[mask])
 
         json_data = df.to_json(orient='values')
 
@@ -199,13 +204,13 @@ def chart_timeframes(request):
         })
 
     return JsonResponse(res, safe=False)
-    # get index candles without thread
+    # get index candles whiout thread
     # feed.feed_tradedaily(instrument)
 
     # get selected instrument
     obj = models.Instrumentsel.objects.get(id=instrument)
 
-    if obj.index is not None:
+    if obj.index is not  None:
         # threading to get index candles
         feed.feed_indexdaily_thread(obj.index_id)
     else:
