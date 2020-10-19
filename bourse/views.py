@@ -97,8 +97,9 @@ def fill_data(request):
     # elif table == "search_rahavard_instruments":
     #     feed.search_rahavard_instruments()
 
-    # feed.second_feed_tradedaily_thread(46978)
-    candle.feed_candle()
+    feed.second_feed_tradedaily_thread(3312)
+    # candle.feed_candle()
+    # feed.update_candlesDay_thread(3312)
 
     return HttpResponse(f"Table processed", content_type="text/plain")
 
@@ -173,14 +174,29 @@ def chart_timeframes(request):
     instrument = request.GET.get('instrument')
     last_date = request.GET.get('date')
     # print(instrument, last_date)
+
+    if instrument is None:
+        return JsonResponse({}, safe=False)
+
+    host = request.get_host()
+
+    #  update candles
+    feed.second_feed_tradedaily_thread(instrument, host)
+
     symbol_timeframes = models.Chart.objects.filter(instrument=instrument)
     url = settings.MEDIA_ROOT.replace('\\', '/')
+    parts = url.split('/')
+    parts = parts[:-1]
+    url = '/'.join(parts)
     res = []
     for itm in symbol_timeframes:
         # print(itm.instrument, itm.timeFrame)
         # print(itm.instrument, itm.data)
+        # url2 = url + itm.data.url
+        # url2 = url2.replace('/media//', '/') #diffrenet in server
         url2 = url + itm.data.url
-        url2 = url2.replace('/media//', '/') #diffrenet in server
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         df = pd.read_csv(url2)  # read csv
         # json_data = df.to_json(r'./New_Products.json')
 
