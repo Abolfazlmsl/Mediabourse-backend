@@ -11,6 +11,8 @@ from django.conf import settings
 from persiantools.jdatetime import JalaliDate
 
 
+base_url = "http://bourse-api.ir/bourse/api-test/?url="
+
 def feed_index():
     offset = 0
     step = 50
@@ -20,12 +22,12 @@ def feed_index():
     if Index.objects.count() > 0:
         last_index_meta_version = Index.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/indexes?' + \
+        get_data = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexes?' + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/indexes?'
+        get_data = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexes?'
 
     # iterate for collect pagination data
     while is_has_next:
@@ -89,12 +91,12 @@ def feed_exchange():
     if Exchange.objects.count() > 0:
         last_index_meta_version = Exchange.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/exchanges?' + \
+        get_data = base_url + 'https://v1.db.api.mabnadp.com/exchange/exchanges?' + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/exchanges?'
+        get_data = base_url + 'https://v1.db.api.mabnadp.com/exchange/exchanges?'
 
     # iterate for collect pagination data
     while is_has_next:
@@ -162,12 +164,12 @@ def feed_market():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -238,12 +240,12 @@ def feed_board():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -314,12 +316,12 @@ def feed_instrumentgroup():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -391,12 +393,12 @@ def feed_instrumentexchangestate():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -466,12 +468,12 @@ def feed_assettype():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -543,12 +545,12 @@ def feed_assetstate():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -598,12 +600,12 @@ def feed_fund():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -681,12 +683,12 @@ def feed_category():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -748,12 +750,12 @@ def feed_company():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -844,12 +846,12 @@ def feed_asset():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -1114,7 +1116,7 @@ def feed_instrument_thread():
     # model.objects.all().delete()
     # return
 
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/instruments?'
 
     sites = [
@@ -1130,7 +1132,7 @@ def feed_instrument_thread():
         print(last_index_meta_version)
         print(last_index_meta_version.meta_id)
         # print(last_index_meta_version.version)
-        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+        api_url = base_url \
                   + 'https://v1.db.api.mabnadp.com/exchange/instruments?' + \
                   '_sort=meta.version@meta.version=' + str(
             last_index_meta_version.meta_id) + '@meta.version_op=gt@'
@@ -1164,12 +1166,12 @@ def feed_instrument():
     if model.objects.count() > 0:
         last_index_meta_version = model.objects.latest('meta__version')
         # print(last_index_meta_version.meta.version)
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+        get_data = base_url + api_url + \
                    '_sort=meta.version&meta.version=' + str(
             last_index_meta_version.meta.version) + '&meta.version_op=gt&'
     else:
         # print('empty')
-        get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url
+        get_data = base_url + api_url
 
     # iterate for collect pagination data
     while is_has_next:
@@ -1350,7 +1352,7 @@ def feed_tradedaily(instrument_id):
                 print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
 
             # print(last_index_meta_version.meta.version)
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+            get_data = base_url + api_url + \
                        'instrument.id=' + instrument_id + '&' + \
                        '_sort=meta.version&meta.version=' + str(
                 last_index_meta_version.version) + '&meta.version_op=gt'
@@ -1358,7 +1360,7 @@ def feed_tradedaily(instrument_id):
                 get_data = get_data + '@_expand=trade'
         else:
             # print('empty')
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+            get_data = base_url + api_url + \
                        'instrument.id=' + instrument_id + '&_sort=meta.version'
             if is_error_expand is False:
                 get_data = get_data + '@_expand=trade'
@@ -1400,7 +1402,7 @@ def feed_tradedaily(instrument_id):
             # if get trade alone
             if is_error_expand is True:
                 is_error_expand = False
-                url_trade = 'http://mediadrive.ir/bourse/api-test/?url=' + 'https://v1.db.api.mabnadp.com/exchange/trades?id=' + \
+                url_trade = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?id=' + \
                             data['trade']['id']
                 req_trade = requests.get(url_trade)
                 obj_trade_single_t = req_trade.json()
@@ -1695,7 +1697,7 @@ def feed_tradedaily_thread(instrument_id):
     x = jdatetime.date.today()
     print(x.strftime("%Y%m%d"))
 
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/tradedetails?' + \
               'instrument.id=' + instrument_id + '@_sort=meta.version' + '@_expand=trade'
 
@@ -1710,7 +1712,7 @@ def feed_tradedaily_thread(instrument_id):
     if model.objects.filter(instrument=instrument_id).count() > 0:
         model.objects.filter(date_time__icontains=x.strftime("%Y%m%d")).delete()
         last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
-        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+        api_url = base_url \
                   + 'https://v1.db.api.mabnadp.com/exchange/tradedetails?' + \
                   'instrument.id=' + instrument_id + '@_sort=meta.version@meta.version=' + str(
             last_index_meta_version.version) + '@meta.version_op=gt' + '@_expand=trade'
@@ -1783,7 +1785,7 @@ def second_feed_tradedaily_thread(instrument_id):
     x = jdatetime.date.today()
     print(x.strftime("%Y%m%d"))
 
-    # api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    # api_url = base_url \
     #           + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
     #           'instrument.stock.company.id=' + company_id + '@_sort=meta.version'
 
@@ -1796,7 +1798,7 @@ def second_feed_tradedaily_thread(instrument_id):
     # if model.objects.filter(instrument=instrument_id).count() > 0:
     last_candle_date = models.Chart.objects.get(instrument=instrument_id).last_candle_date
     # last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
               'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
               '@date_time_op=gt'
@@ -1872,7 +1874,7 @@ def feed_indexdaily_thread(index_id):
     x = jdatetime.date.today()
     print(x.strftime("%Y%m%d"))
 
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
               'index.id=' + index_id + '@_sort=meta.version'
 
@@ -1885,7 +1887,7 @@ def feed_indexdaily_thread(index_id):
     if model.objects.filter(instrument__index=index_id).count() > 0:
         model.objects.filter(date_time__icontains=x.strftime("%Y%m%d")).delete()
         last_index_meta_version = model.objects.filter(instrument__index=index_id).latest('version')
-        api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+        api_url = base_url \
                   + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
                   'index.id=' + index_id + '@_sort=meta.version@meta.version=' + str(
             last_index_meta_version.version) + '@meta.version_op=gt'
@@ -1931,12 +1933,12 @@ def feed_trademidday(company_id):
                 print('------------- set delete version --------------- ' + str(last_index_meta_version.version))
 
             # print(last_index_meta_version.meta.version)
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+            get_data = base_url + api_url + \
                        'instrument.stock.company.id=' + company_id + '&' + \
                        'date_time=' + today_date + timee + '&_sort=meta.version=' + str(
                 last_index_meta_version.version) + '&date_time_op=gt'
         else:
-            get_data = 'http://mediadrive.ir/bourse/api-test/?url=' + api_url + \
+            get_data = base_url + api_url + \
                        'instrument.stock.company.id=' + company_id + '&' + \
                        'date_time=' + today_date + timee + '&' + 'date_time_op=gt'
             # print(get_data)
@@ -2628,7 +2630,7 @@ def search_rahavard_instruments():
     feed_instrumentsel()
 
     # url for get instruments from mabna api
-    api_url = 'http://mediadrive.ir/bourse/api-test/?url=' \
+    api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/instruments?'
 
     # list of missed instrument url
@@ -2641,7 +2643,7 @@ def search_rahavard_instruments():
         res = models.Instrumentsel.objects.filter(short_name=itm)
 
         # check missed in instrumentSel
-        if len(res) is 0:
+        if len(res) == 0:
             print("---")
             print(itm)
             cntr = cntr + 1
@@ -2651,7 +2653,7 @@ def search_rahavard_instruments():
             print(res2)
 
             # check missed in instrument
-            if len(res2) is 0:
+            if len(res2) == 0:
                 sites.append(f'{api_url}short_name={itm}@name_op=like')
             else:
                 print(res2[0].id)
