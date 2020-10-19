@@ -33,7 +33,8 @@ tabulate==0.8.7
 uritemplate==3.0.1
 urllib3==1.25.10
 websockets==8.1
-
 pandas~=1.1.3
 django-cleanup==5.1.0
 persiantools==1.5.0
+PyAutoGUI~=0.9.52
+pyperclip~=1.8.1

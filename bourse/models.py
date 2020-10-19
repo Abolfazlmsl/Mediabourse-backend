@@ -1012,7 +1012,7 @@ class Bazaar(models.Model):
 class Chart(models.Model):
 
     def file_path(self, filename):
-        return os.path.join('uploads/file/chart/', str(self.instrument.short_name), filename)
+        return os.path.join('uploads/file/chart/', str(self.instrument.english_short_name), filename)
 
     TIME_FRAME_CHOICES = (
         ('M1', "1 دقیقه"),

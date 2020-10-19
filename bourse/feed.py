@@ -8,7 +8,9 @@ import pandas as pd
 from .models import Meta, Index, Exchange
 from . import models
 from django.conf import settings
+from datetime import date, timedelta, datetime
 from persiantools.jdatetime import JalaliDate
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 base_url = 'http://bourse-api.ir/bourse/api-test/?url='
 
@@ -1144,6 +1146,10 @@ def feed_instrument_thread():
     # print(sites)
     # return
 
+    # add missed instruments
+    # url = 'http://mediadrive.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/instruments?short_name=%D8%AF%D8%B3%D8%A8%D8%AD%D8%A7%D9%86,%DA%A9%D8%AF%D9%85%D8%A7,%D8%AE%D9%BE%D9%88%DB%8C%D8%B4,%D8%AE%D8%B2%D8%A7%D9%85%DB%8C%D8%A7,%D8%AA%DA%A9%D9%86%D9%88,%D9%88%D8%AF%D8%A7%D9%86%D8%A7@short_name_op=in'
+    # sites = [url]
+
     start_time = time.time()
     # download_all_sites(sites)
     with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
@@ -1289,8 +1295,16 @@ def feed_instrumentsel():
                                                 | Q(type='portfoy') | Q(type='index'))
                                                & (Q(market=1) | Q(market=5))
                                                & Q(exchange_state=1)
-                                               & (Q(board=1) | Q(board=2) | Q(board=4) | Q(board=5) | Q(board=6) | Q(board=8))
+                                               & (Q(board=1) | Q(board=2) | Q(board=4) | Q(board=5) | Q(board=6) | Q(
+        board=8))
                                                )
+    # add missed instruments
+    sel_obj = models.Instrument.objects.filter(Q(short_name='دسبحان') |
+                                               Q(short_name='کدما') |
+                                               Q(short_name='خپویش') |
+                                               Q(short_name='خزامیا') |
+                                               Q(short_name='ودانا') |
+                                               Q(short_name='تکنو'))
     for itm in sel_obj:
         obj = models.Instrumentsel(id=itm.id
                                    , code=itm.code
@@ -1706,7 +1720,7 @@ def feed_tradedaily_thread(instrument_id):
     for i in range(21):
         sites.append(f'{api_url}@_count=100@_skip={(i * 100)}')
 
-    #print(sites)
+    # print(sites)
     #  check model is empty or not
     if model.objects.filter(instrument=instrument_id).count() > 0:
         model.objects.filter(date_time__icontains=x.strftime("%Y%m%d")).delete()
@@ -1730,6 +1744,136 @@ def feed_tradedaily_thread(instrument_id):
 
 
 candle_list = list()
+intraday_list = list()
+
+
+def extract_time(json):
+    try:
+        # Also convert to int since update_time will be string.  When comparing
+        # strings, "10" is smaller than "2".
+        return int(json['date_time'])
+    except KeyError:
+        return 0
+
+
+# last request have not any data
+skip_num = -1
+
+
+def get_intraday(sites, skip):
+    global skip_num
+    print('-=-=-sites: ', skip, skip_num)
+    if skip_num is not -1:
+        print('retrun---')
+        return
+    with requests.get(sites) as request:
+        data1 = request.json()
+        # print(data1)
+        print(f"receive data of {sites}, len = {len(data1['data'])}")
+        if len(data1['data']) < 100:
+            skip_num = skip
+        for data in data1['data']:
+            intraday_list.append(data)
+
+
+def update_candlesDay_thread(instrument_id):
+    num_of_threads = 10
+    try:
+        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+    except IntegrityError:
+        print('Instrument not found!')
+        return
+    except ObjectDoesNotExist:
+        print('Instrument Does Not Exist')
+        return
+
+    x = jdatetime.date.today()
+    print(x.strftime("%Y%m%d"))
+    last_candle_date = models.Chart.objects.get(Q(instrument=instrument_id) & Q(timeFrame='D1')).last_candle_date
+    print(f'last_candle_date: {last_candle_date}')
+
+    api_url = base_url \
+              + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+              'instrument.stock.company.id=' + company_id + '@date_time=13990722110000' + \
+              '@date_time_op=gt'
+    # 'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
+
+    sites = []
+    skip = []
+    skip_num = -1
+    for i in range(100):
+        sites.append(f'{api_url}@_count=100@_skip={(i * 100)}')
+        skip.append(i * 100)
+
+    # print(f'sites {sites}')
+    intraday_list.clear()
+    with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
+        pool.map(get_intraday, sites, skip)
+    intraday_list.sort(key=extract_time, reverse=False)
+    if len(intraday_list) > 0:
+        max_val = max(intraday_list, key=lambda item: item['real_close_price'])
+        min_val = min(intraday_list, key=lambda item: item['real_close_price'])
+        print('intraday_list: ', intraday_list)
+        print('len: ', len(intraday_list))
+        print('max_val: ', max_val['real_close_price'])
+        print('min_val: ', min_val['real_close_price'])
+    # for itm in intraday_list:
+    #     print(itm['id'], itm['date_time'], itm['real_close_price'])
+
+
+def update_candles_thread(instrument_id):
+    num_of_threads = 10
+    model = models.Tradedetail
+    try:
+        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+    except IntegrityError:
+        print('Instrument not found!')
+        return
+    except ObjectDoesNotExist:
+        print('Instrument Does Not Exist')
+        return
+
+    x = jdatetime.date.today()
+    print(x.strftime("%Y%m%d"))
+    last_candle_date = models.Chart.objects.get(Q(instrument=instrument_id) & Q(timeFrame='D1')).last_candle_date
+    print(f'last_candle_date: {last_candle_date}')
+
+    api_url = base_url \
+              + 'https://v1.db.api.mabnadp.com/exchange/intradaytrades?' + \
+              'instrument.stock.company.id=' + company_id + '@date_time=13990722110000,13990722120000' + \
+              '@date_time_op=bw'
+    # 'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
+
+    sites = []
+    skip = []
+    skip_num = -1
+    for i in range(100):
+        sites.append(f'{api_url}@_count=100@_skip={((i * 100) + 2000)}')
+        skip.append(((i * 100) + 2000))
+
+    # sites = [
+    #     api_url + '@_count=100@_skip=5000',
+    #     api_url + '@_count=100@_skip=5100',
+    # ]
+    # skip = [
+    #     5000,
+    #     5100
+    # ]
+
+    # print(f'sites {sites}')
+    intraday_list.clear()
+    with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
+        pool.map(get_intraday, sites, skip)
+    intraday_list.sort(key=extract_time, reverse=False)
+    if len(intraday_list) > 0:
+        max_val = max(intraday_list, key=lambda item: item['real_close_price'])
+        min_val = min(intraday_list, key=lambda item: item['real_close_price'])
+        print('intraday_list: ', intraday_list)
+        print('len: ', len(intraday_list))
+        print('max_val: ', max_val['real_close_price'])
+        print('min_val: ', min_val['real_close_price'])
+    # for itm in intraday_list:
+    #     print(itm['id'], itm['date_time'], itm['real_close_price'])
 
 
 def second_get_instrument(sites):
@@ -1749,18 +1893,26 @@ def second_get_instrument(sites):
                 val = val + '-1,'
             if 'open_price' in data:
                 val = val + str(data['open_price']) + ','
+            elif 'open_value' in data:
+                val = val + str(data['open_value']) + ','
             else:
                 val = val + '-1,'
             if 'high_price' in data:
                 val = val + str(data['high_price']) + ','
+            elif 'high_value' in data:
+                val = val + str(data['high_value']) + ','
             else:
                 val = val + '-1,'
             if 'low_price' in data:
                 val = val + str(data['low_price']) + ','
+            elif 'low_value' in data:
+                val = val + str(data['low_value']) + ','
             else:
                 val = val + '-1,'
-            if 'close_price' in data:
-                val = val + str(data['close_price']) + ','
+            if 'real_close_price' in data:
+                val = val + str(data['real_close_price']) + ','
+            elif 'close_value' in data:
+                val = val + str(data['close_value']) + ','
             else:
                 val = val + '-1,'
             if 'volume' in data:
@@ -1771,62 +1923,200 @@ def second_get_instrument(sites):
             candle_list.append(val)
 
 
-def second_feed_tradedaily_thread(instrument_id):
+def second_feed_tradedaily_thread(instrument_id, host):
     num_of_threads = 10
 
     model = models.Tradedetail
     # model.objects.filter(instrument=instrument_id).delete()
-    # return
     try:
-        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        obj = models.Instrumentsel.objects.get(id=instrument_id)
+
     except IntegrityError:
         print('Instrument not found!')
+        return
+    except ObjectDoesNotExist:
+        print('Instrument Does Not Exist')
+        return
     x = jdatetime.date.today()
-    print(x.strftime("%Y%m%d"))
+    # print(x.strftime("%Y%m%d"))
 
-    # api_url = base_url \
-    #           + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-    #           'instrument.stock.company.id=' + company_id + '@_sort=meta.version'
+    last_candle_date = models.Chart.objects.get(Q(instrument=instrument_id) & Q(timeFrame='D1')).last_candle_date
+    print(f'last_candle_date: {last_candle_date}')
 
-    # sites = []
-    #
-    # for i in range(21):
-    #     sites.append(f'{api_url}@_count=100@_skip={(i * 100)}')
+    api_url = ''
+    if obj.index is None:
+        company_id = obj.stock_id
+        print('company_id: ', company_id)
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+                  'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
+    else:
+        company_id = obj.index_id
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
+                  'index.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
 
-    #  check model is empty or not
-    # if model.objects.filter(instrument=instrument_id).count() > 0:
-    last_candle_date = models.Chart.objects.get(instrument=instrument_id).last_candle_date
-    # last_index_meta_version = model.objects.filter(instrument=instrument_id).latest('version')
-    api_url = base_url \
-              + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-              'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
-              '@date_time_op=gt'
     sites = [
         api_url + '@_count=100@_skip=0',
         api_url + '@_count=100@_skip=100',
+        api_url + '@_count=100@_skip=200',
     ]
 
-    start_time = time.time()
+    print(f'sites {sites}')
     # download_all_sites(sites)
     with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
         pool.map(second_get_instrument, sites)
-        # audiolists = pool.map(get_audio_link, sites)
-    duration = time.time() - start_time
-    print('ghablish eeeeeeeeee', candle_list)
-    print(len(candle_list), 'sdasd')
+
+    # check result length
+    if len(candle_list) == 0:
+        return
+
+    # read candle csv file and update it
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
+        # find candle file url
+        url = settings.MEDIA_ROOT.replace('\\', '/')
+        parts = url.split('/')
+        parts = parts[:-1]
+        url = '/'.join(parts)
+        url2 = url + candle.url
+        print(url2)
+        # url2 = 'http://127.0.0.1:8000' + candle.url
+        # if host != '127.0.0.1:8000':
+        #     url2 = url2.replace('/media/media/', '/media/')
+        # read csv file
+        df = pd.read_csv(url2)
+        # iterate new candles and add to csv file
+        for item in candle_list:
+            print(item)
+            # date conversion
+            candle_parts = item.split(",")
+            jalali_date = JalaliDate(int(candle_parts[0][:4]), int(candle_parts[0][4:6]),
+                                     int(candle_parts[0][6:8])).to_gregorian()
+            jalali_date = str(jalali_date).replace('-', '')
+            print(jalali_date)
+            # find similar row and replace or append new entry
+            index = df['<DTYYYYMMDD>'].searchsorted(int(jalali_date), 'left')
+            # print('index: ', index)
+            to_append = [int(jalali_date), int(candle_parts[0][8:])
+                , int(float(candle_parts[1])), int(float(candle_parts[2])), int(float(candle_parts[3]))
+                , int(float(candle_parts[4])), int(float(candle_parts[5]))]
+            df.loc[index, :] = to_append
+
+        # print(df)
+        df['<DTYYYYMMDD>'] = df['<DTYYYYMMDD>'].astype(int)
+        # df['<TIME>'] = df['<TIME>'].astype(int)
+        df['<OPEN>'] = df['<OPEN>'].astype(int)
+        df['<HIGH>'] = df['<HIGH>'].astype(int)
+        df['<LOW>'] = df['<LOW>'].astype(int)
+        df['<CLOSE>'] = df['<CLOSE>'].astype(int)
+        df['<VOL>'] = df['<VOL>'].astype(int)
+        str_lst_date = str(df['<DTYYYYMMDD>'].iloc[-1])
+        jl_date = jdatetime.date.fromgregorian(
+            day=int(str_lst_date[6:]),
+            month=int(str_lst_date[4:6]),
+            year=int(str_lst_date[:4])
+        )
+        jl_date = str(jl_date).replace('-', '')
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='D1').update(last_candle_date=jl_date)
+        df.to_csv(url2, index=False)
+    except IntegrityError:
+        print('candle nadarim')
+        return
+
+    # return
+    # todo: update week csv
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='W1').data
+        # find candle file url
+        url2 = url + candle.url
+        # read csv file
+        df_week = pd.read_csv(url2)
+        # read las item
+        print(len(df_week))
+        # last_entry_date = df_week.loc[len(df_week)-1:,:]['<DTYYYYMMDD>']
+        last_entry_date = df_week['<DTYYYYMMDD>'][len(df_week)-1]
+        last_day_date = df['<DTYYYYMMDD>'][len(df)-1]
+        print(last_entry_date, last_day_date)
+        d_last = datetime.strptime(str(last_entry_date), "%Y%m%d").date()
+        day_last = datetime.strptime(str(last_day_date), "%Y%m%d").date()
+        day_last = day_last + timedelta(weeks=1)
+        print('date,', d_last, day_last)
+        week_prior = d_last - timedelta(weeks=1)
+        d_last = d_last + timedelta(weeks=1)
+        week_next = d_last + timedelta(weeks=1)
+        print('three', week_prior, d_last, week_next)
+        while day_last > week_next:
+            d_last_str = str(d_last).replace('-', '')
+            week_next_str = str(week_next).replace('-', '')
+            # find start day of week
+            index_start_day = df['<DTYYYYMMDD>'].searchsorted(int(d_last_str), 'left')
+            # find stop day  of week
+            index_stop_day = df['<DTYYYYMMDD>'].searchsorted(int(week_next_str), 'left')
+            print('week: ', d_last_str, week_next_str)
+            print('index: ', index_start_day, index_stop_day)
+            df_days_of_week = df[:][index_start_day:index_stop_day]
+            print(df_days_of_week)
+
+            # sum of volume
+            vol = 0
+            for i in range(len(df_days_of_week)):
+                print('vol', df_days_of_week['<VOL>'][index_start_day + i])
+                if df_days_of_week['<VOL>'][index_start_day + i] < 0:
+                    vol = vol + (int(df_days_of_week['<VOL>'][index_start_day + i])*-1)
+                else:
+                    vol = vol + int(df_days_of_week['<VOL>'][index_start_day + i])
+                print('after plus vol', vol)
+
+            candle_week = [int(d_last_str), int(0), int(df_days_of_week['<OPEN>'][index_start_day])
+                           , int(df_days_of_week['<HIGH>'].max())
+                           , int(df_days_of_week['<LOW>'].min())
+                           , int(df_days_of_week['<CLOSE>'][index_start_day + len(df_days_of_week) - 1])
+                           , vol
+                           ]
+            print('candle_week: ', candle_week)
+
+            df_week.loc[len(df_week)-1, :] = candle_week
+
+            df_week['<DTYYYYMMDD>'] = df_week['<DTYYYYMMDD>'].astype(int)
+            # df_week['<TIME>'] = df_week['<TIME>'].astype(int)
+            df_week['<OPEN>'] = df_week['<OPEN>'].astype(int)
+            df_week['<HIGH>'] = df_week['<HIGH>'].astype(int)
+            df_week['<LOW>'] = df_week['<LOW>'].astype(int)
+            df_week['<CLOSE>'] = df_week['<CLOSE>'].astype(int)
+            df_week['<VOL>'] = df_week['<VOL>'].astype(int)
+            df_week.to_csv(url2, index=False)
+
+            d_last = datetime.strptime(str(d_last_str), "%Y%m%d").date()
+            week_next = datetime.strptime(str(week_next_str), "%Y%m%d").date()
+
+            d_last = d_last + timedelta(weeks=1)
+            week_next = d_last + timedelta(weeks=2)
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='W1').update(last_candle_date=df_week['<DTYYYYMMDD>'][len(df_week)-1])
+        # print(df)
+    except IntegrityError:
+        print('candle nadarim')
+
+    # todo: update month csv
+    return
+
+
+    # old method
     cndl_list = [''] * len(candle_list)
     for i in range(len(candle_list)):
         print('shomare', i)
+        # check duplication candles
         if i > 0:
             lst = candle_list[i].split(",")
-            lst_prv = candle_list[i-1].split(",")
+            lst_prv = candle_list[i - 1].split(",")
             if int(float(lst[0][:8])) == int(float(lst_prv[0][:8])):
                 jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
                 jalali_date = str(jalali_date).replace('-', '')
-                lstt = [jalali_date, lst_prv[0][8:], lst_prv[1], max(lst_prv[2], lst[2]), min(lst_prv[3], lst[3]), lst[4], lst_prv[5]]
+                lstt = [jalali_date, lst_prv[0][8:], lst_prv[1], max(lst_prv[2], lst[2]), min(lst_prv[3], lst[3]),
+                        lst[4], lst_prv[5]]
                 str1 = ','.join(lstt)
                 cndl_list[i] = str1
-                cndl_list[i-1] = 'deleted'
+                cndl_list[i - 1] = 'deleted'
             else:
                 jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
                 jalali_date = str(jalali_date).replace('-', '')
@@ -1834,23 +2124,32 @@ def second_feed_tradedaily_thread(instrument_id):
                         lst[4], lst[5]]
                 str1 = ','.join(lstt)
                 cndl_list[i] = str1
+        else:
+            # add first row
+            lst = candle_list[i].split(",")
+            jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+            jalali_date = str(jalali_date).replace('-', '')
+            lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3], lst[4], lst[5]]
+            str1 = ','.join(lstt)
+            cndl_list[i] = str1
     new_candle_list = [x for x in cndl_list if x != 'deleted']
+    print('new_candle_list: ', len(new_candle_list))
 
     try:
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
         candle_name = str(candle).split('/')[-1]
+        # find candle file url
         url = settings.MEDIA_ROOT.replace('\\', '/')
-        # url2 = url + candle
-        # url2 = url2.replace('/media//', '/') #diffrenet in server
-        # df = pd.read_csv(url2)  # read csv
-        # print(url2)
-        df = pd.read_csv('http://127.0.0.1:8000/media/uploads/file/chart/%D8%AE%D9%88%D8%AF%D8%B1%D9%88-D1_wy7Tv7f.CSV')
-        df = df.drop(columns=['<TICKER>', '<PER>', '<OPENINT>'])
-        # df =
+        parts = url.split('/')
+        parts = parts[:-1]
+        url = '/'.join(parts)
+        url2 = url + candle.url
+        # read csv file
+        df = pd.read_csv(url2)
         i = 0
         for item in new_candle_list:
             print(i)
-            i+=1
+            i += 1
             lst = item.split(",")
             print('sdfsdf', item)
             print('sdfsdf', lst)
@@ -1858,7 +2157,7 @@ def second_feed_tradedaily_thread(instrument_id):
                          int(float(lst[3])), int(float(lst[4])), int(float(lst[5])), int(float(lst[6]))]
             df.loc[len(df), :] = to_append
         print(df.tail())
-        df.to_csv(candle_name)
+        df.to_csv(url2, index=False)
     except IntegrityError:
         print('candle nadarim')
     print(f"Downloaded {len(sites)} in {duration} seconds")
@@ -2045,7 +2344,6 @@ def feed_trademidday(company_id):
 
 # search in valid instrument and add to DataBase
 def search_rahavard_instruments():
-
     # valid instrument list (fetched from rahavard)
     ins = ["آ س پ",
            "آبادا",
@@ -2642,7 +2940,7 @@ def search_rahavard_instruments():
         res = models.Instrumentsel.objects.filter(short_name=itm)
 
         # check missed in instrumentSel
-        if len(res) == 0:
+        if len(res) is 0:
             print("---")
             print(itm)
             cntr = cntr + 1
@@ -2652,7 +2950,7 @@ def search_rahavard_instruments():
             print(res2)
 
             # check missed in instrument
-            if len(res2) == 0:
+            if len(res2) is 0:
                 sites.append(f'{api_url}short_name={itm}@name_op=like')
             else:
                 print(res2[0].id)
