@@ -154,7 +154,7 @@ def trade_daily(request):
     # get selected instrument
     obj = models.Instrumentsel.objects.get(id=instrument)
 
-    if obj.index is not  None:
+    if obj.index is not None:
         # threading to get index candles
         feed.feed_indexdaily_thread(obj.index_id)
     else:
