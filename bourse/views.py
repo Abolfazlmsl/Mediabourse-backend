@@ -53,6 +53,8 @@ from . import feed
 
 from . import candle
 
+from . import trade_midday
+
 
 def save_csv_candle(request):
     candle.feed_candle()
@@ -941,3 +943,8 @@ class NotificationListRetrieveViewSet(viewsets.GenericViewSet,
         if self.action == 'retrieve':
             return NotificationDetailSerializer
         return self.serializer_class
+
+
+def trade_midday_function(request):
+    trade_midday.main()
+    return HttpResponse(("Text only, please."), content_type="text/plain")

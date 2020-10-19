@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('fillData/',  views.fill_data, name='fill-data'),
     path('candle/',  views.save_csv_candle, name='candle'),
+    path('trade-midday/',  views.trade_midday_function, name='trade-midday'),
     path('api-test/',  views.test_data, name='test-data'),
     path('trade-daily/',  views.trade_daily, name='trade-daily'),
     path('chart_timeframes/',  views.chart_timeframes, name='chart-timeframes'),
