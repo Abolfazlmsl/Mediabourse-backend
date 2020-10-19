@@ -759,7 +759,10 @@ def feed_candle():
             try:
                 symbol = models.Instrumentsel.objects.get(short_name=directory)
                 # symbol = models.Instrumentsel.objects.get(short_name=farsi_title)
-                # symbol = models.Instrumentsel.objects.get(id=36094)
+                # symbol = models
+                #
+                #
+                # .Instrumentsel.objects.get(id=36094)
             except ObjectDoesNotExist:
                 print('Instrument not found!')
                 continue
