@@ -2100,7 +2100,6 @@ def second_feed_tradedaily_thread(instrument_id, host):
     # todo: update month csv
     return
 
-
     # old method
     cndl_list = [''] * len(candle_list)
     for i in range(len(candle_list)):
