@@ -83,7 +83,7 @@ class ResendSignUpTokenAPIView(APIView):
         user = get_object_or_404(get_user_model(), phone_number=data['phone_number'])
         print(user)
         if user:
-            serializer = serializers.UserPhoneRegisterSerializer(user, data=data)
+            serializer = serializers.ResendSignUpTokenSerializer(user, data=data)
             if serializer.is_valid():
                 serializer.validated_data['generated_token'] = randint(100000, 999999)
                 user.save()
