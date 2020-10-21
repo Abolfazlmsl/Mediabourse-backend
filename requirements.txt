@@ -38,3 +38,7 @@ django-cleanup==5.1.0
 persiantools==1.5.0
 PyAutoGUI~=0.9.52
 pyperclip~=1.8.1
+
+redis==2.10.6
+channels==2.1.2
+channels_redis==2.2.1
