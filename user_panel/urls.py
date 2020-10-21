@@ -18,6 +18,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('info/', views.UserInfoView.as_view(), name='user-info'),
     path('signup/', views.SignUpAPIView.as_view(), name='user-signup'),
+    path('resend/', views.ResendSignUpTokenAPIView.as_view(), name='resend-token'),
     path('verify-user/', views.UserPhoneRegisterAPIView.as_view(), name='verify-user'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
     path('instrument/', views.InstrumentSearchListAPIView.as_view(), name='instrument-search')

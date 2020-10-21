@@ -73,6 +73,47 @@ class SignUpAPIView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ResendSignUpTokenAPIView(APIView):
+    """
+    User verification via sms
+    """
+
+    def put(self, request):
+        data = request.data
+        user = get_object_or_404(get_user_model(), phone_number=data['phone_number'])
+        print(user)
+        if user:
+            serializer = serializers.UserPhoneRegisterSerializer(user, data=data)
+            if serializer.is_valid():
+                serializer.validated_data['generated_token'] = randint(100000, 999999)
+                user.save()
+                try:
+                    api = KavenegarAPI(KAVENEGAR_APIKEY)
+                    params = {'sender': '10008445', 'receptor': serializer.validated_data['phone_number'],
+                              'message': 'مدیابورس\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
+                    response = api.sms_send(params)
+                    return Response({"message": "کاربر با موفقیت ثبت نام شد."})
+
+                except APIException:
+                    return Response(
+                        {
+                            'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                            'type': 'APIException'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                except HTTPException:
+                    return Response(
+                        {
+                            'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                            'type': 'HTTPException'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+        else:
+            return Response({"user": "چنین کاربری وجود ندارد"})
+
+
 class UserPhoneRegisterAPIView(APIView):
     """
     User verification via sms

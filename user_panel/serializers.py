@@ -43,6 +43,16 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         return user
 
 
+class ResendSignUpTokenSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['phone_number', 'generated_token']
+        read_only_fields = (
+            'generated_token',
+        )
+
+
 class UserPhoneRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
