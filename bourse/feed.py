@@ -2241,6 +2241,13 @@ def second_feed_tradedaily_thread(instrument_id, host):
     # print(f"Downloaded {len(sites)} in {duration} seconds")
 
 
+def update_timeframe_candles():
+    instruments_id = models.Instrumentsel.objects.all().values_list('id', flat=True)
+    host = ['127.0.0.1:8000'] * len(instruments_id)
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        pool.map(second_feed_tradedaily_thread, instruments_id, host)
+
+
 # thread version of get index candle
 def feed_indexdaily_thread(index_id):
     num_of_threads = 10
