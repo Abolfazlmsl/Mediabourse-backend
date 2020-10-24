@@ -9,7 +9,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'phone_number', 'first_name',
-                  'last_name', 'is_verified', 'picture',
+                  'last_name', 'picture',
                   'national_code', 'father_name', 'birth_date',
                   'postal_code', 'address']
         read_only_fields = ('id',)
