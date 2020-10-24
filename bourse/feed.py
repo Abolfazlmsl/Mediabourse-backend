@@ -1996,11 +1996,19 @@ def second_feed_tradedaily_thread(instrument_id, host):
             print(jalali_date)
             # find similar row and replace or append new entry
             index = df['<DTYYYYMMDD>'].searchsorted(int(jalali_date), 'left')
+            print('length: ', len(df))
             print('index: ', index)
-            to_append = [int(jalali_date), int(candle_parts[0][8:]), int(float(candle_parts[1])),
+            if index != len(df):
+                to_append = [int(jalali_date), int(candle_parts[0][8:]), int(float(candle_parts[1])),
+                             max(int(float(candle_parts[2])), df.iloc[index]['<HIGH>']),
+                             min(int(float(candle_parts[3])), df.iloc[index]['<LOW>']), int(float(candle_parts[4])),
+                             max(float(candle_parts[5]), float(df.iloc[index]['<VOL>']))]
+                df.loc[index, :] = to_append
+            else:
+                to_append = [int(jalali_date), int(candle_parts[0][8:]), int(float(candle_parts[1])),
                          int(float(candle_parts[2])), int(float(candle_parts[3])), int(float(candle_parts[4])),
-                         int(float(candle_parts[5]))]
-            df.loc[index, :] = to_append
+                         float(candle_parts[5])]
+                df.loc[index, :] = to_append
 
         print(df)
         df['<DTYYYYMMDD>'] = df['<DTYYYYMMDD>'].astype(int)
@@ -2009,7 +2017,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
         df['<HIGH>'] = df['<HIGH>'].astype(int)
         df['<LOW>'] = df['<LOW>'].astype(int)
         df['<CLOSE>'] = df['<CLOSE>'].astype(int)
-        df['<VOL>'] = df['<VOL>'].astype(int)
+        # df['<VOL>'] = df['<VOL>'].astype(int)
         str_lst_date = str(df['<DTYYYYMMDD>'].iloc[-1])
         jl_date = jdatetime.date.fromgregorian(
             day=int(str_lst_date[6:]),
@@ -2065,9 +2073,9 @@ def second_feed_tradedaily_thread(instrument_id, host):
             for i in range(len(df_days_of_week)):
                 print('vol', df_days_of_week['<VOL>'][index_start_day + i])
                 if df_days_of_week['<VOL>'][index_start_day + i] < 0:
-                    vol = vol + (int(df_days_of_week['<VOL>'][index_start_day + i])*-1)
+                    vol = vol + (df_days_of_week['<VOL>'][index_start_day + i]*-1)
                 else:
-                    vol = vol + int(df_days_of_week['<VOL>'][index_start_day + i])
+                    vol = vol + df_days_of_week['<VOL>'][index_start_day + i]
 
             candle_week = [int(d_last_str), int(0), int(df_days_of_week['<OPEN>'][index_start_day])
                            , int(df_days_of_week['<HIGH>'].max())
@@ -2090,7 +2098,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
             df_week['<HIGH>'] = df_week['<HIGH>'].astype(int)
             df_week['<LOW>'] = df_week['<LOW>'].astype(int)
             df_week['<CLOSE>'] = df_week['<CLOSE>'].astype(int)
-            df_week['<VOL>'] = df_week['<VOL>'].astype(int)
+            # df_week['<VOL>'] = df_week['<VOL>'].astype(int)
 
             d_last = d_last + timedelta(weeks=1)
             week_next = week_next + timedelta(weeks=1)
@@ -2142,9 +2150,9 @@ def second_feed_tradedaily_thread(instrument_id, host):
             for i in range(len(df_days_of_month)):
                 print('vol', df_days_of_month['<VOL>'][index_start_day + i])
                 if df_days_of_month['<VOL>'][index_start_day + i] < 0:
-                    vol = vol + (int(df_days_of_month['<VOL>'][index_start_day + i]) * -1)
+                    vol = vol + (df_days_of_month['<VOL>'][index_start_day + i] * -1)
                 else:
-                    vol = vol + int(df_days_of_month['<VOL>'][index_start_day + i])
+                    vol = vol + df_days_of_month['<VOL>'][index_start_day + i]
 
             candle_month = [int(d_last_str), int(0), int(df_days_of_month['<OPEN>'][index_start_day])
                 , int(df_days_of_month['<HIGH>'].max())
@@ -2166,7 +2174,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
             df_month['<HIGH>'] = df_month['<HIGH>'].astype(int)
             df_month['<LOW>'] = df_month['<LOW>'].astype(int)
             df_month['<CLOSE>'] = df_month['<CLOSE>'].astype(int)
-            df_month['<VOL>'] = df_month['<VOL>'].astype(int)
+            # df_month['<VOL>'] = df_month['<VOL>'].astype(int)
 
             d_last = d_last + timedelta(days=30)
             month_next = month_next + timedelta(days=30)

@@ -99,8 +99,8 @@ def fill_data(request):
     # elif table == "search_rahavard_instruments":
     #     feed.search_rahavard_instruments()
 
-    # feed.second_feed_tradedaily_thread(1931, '127.0.0.1:8000')
-    feed.update_timeframe_candles()
+    feed.second_feed_tradedaily_thread(3312, '127.0.0.1:8000')
+    # feed.update_timeframe_candles()
     # candle.feed_candle()
     # feed.update_candlesDay_thread(3312)
 

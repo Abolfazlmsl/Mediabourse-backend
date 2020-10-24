@@ -1045,7 +1045,7 @@ class Chart(models.Model):
     )
 
     def __str__(self):
-        return self.instrument.name
+        return self.instrument.short_name
 
 
     class Meta:
