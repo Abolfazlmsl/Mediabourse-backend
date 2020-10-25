@@ -2255,6 +2255,9 @@ def update_timeframe_candles():
     with ThreadPoolExecutor(max_workers=10) as pool:
         pool.map(second_feed_tradedaily_thread, instruments_id, host)
 
+def test():
+    print('man')
+    print('no')
 
 # thread version of get index candle
 def feed_indexdaily_thread(index_id):
