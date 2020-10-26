@@ -66,6 +66,10 @@ import time
 
 
 def fill_data(request):
+    # candle.feed_candle()
+    # return HttpResponse(f"Table processed", content_type="text/plain")
+
+
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
     # Enable port reusage so we will be able to run multiple clients and servers on single (host, port).

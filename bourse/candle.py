@@ -1534,6 +1534,7 @@ def find_farsi_title(instrument):
 
 
 def feed_candle():
+
     # instruments = models.Instrumentsel.objects.all().filter(type='warrant')
     # print(instruments.count())
     # for itm in instruments:
@@ -1541,33 +1542,35 @@ def feed_candle():
     #     print(f'\'{itm}\',')
     # return
 
+    #-----------------------------------------------------------
     # check empty instruments
-    instruments_chart = models.Chart.objects.all().values('instrument').distinct()
-    instruments = models.Instrumentsel.objects.all()
-    # instruments = models.Instrumentsel.objects.filter(type='index').distinct()
-    print(instruments_chart.count())
-
-    for itm in instruments:
-        # print(f'{itm}')
-        # continue
-        res = instruments_chart.filter(instrument=itm.id)
-        if res.count() > 0:
-            # print(f'{itm}-{itm.id} exist')
-            pass
-        else:
-            # print(f'{itm}-{itm.id} dose not exist')
-            print(f'{itm}')
-            continue
-            url = f'http://mediadrive.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?instrument.id={itm.id}'
-
-            req = requests.get(url)
-            data1 = req.json()
-            print(len(data1['data']))
-            #  check next pagination
-            if len(data1['data']) == 0:
-                print(f"remove: {itm}")
-                itm.delete()
-    return
+    # instruments_chart = models.Chart.objects.all().values('instrument').distinct()
+    # instruments = models.Instrumentsel.objects.all()
+    # # instruments = models.Instrumentsel.objects.filter(type='index').distinct()
+    # print(instruments_chart.count())
+    #
+    # for itm in instruments:
+    #     # print(f'{itm}')
+    #     # continue
+    #     res = instruments_chart.filter(instrument=itm.id)
+    #     if res.count() > 0:
+    #         # print(f'{itm}-{itm.id} exist')
+    #         pass
+    #     else:
+    #         # print(f'{itm}-{itm.id} dose not exist')
+    #         print(f'{itm}')
+    #         continue
+    #         url = f'http://mediadrive.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?instrument.id={itm.id}'
+    #
+    #         req = requests.get(url)
+    #         data1 = req.json()
+    #         print(len(data1['data']))
+    #         #  check next pagination
+    #         if len(data1['data']) == 0:
+    #             print(f"remove: {itm}")
+    #             itm.delete()
+    # return
+    #-----------------------------------------------------------
 
     is_haghtaghadom = False  #True #
 

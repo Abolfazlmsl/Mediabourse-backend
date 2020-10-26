@@ -42,3 +42,4 @@ pyperclip~=1.8.1
 redis==2.10.6
 channels==2.1.2
 channels_redis==2.2.1
+apscheduler==3.6.3
