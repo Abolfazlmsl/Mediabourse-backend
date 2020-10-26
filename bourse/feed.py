@@ -14,6 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 base_url = 'http://bourse-api.ir/bourse/api-test/?url='
 
+
 def feed_index():
     offset = 0
     step = 50
@@ -1960,6 +1961,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
     ]
 
     print(f'sites {sites}')
+    candle_list.clear()
     # download_all_sites(sites)
     with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
         pool.map(second_get_instrument, sites)
@@ -1967,6 +1969,8 @@ def second_feed_tradedaily_thread(instrument_id, host):
     # check result length
     if len(candle_list) == 0:
         return
+
+    print("candle_list:", candle_list)
 
     # read daily candle csv file and update it
     try:
@@ -1999,18 +2003,27 @@ def second_feed_tradedaily_thread(instrument_id, host):
             print('length: ', len(df))
             print('index: ', index)
             if index != len(df):
+                # to_append = [int(jalali_date),
+                #              max(int(candle_parts[0][8:]), int(df.iloc[index][1])),
+                #              # int(candle_parts[0][8:]),
+                #              int(float(candle_parts[1])),
+                #              max(int(float(candle_parts[2])), df.iloc[index]['<HIGH>']),
+                #              min(int(float(candle_parts[3])), df.iloc[index]['<LOW>']),
+                #              int(float(candle_parts[4])),
+                #              max(float(candle_parts[5]), float(df.iloc[index]['<VOL>']))]
+                # print("to_append!=", to_append)
                 to_append = [int(jalali_date), int(candle_parts[0][8:]), int(float(candle_parts[1])),
-                             max(int(float(candle_parts[2])), df.iloc[index]['<HIGH>']),
-                             min(int(float(candle_parts[3])), df.iloc[index]['<LOW>']), int(float(candle_parts[4])),
-                             max(float(candle_parts[5]), float(df.iloc[index]['<VOL>']))]
+                             int(float(candle_parts[2])), int(float(candle_parts[3])), int(float(candle_parts[4])),
+                             float(candle_parts[5])]
                 df.loc[index, :] = to_append
             else:
                 to_append = [int(jalali_date), int(candle_parts[0][8:]), int(float(candle_parts[1])),
-                         int(float(candle_parts[2])), int(float(candle_parts[3])), int(float(candle_parts[4])),
-                         float(candle_parts[5])]
+                             int(float(candle_parts[2])), int(float(candle_parts[3])), int(float(candle_parts[4])),
+                             float(candle_parts[5])]
+                print("to_append=", to_append)
                 df.loc[index, :] = to_append
 
-        print(df)
+        # print(df)
         df['<DTYYYYMMDD>'] = df['<DTYYYYMMDD>'].astype(int)
         # df['<TIME>'] = df['<TIME>'].astype(int)
         df['<OPEN>'] = df['<OPEN>'].astype(int)
@@ -2026,10 +2039,13 @@ def second_feed_tradedaily_thread(instrument_id, host):
         )
         jl_date = str(jl_date).replace('-', '')
         models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='D1').update(last_candle_date=jl_date)
+
+        # print("df:", df)
         df.to_csv(url2, index=False)
     except IntegrityError:
         print('candle nadarim')
         return
+    # return
 
     # todo: update week csv
     try:
@@ -2041,9 +2057,9 @@ def second_feed_tradedaily_thread(instrument_id, host):
         # read las item
         print(len(df_week))
         # last candle date in weekly dataframe
-        last_entry_date = df_week['<DTYYYYMMDD>'][len(df_week)-1]
+        last_entry_date = df_week['<DTYYYYMMDD>'][len(df_week) - 1]
         # last candle date in daily dataframe
-        last_day_date = df['<DTYYYYMMDD>'][len(df)-1]
+        last_day_date = df['<DTYYYYMMDD>'][len(df) - 1]
         print(last_entry_date, last_day_date)
         d_last = datetime.strptime(str(last_entry_date), "%Y%m%d").date()
         day_last = datetime.strptime(str(last_day_date), "%Y%m%d").date()
@@ -2073,21 +2089,21 @@ def second_feed_tradedaily_thread(instrument_id, host):
             for i in range(len(df_days_of_week)):
                 print('vol', df_days_of_week['<VOL>'][index_start_day + i])
                 if df_days_of_week['<VOL>'][index_start_day + i] < 0:
-                    vol = vol + (df_days_of_week['<VOL>'][index_start_day + i]*-1)
+                    vol = vol + (df_days_of_week['<VOL>'][index_start_day + i] * -1)
                 else:
                     vol = vol + df_days_of_week['<VOL>'][index_start_day + i]
 
             candle_week = [int(d_last_str), int(0), int(df_days_of_week['<OPEN>'][index_start_day])
-                           , int(df_days_of_week['<HIGH>'].max())
-                           , int(df_days_of_week['<LOW>'].min())
-                           , int(df_days_of_week['<CLOSE>'][index_start_day + len(df_days_of_week) - 1])
-                           , vol
+                , int(df_days_of_week['<HIGH>'].max())
+                , int(df_days_of_week['<LOW>'].min())
+                , int(df_days_of_week['<CLOSE>'][index_start_day + len(df_days_of_week) - 1])
+                , vol
                            ]
             # print('candle_week: ', candle_week)
 
             # checks if it is first iterate for update or create candle
             if is_first_iterate:
-                df_week.loc[len(df_week)-1, :] = candle_week
+                df_week.loc[len(df_week) - 1, :] = candle_week
                 is_first_iterate = False
             else:
                 df_week.loc[len(df_week), :] = candle_week
@@ -2105,7 +2121,8 @@ def second_feed_tradedaily_thread(instrument_id, host):
 
         # print(df_week.tail())
         df_week.to_csv(url2, index=False)
-        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='W1').update(last_candle_date=df_week['<DTYYYYMMDD>'][len(df_week)-1])
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='W1').update(
+            last_candle_date=df_week['<DTYYYYMMDD>'][len(df_week) - 1])
         # print(df)
     except IntegrityError:
         print('candle nadarim')
@@ -2181,11 +2198,11 @@ def second_feed_tradedaily_thread(instrument_id, host):
 
         print(df_month.tail())
         df_month.to_csv(url2, index=False)
-        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='MN1').update(last_candle_date=df_month['<DTYYYYMMDD>'][len(df_month) - 1])
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='MN1').update(
+            last_candle_date=df_month['<DTYYYYMMDD>'][len(df_month) - 1])
         # print(df)
     except IntegrityError:
         print('candle nadarim')
-
 
     # old method
     # cndl_list = [''] * len(candle_list)
@@ -2254,6 +2271,11 @@ def update_timeframe_candles():
     host = ['127.0.0.1:8000'] * len(instruments_id)
     with ThreadPoolExecutor(max_workers=10) as pool:
         pool.map(second_feed_tradedaily_thread, instruments_id, host)
+
+
+def test():
+    print('man')
+    print('no')
 
 
 # thread version of get index candle
@@ -3057,4 +3079,245 @@ def search_rahavard_instruments():
     with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
         pool.map(get_instrument_all, sites)
     duration = time.time() - start_time
+    print(f"Downloaded {len(sites)} in {duration} seconds")
+
+
+# update all instrument candles
+def daily_candle_update_thread(instrument_id, host):
+    num_of_threads = 10
+
+    model = models.Tradedetail
+    # model.objects.filter(instrument=instrument_id).delete()
+    try:
+        obj = models.Instrumentsel.objects.get(id=instrument_id)
+
+    except IntegrityError:
+        print('Instrument not found!')
+        return
+    except ObjectDoesNotExist:
+        print('Instrument Does Not Exist')
+        return
+    x = jdatetime.date.today()
+    # print(x.strftime("%Y%m%d"))
+
+    last_candle_date = models.Chart.objects.get(Q(instrument=instrument_id) & Q(timeFrame='D1')).last_candle_date
+    print(f'last_candle_date: {last_candle_date}')
+
+    api_url = ''
+    if obj.index is None:
+        company_id = obj.stock_id
+        print('company_id: ', company_id)
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
+                  'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
+    else:
+        company_id = obj.index_id
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
+                  'index.id=' + company_id + '@date_time=' + last_candle_date + \
+                  '@date_time_op=gt'
+
+    sites = [
+        api_url + '@_count=100@_skip=0',
+        api_url + '@_count=100@_skip=100',
+        api_url + '@_count=100@_skip=200',
+    ]
+
+    print(f'sites {sites}')
+    # download_all_sites(sites)
+    with ThreadPoolExecutor(max_workers=num_of_threads) as pool:
+        pool.map(second_get_instrument, sites)
+
+    # check result length
+    if len(candle_list) == 0:
+        return
+
+    # read candle csv file and update it
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
+        # find candle file url
+        url = settings.MEDIA_ROOT.replace('\\', '/')
+        parts = url.split('/')
+        parts = parts[:-1]
+        url = '/'.join(parts)
+        url2 = url + candle.url
+        print(url2)
+        # url2 = 'http://127.0.0.1:8000' + candle.url
+        # if host != '127.0.0.1:8000':
+        #     url2 = url2.replace('/media/media/', '/media/')
+        # read csv file
+        df = pd.read_csv(url2)
+        # iterate new candles and add to csv file
+        for item in candle_list:
+            print(item)
+            # date conversion
+            candle_parts = item.split(",")
+            jalali_date = JalaliDate(int(candle_parts[0][:4]), int(candle_parts[0][4:6]),
+                                     int(candle_parts[0][6:8])).to_gregorian()
+            jalali_date = str(jalali_date).replace('-', '')
+            print(jalali_date)
+            # find similar row and replace or append new entry
+            index = df['<DTYYYYMMDD>'].searchsorted(int(jalali_date), 'left')
+            # print('index: ', index)
+            to_append = [int(jalali_date), int(candle_parts[0][8:])
+                , int(float(candle_parts[1])), int(float(candle_parts[2])), int(float(candle_parts[3]))
+                , int(float(candle_parts[4])), int(float(candle_parts[5]))]
+            df.loc[index, :] = to_append
+
+        # print(df)
+        df['<DTYYYYMMDD>'] = df['<DTYYYYMMDD>'].astype(int)
+        # df['<TIME>'] = df['<TIME>'].astype(int)
+        df['<OPEN>'] = df['<OPEN>'].astype(int)
+        df['<HIGH>'] = df['<HIGH>'].astype(int)
+        df['<LOW>'] = df['<LOW>'].astype(int)
+        df['<CLOSE>'] = df['<CLOSE>'].astype(int)
+        df['<VOL>'] = df['<VOL>'].astype(int)
+        str_lst_date = str(df['<DTYYYYMMDD>'].iloc[-1])
+        jl_date = jdatetime.date.fromgregorian(
+            day=int(str_lst_date[6:]),
+            month=int(str_lst_date[4:6]),
+            year=int(str_lst_date[:4])
+        )
+        jl_date = str(jl_date).replace('-', '')
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='D1').update(last_candle_date=jl_date)
+        df.to_csv(url2, index=False)
+    except IntegrityError:
+        print('candle nadarim')
+        return
+
+    return
+    # todo: update week csv
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='W1').data
+        # find candle file url
+        url2 = url + candle.url
+        # read csv file
+        df_week = pd.read_csv(url2)
+        # read las item
+        print(len(df_week))
+        # last_entry_date = df_week.loc[len(df_week)-1:,:]['<DTYYYYMMDD>']
+        last_entry_date = df_week['<DTYYYYMMDD>'][len(df_week) - 1]
+        last_day_date = df['<DTYYYYMMDD>'][len(df) - 1]
+        print(last_entry_date, last_day_date)
+        d_last = datetime.strptime(str(last_entry_date), "%Y%m%d").date()
+        day_last = datetime.strptime(str(last_day_date), "%Y%m%d").date()
+        day_last = day_last + timedelta(weeks=1)
+        print('date,', d_last, day_last)
+        week_prior = d_last - timedelta(weeks=1)
+        d_last = d_last + timedelta(weeks=1)
+        week_next = d_last + timedelta(weeks=1)
+        print('three', week_prior, d_last, week_next)
+        while day_last > week_next:
+            d_last_str = str(d_last).replace('-', '')
+            week_next_str = str(week_next).replace('-', '')
+            # find start day of week
+            index_start_day = df['<DTYYYYMMDD>'].searchsorted(int(d_last_str), 'left')
+            # find stop day  of week
+            index_stop_day = df['<DTYYYYMMDD>'].searchsorted(int(week_next_str), 'left')
+            print('week: ', d_last_str, week_next_str)
+            print('index: ', index_start_day, index_stop_day)
+            df_days_of_week = df[:][index_start_day:index_stop_day]
+            print(df_days_of_week)
+
+            # sum of volume
+            vol = 0
+            for i in range(len(df_days_of_week)):
+                print('vol', df_days_of_week['<VOL>'][index_start_day + i])
+                if df_days_of_week['<VOL>'][index_start_day + i] < 0:
+                    vol = vol + (int(df_days_of_week['<VOL>'][index_start_day + i]) * -1)
+                else:
+                    vol = vol + int(df_days_of_week['<VOL>'][index_start_day + i])
+                print('after plus vol', vol)
+
+            candle_week = [int(d_last_str), int(0), int(df_days_of_week['<OPEN>'][index_start_day])
+                , int(df_days_of_week['<HIGH>'].max())
+                , int(df_days_of_week['<LOW>'].min())
+                , int(df_days_of_week['<CLOSE>'][index_start_day + len(df_days_of_week) - 1])
+                , vol
+                           ]
+            print('candle_week: ', candle_week)
+
+            df_week.loc[len(df_week) - 1, :] = candle_week
+
+            df_week['<DTYYYYMMDD>'] = df_week['<DTYYYYMMDD>'].astype(int)
+            # df_week['<TIME>'] = df_week['<TIME>'].astype(int)
+            df_week['<OPEN>'] = df_week['<OPEN>'].astype(int)
+            df_week['<HIGH>'] = df_week['<HIGH>'].astype(int)
+            df_week['<LOW>'] = df_week['<LOW>'].astype(int)
+            df_week['<CLOSE>'] = df_week['<CLOSE>'].astype(int)
+            df_week['<VOL>'] = df_week['<VOL>'].astype(int)
+            df_week.to_csv(url2, index=False)
+
+            d_last = datetime.strptime(str(d_last_str), "%Y%m%d").date()
+            week_next = datetime.strptime(str(week_next_str), "%Y%m%d").date()
+
+            d_last = d_last + timedelta(weeks=1)
+            week_next = d_last + timedelta(weeks=2)
+        models.Chart.objects.filter(instrument_id=instrument_id, timeFrame='W1').update(
+            last_candle_date=df_week['<DTYYYYMMDD>'][len(df_week) - 1])
+        # print(df)
+    except IntegrityError:
+        print('candle nadarim')
+
+    # todo: update month csv
+    return
+
+    # old method
+    cndl_list = [''] * len(candle_list)
+    for i in range(len(candle_list)):
+        print('shomare', i)
+        # check duplication candles
+        if i > 0:
+            lst = candle_list[i].split(",")
+            lst_prv = candle_list[i - 1].split(",")
+            if int(float(lst[0][:8])) == int(float(lst_prv[0][:8])):
+                jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+                jalali_date = str(jalali_date).replace('-', '')
+                lstt = [jalali_date, lst_prv[0][8:], lst_prv[1], max(lst_prv[2], lst[2]), min(lst_prv[3], lst[3]),
+                        lst[4], lst_prv[5]]
+                str1 = ','.join(lstt)
+                cndl_list[i] = str1
+                cndl_list[i - 1] = 'deleted'
+            else:
+                jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+                jalali_date = str(jalali_date).replace('-', '')
+                lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3],
+                        lst[4], lst[5]]
+                str1 = ','.join(lstt)
+                cndl_list[i] = str1
+        else:
+            # add first row
+            lst = candle_list[i].split(",")
+            jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
+            jalali_date = str(jalali_date).replace('-', '')
+            lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3], lst[4], lst[5]]
+            str1 = ','.join(lstt)
+            cndl_list[i] = str1
+    new_candle_list = [x for x in cndl_list if x != 'deleted']
+    print('new_candle_list: ', len(new_candle_list))
+
+    try:
+        candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
+        candle_name = str(candle).split('/')[-1]
+        # find candle file url
+        url = settings.MEDIA_ROOT.replace('\\', '/')
+        parts = url.split('/')
+        parts = parts[:-1]
+        url = '/'.join(parts)
+        url2 = url + candle.url
+        # read csv file
+        df = pd.read_csv(url2)
+        i = 0
+        for item in new_candle_list:
+            print(i)
+            i += 1
+            lst = item.split(",")
+            print('sdfsdf', item)
+            print('sdfsdf', lst)
+            to_append = [int(float(lst[0])), int(float(lst[1])), int(float(lst[2])),
+                         int(float(lst[3])), int(float(lst[4])), int(float(lst[5])), int(float(lst[6]))]
+            df.loc[len(df), :] = to_append
+        print(df.tail())
+        df.to_csv(url2, index=False)
+    except IntegrityError:
+        print('candle nadarim')
     print(f"Downloaded {len(sites)} in {duration} seconds")
