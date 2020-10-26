@@ -6,7 +6,6 @@ import jdatetime
 from shutil import copy2
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
-import pyautogui
 import requests
 
 
