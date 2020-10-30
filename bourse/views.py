@@ -887,7 +887,7 @@ class ForgetPasswordAPIView(generics.CreateAPIView):
         user.save()
         try:
             api = KavenegarAPI(KAVENEGAR_APIKEY)
-            params = {'sender': '10008445', 'receptor': phone_number,
+            params = {'sender': '10006000660600', 'receptor': phone_number,
                       'message': 'مدیابورس\n' + 'رمزعبور جدید شما:' + password}
             api.sms_send(params)
             return Response(
