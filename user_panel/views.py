@@ -43,32 +43,65 @@ class SignUpAPIView(APIView):
     def post(self, request):
         serializer = serializers.UserSignUpSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.validated_data['generated_token'] = randint(100000, 999999)
-            serializer.save()
             try:
-                api = KavenegarAPI(KAVENEGAR_APIKEY)
-                params = {'sender': '10006000660600', 'receptor': serializer.validated_data['phone_number'],
-                          'message': 'مدیابورس\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
-                response = api.sms_send(params)
-                return Response({"message": "کاربر با موفقیت ثبت نام شد."})
+                user = get_user_model().objects.get(phone_number=serializer.validated_data['phone_number'])
+                if user.is_active:
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+                else:
+                    serializer.validated_data['generated_token'] = randint(100000, 999999)
+                    serializer.save()
+                    try:
+                        api = KavenegarAPI(KAVENEGAR_APIKEY)
+                        params = {'sender': '10006000660600', 'receptor': serializer.validated_data['phone_number'],
+                                  'message': 'مدیابورس\n' + 'کد تایید:' + str(
+                                      serializer.validated_data['generated_token'])}
+                        response = api.sms_send(params)
+                        return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 
-            except APIException:
-                return Response(
-                    {
-                        'error': 'ارسال کد تایید با مشکل مواجه شده است',
-                        'type': 'APIException'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            except HTTPException:
-                return Response(
-                    {
-                        'error': 'ارسال کد تایید با مشکل مواجه شده است',
-                        'type': 'HTTPException'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                    except APIException:
+                        return Response(
+                            {
+                                'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                                'type': 'APIException'
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    except HTTPException:
+                        return Response(
+                            {
+                                'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                                'type': 'HTTPException'
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+            except get_user_model().DoesNotExist:
+                serializer.validated_data['generated_token'] = randint(100000, 999999)
+                serializer.save()
+                try:
+                    api = KavenegarAPI(KAVENEGAR_APIKEY)
+                    params = {'sender': '10006000660600', 'receptor': serializer.validated_data['phone_number'],
+                              'message': 'مدیابورس\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
+                    response = api.sms_send(params)
+                    return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 
+                except APIException:
+                    return Response(
+                        {
+                            'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                            'type': 'APIException'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                except HTTPException:
+                    return Response(
+                        {
+                            'error': 'ارسال کد تایید با مشکل مواجه شده است',
+                            'type': 'HTTPException'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
