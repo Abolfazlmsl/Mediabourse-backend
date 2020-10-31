@@ -42,22 +42,27 @@ class SignUpAPIView(APIView):
 
     def post(self, request):
         serializer = serializers.UserSignUpSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
                 user = get_user_model().objects.get(phone_number=serializer.validated_data['phone_number'])
                 if user.is_active:
                     return Response(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                        {
+                            'message': 'کاربر با این اطلاعات وجود دارد. لطفا وارد شوید.',
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
                     )
                 else:
+                    print('11111111111111')
                     user.set_password(serializer.validated_data['password'])
-                    serializer.validated_data['generated_token'] = randint(100000, 999999)
-                    serializer.save()
+                    user.generated_token = randint(100000, 999999)
+                    user.save()
                     try:
                         api = KavenegarAPI(KAVENEGAR_APIKEY)
                         params = {'sender': '10006000660600', 'receptor': serializer.validated_data['phone_number'],
                                   'message': 'مدیابورس\n' + 'کد تایید:' + str(
-                                      serializer.validated_data['generated_token'])}
+                                      user.generated_token)}
                         response = api.sms_send(params)
                         return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 
@@ -78,21 +83,20 @@ class SignUpAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST
                         )
             except get_user_model().DoesNotExist:
+                print('222222222222')
                 phone_number = serializer.validated_data['phone_number']
-                generated_token = serializer.validated_data['generated_token']
                 user = User(
                     phone_number=phone_number,
-                    generated_token=generated_token,
                 )
                 password = serializer.validated_data['password']
                 user.is_active = False
                 user.set_password(password)
-                serializer.validated_data['generated_token'] = randint(100000, 999999)
-                serializer.save()
+                user.generated_token = randint(100000, 999999)
+                user.save()
                 try:
                     api = KavenegarAPI(KAVENEGAR_APIKEY)
                     params = {'sender': '10006000660600', 'receptor': serializer.validated_data['phone_number'],
-                              'message': 'مدیابورس\n' + 'کد تایید:' + str(serializer.validated_data['generated_token'])}
+                              'message': 'مدیابورس\n' + 'کد تایید:' + str(user.generated_token)}
                     response = api.sms_send(params)
                     return Response({"message": "کاربر با موفقیت ثبت نام شد."})
 

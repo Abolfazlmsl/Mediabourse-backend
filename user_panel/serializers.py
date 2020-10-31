@@ -15,19 +15,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-class UserSignUpSerializer(serializers.ModelSerializer):
-
+class UserSignUpSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=11)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-
-    class Meta:
-        model = User
-        fields = ['phone_number', 'password', 'generated_token']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
-        read_only_fields = (
-            'generated_token',
-        )
+    #
+    # class Meta:
+    #     model = User
+    #     fields = ['phone_number', 'password']
+    #     extra_kwargs = {
+    #         'password': {'write_only': True}
+    #     }
 
 
 class ResendSignUpTokenSerializer(serializers.ModelSerializer):
