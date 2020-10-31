@@ -1985,8 +1985,8 @@ def second_feed_tradedaily_thread(instrument_id, host):
         url2 = url + candle.url
         print(url2)
         # url2 = 'http://127.0.0.1:8000' + candle.url
-        # if host != '127.0.0.1:8000':
-        #     url2 = url2.replace('/media/media/', '/media/')
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         # read csv file
         df = pd.read_csv(url2)
         # iterate new candles and add to csv file
