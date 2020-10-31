@@ -50,6 +50,7 @@ class SignUpAPIView(APIView):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
                 else:
+                    user.set_password(serializer.validated_data['password'])
                     serializer.validated_data['generated_token'] = randint(100000, 999999)
                     serializer.save()
                     try:
@@ -77,6 +78,15 @@ class SignUpAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST
                         )
             except get_user_model().DoesNotExist:
+                phone_number = serializer.validated_data['phone_number']
+                generated_token = serializer.validated_data['generated_token']
+                user = User(
+                    phone_number=phone_number,
+                    generated_token=generated_token,
+                )
+                password = serializer.validated_data['password']
+                user.is_active = False
+                user.set_password(password)
                 serializer.validated_data['generated_token'] = randint(100000, 999999)
                 serializer.save()
                 try:

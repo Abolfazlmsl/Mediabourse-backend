@@ -29,19 +29,6 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             'generated_token',
         )
 
-    def create(self, validated_data):
-        phone_number = self.validated_data['phone_number']
-        generated_token = self.validated_data['generated_token']
-        user = User(
-            phone_number=phone_number,
-            generated_token=generated_token,
-        )
-        password = self.validated_data['password']
-        user.is_active = False
-        user.set_password(password)
-        user.save()
-        return user
-
 
 class ResendSignUpTokenSerializer(serializers.ModelSerializer):
 
