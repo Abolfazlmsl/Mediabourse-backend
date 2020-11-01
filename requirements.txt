@@ -66,7 +66,7 @@ six==1.15.0
 soupsieve==2.0.1
 sqlparse==0.3.1
 tabulate==0.8.7
-Twisted @ file:///C:/Users/Developer%2008/PycharmProjects/mediabourse-backend/Twisted-20.3.0-cp38-cp38-win_amd64.whl
+#Twisted @ file:///C:/Users/Developer%2008/PycharmProjects/mediabourse-backend/Twisted-20.3.0-cp38-cp38-win_amd64.whl
 txaio==20.4.1
 uritemplate==3.0.1
 urllib3==1.25.10

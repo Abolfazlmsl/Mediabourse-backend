@@ -1,4 +1,4 @@
-# ignore an entire directory   
+# ignore an entire directory
 /.idea/
 /mediabourse/__pycache__/
 /bourseapp/__pycache__/
@@ -13,6 +13,7 @@
 /.venv/*
 /.venv
 /venv/
+/venv-old/
 .venv
 db.sqlite3
 media/
