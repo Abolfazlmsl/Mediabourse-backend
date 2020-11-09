@@ -1300,12 +1300,7 @@ def feed_instrumentsel():
         board=8))
                                                )
     # add missed instruments
-    sel_obj = models.Instrument.objects.filter(Q(short_name='دسبحان') |
-                                               Q(short_name='کدما') |
-                                               Q(short_name='خپویش') |
-                                               Q(short_name='خزامیا') |
-                                               Q(short_name='ودانا') |
-                                               Q(short_name='تکنو'))
+    sel_obj = models.Instrument.objects.filter(Q(short_name='دارا یکم'))
     for itm in sel_obj:
         obj = models.Instrumentsel(id=itm.id
                                    , code=itm.code
@@ -1780,7 +1775,8 @@ def get_intraday(sites, skip):
 def update_candlesDay_thread(instrument_id):
     num_of_threads = 10
     try:
-        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        # company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        company_id = models.Instrumentsel.objects.get(id=instrument_id).id
     except IntegrityError:
         print('Instrument not found!')
         return
@@ -1795,7 +1791,7 @@ def update_candlesDay_thread(instrument_id):
 
     api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-              'instrument.stock.company.id=' + company_id + '@date_time=13990722110000' + \
+              'instrument.id=' + company_id + '@date_time=13990722110000' + \
               '@date_time_op=gt'
     # 'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
 
@@ -1826,7 +1822,8 @@ def update_candles_thread(instrument_id):
     num_of_threads = 10
     model = models.Tradedetail
     try:
-        company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        # company_id = models.Instrumentsel.objects.get(id=instrument_id).stock_id
+        company_id = models.Instrumentsel.objects.get(id=instrument_id).id
     except IntegrityError:
         print('Instrument not found!')
         return
@@ -1841,7 +1838,7 @@ def update_candles_thread(instrument_id):
 
     api_url = base_url \
               + 'https://v1.db.api.mabnadp.com/exchange/intradaytrades?' + \
-              'instrument.stock.company.id=' + company_id + '@date_time=13990722110000,13990722120000' + \
+              'instrument.id=' + company_id + '@date_time=13990722110000,13990722120000' + \
               '@date_time_op=bw'
     # 'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
 
@@ -1943,11 +1940,11 @@ def second_feed_tradedaily_thread(instrument_id, host):
 
     api_url = ''
     if obj.index is None:
-        company_id = obj.stock_id
+        # company_id = obj.stock_id
+        company_id = obj.id
         print('company_id: ', company_id)
-        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-                  'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
-                  '@date_time_op=gt'
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + 'instrument.id=' + company_id + \
+                  '@date_time=' + last_candle_date + '@date_time_op=gt'
     else:
         company_id = obj.index_id
         api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \
@@ -2052,6 +2049,8 @@ def second_feed_tradedaily_thread(instrument_id, host):
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='W1').data
         # find candle file url
         url2 = url + candle.url
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         # read csv file
         df_week = pd.read_csv(url2)
         # read las item
@@ -2132,6 +2131,8 @@ def second_feed_tradedaily_thread(instrument_id, host):
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='MN1').data
         # find candle file url
         url2 = url + candle.url
+        if host != '127.0.0.1:8000':
+            url2 = url2.replace('/media/media/', '/media/')
         # read csv file
         df_month = pd.read_csv(url2)
         # read las item
@@ -3105,11 +3106,11 @@ def daily_candle_update_thread(instrument_id, host):
 
     api_url = ''
     if obj.index is None:
-        company_id = obj.stock_id
+        # company_id = obj.stock_id
+        company_id = obj.id
         print('company_id: ', company_id)
-        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + \
-                  'instrument.stock.company.id=' + company_id + '@date_time=' + last_candle_date + \
-                  '@date_time_op=gt'
+        api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/trades?' + 'instrument.id=' + company_id + \
+                  '@date_time=' + last_candle_date + '@date_time_op=gt'
     else:
         company_id = obj.index_id
         api_url = base_url + 'https://v1.db.api.mabnadp.com/exchange/indexvalues?' + \

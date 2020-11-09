@@ -13,6 +13,8 @@ import requests
 def find_farsi_title(instrument):
     if instrument == 'saman':
         return 'سامان'
+    elif instrument == 'dara_ikm':
+        return 'دارا یکم'
     # گروه:حمل ونقل، انبارداري و ارتباطات
     elif instrument == 'hkshti':
         return 'حکشتی'
