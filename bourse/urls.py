@@ -35,6 +35,7 @@ urlpatterns = [
 
     path('instrument/',  views.instrument_list, name='instrument-list'),
     path('watchlist2/',  views.watchlist, name='watchlist'),
+    path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     url(r'^watchlist$', views.WatchlistAPIView.as_view(), name='watchlist-post-listcreate'),
     url(r'^watchlist/(?P<pk>\d+)/$', views.WatchlistRudView.as_view(), name='watchlist-post-rud'),
     url(r'^bug-report$', views.BugReportAPIView.as_view(), name='bugreport-post-listcreate'),

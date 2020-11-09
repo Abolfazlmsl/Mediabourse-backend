@@ -710,6 +710,8 @@ class News(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         help_text='کاربر'
     )
     category = models.ForeignKey(
@@ -728,6 +730,7 @@ class News(models.Model):
     )
     title = models.CharField(
         max_length=255,
+        unique=True,
         help_text='عنوان'
     )
     reference = models.CharField(
@@ -736,8 +739,8 @@ class News(models.Model):
         blank=True,
         help_text='مرجع'
     )
-    created_on = models.DateTimeField(
-        auto_now_add=True,
+    date = models.CharField(
+        max_length=255,
         help_text='تاریخ ایجاد'
     )
     pic = models.ImageField(

@@ -1,7 +1,11 @@
 import json
+
+from django.db import IntegrityError
+
+from .models import News
 from pprint import pprint
 from urllib.error import HTTPError
-
+from unidecode import unidecode
 import requests
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -13,73 +17,93 @@ urls = [
     'http://www.fipiran.com/News?Cat=5&Feeder=0',
 ]
 
-for url in urls:
-    page = urlopen(url)
 
-    html_bytes = page.read()
-    html = html_bytes
+def scraper():
+    for url in urls:
+        page = urlopen(url)
 
-    soup = BeautifulSoup(html, "html.parser")
+        html_bytes = page.read()
+        html = html_bytes
 
-    all_news = soup.find('div', {'class': 'faq_accordion'}).find_all('div', {'class': 'item'})
-    for news in all_news:
-        page_url = news.find('a', href=True).get('href')
-        if 'sena.ir' in page_url:
-            continue
-        print(page_url)
-        page = requests.get(page_url)
+        soup = BeautifulSoup(html, "html.parser")
 
-        soup = BeautifulSoup(page.content, "html.parser")
-
-        json_list = {}
-        if 'boursepress.ir' in page_url:
-            try:
-                image = soup.find('div', {'class': 'news-img'}).find('img', src=True).get('src')
-                date = soup.find('div', {'class': 'news-map'}).find_all('div')[2].get_text()
-                title = soup.find('h1').get_text()
-                summary = soup.find('div', {'class': 'news-lead'}).get_text()
-                text_list = soup.find('div', {'class': 'news-text'}).find_all('p')
-                text_list.pop()
-                text_list.pop()
-                text = {}
-                for i, j in enumerate(text_list):
-                    text[i + 1] = j.get_text()
-                # short_title = soup.find('div', {'class': 'short-title'}).get_text()
-
-                json_list = {
-                    "title": title,
-                    "image": image,
-                    # 'short_title': short_title,
-                    "summary": summary,
-                    "text": text,
-                    "date": date,
-                }
-
-                with open('data1.json', 'w', encoding='utf-8') as f:
-                    json.dump(json_list, f, ensure_ascii=False)
-            except AttributeError:
+        all_news = soup.find('div', {'class': 'faq_accordion'}).find_all('div', {'class': 'item'})
+        for news in all_news:
+            page_url = news.find('a', href=True).get('href')
+            if 'sena.ir' in page_url:
                 continue
+            print(page_url)
+            page = requests.get(page_url)
 
-        elif 'isna.ir' in page_url:
-            try:
-                date = soup.find('li').find('span', {'class': 'text-meta'})
-                title = soup.find('div', {'class': 'item-title'}).find('h1', {'class': 'first-title'}).get_text()
-                image = soup.find('figure', {'class': 'item-img'}).find('img')['src']
-                summary = soup.find('p', {'class': 'summary'}).get_text()
-                text = soup.find('div', {'class': 'item-text'}).get_text()
+            soup = BeautifulSoup(page.content, "html.parser")
 
-                json_list = {
-                    "title": title,
-                    "image": image,
-                    "summary": summary,
-                    "text": text,
-                    "date": date,
-                }
+            json_list = {}
+            if 'boursepress.ir' in page_url:
+                try:
+                    image = soup.find('div', {'class': 'news-img'}).find('img', src=True).get('src')
+                    date = soup.find('div', {'class': 'news-map'}).find_all('div')[2].get_text()
+                    title = soup.find('h1').get_text()
+                    summary = soup.find('div', {'class': 'news-lead'}).get_text()
+                    text_list = soup.find('div', {'class': 'news-text'}).find_all('p')
+                    text_list.pop()
+                    text_list.pop()
+                    text = {}
+                    for i, j in enumerate(text_list):
+                        text[i + 1] = j.get_text()
+                    # short_title = soup.find('div', {'class': 'short-title'}).get_text()
 
-                with open('data3.json', 'w', encoding='utf-8') as f:
-                    json.dump(json_list, f, ensure_ascii=False)
-            except AttributeError:
-                continue
+                    json_list = {
+                        "title": title,
+                        "image": image,
+                        # 'short_title': short_title,
+                        "summary": summary,
+                        "text": text,
+                        "date": date,
+                    }
+                    time, date = date.split('-')
+                    time_str = ''.join(time.split(':'))
+                    date = date.split('/')
+                    date_str = ''
+                    for i, x in enumerate(date):
+                        if i > 0:
+                            if len(x) < 2:
+                                date[i] = '0' + date[i]
+                        date_str += date[i]
+                    try:
+                        News.objects.create(
+                            title=title,
+                            short_description=summary,
+                            description=text,
+                            pic=image,
+                            date=unidecode(date_str+time_str)
+                        )
+                    except IntegrityError:
+                        continue
+                    # with open('data1.json', 'w', encoding='utf-8') as f:
+                    #     json.dump(json_list, f, ensure_ascii=False)
+                except AttributeError:
+                    continue
+
+            elif 'isna.ir' in page_url:
+                try:
+                    date = soup.find('li').find('span', {'class': 'text-meta'})
+                    title = soup.find('div', {'class': 'item-title'}).find('h1', {'class': 'first-title'}).get_text()
+                    image = soup.find('figure', {'class': 'item-img'}).find('img')['src']
+                    summary = soup.find('p', {'class': 'summary'}).get_text()
+                    text = soup.find('div', {'class': 'item-text'}).get_text()
+
+                    json_list = {
+                        "title": title,
+                        "image": image,
+                        "summary": summary,
+                        "text": text,
+                        "date": date,
+                    }
+                    print(date)
+                    # with open('data3.json', 'w', encoding='utf-8') as f:
+                    #     json.dump(json_list, f, ensure_ascii=False)
+                except AttributeError:
+                    continue
 
         # pprint(json_list)
 # url = "http://www.fipiran.com/News?Cat=2&Feeder=0"

@@ -55,6 +55,13 @@ from . import candle
 
 from . import trade_midday
 
+from . import news_scraper
+
+
+def news_scraper_view(request):
+    news_scraper.scraper()
+    return HttpResponse(("Text only, please."), content_type="text/plain")
+
 
 def save_csv_candle(request):
     candle.feed_candle()
