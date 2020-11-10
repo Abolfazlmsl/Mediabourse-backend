@@ -15,6 +15,10 @@ def find_farsi_title(instrument):
         return 'سامان'
     elif instrument == 'dara_ikm':
         return 'دارا یکم'
+    elif instrument == 'join':
+        return 'جوین'
+    elif instrument == 'bdko':
+        return 'بدکو'
     # گروه:حمل ونقل، انبارداري و ارتباطات
     elif instrument == 'hkshti':
         return 'حکشتی'
@@ -1572,8 +1576,10 @@ def feed_candle():
     #             itm.delete()
     # return
     #-----------------------------------------------------------
+    # models.Chart.objects.all().delete()
+    # return
 
-    is_haghtaghadom = False  #True #
+    is_haghtaghadom = True #False  #
 
     directories = os.listdir('./helper/')
     for directory in directories:
@@ -1608,7 +1614,7 @@ def feed_candle():
             print(f'symbol: {symbol}')
 
             for file in os.listdir(path):
-                # print(file)
+                print(file)
                 df = pd.read_csv(path + file)  # read csv
                 df = df.drop(columns=['<TICKER>', '<PER>', '<OPENINT>'])  # drop unused columns
                 df.to_csv((path + file), index=False)  # write to file
@@ -1621,7 +1627,10 @@ def feed_candle():
                 jalali_date = str(jalali_date).replace('-', '')
                 last_time = "{0:0=6d}".format(df[' <TIME>'].iloc[-1])
                 date_time = str(jalali_date) + str(last_time)
-                time_frame = file.split('.')[0].split('-')[1]
+                tf_temp = file.split('.')[0].split('-')
+                time_frame = tf_temp[len(tf_temp)-1]
+                # time_frame = file.split('.')[0].split('-')[1]
+                # print("time_frame: ", time_frame)
 
                 # print(settings.MEDIA_ROOT)
                 # continue
@@ -1643,5 +1652,6 @@ def feed_candle():
                         timeFrame=time_frame,
                         data=f'./uploads/file/chart/{directory}/' + file
                     )
+                    # print(objj.instrument.short_name, objj.timeFrame)
                 except IntegrityError:
                     pass

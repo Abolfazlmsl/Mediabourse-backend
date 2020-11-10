@@ -176,11 +176,16 @@ class BugReportAdmin(admin.ModelAdmin):
     list_filter = ("email", "status",)
 
 
+@admin.register(models.News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "reference", "created_on", "is_approved", "hit_count", "instrument")
+    list_filter = ("reference", "is_approved", "created_on",)
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.WatchList)
 admin.site.register(models.RequestSymbol)
 admin.site.register(models.WatchListItem)
-admin.site.register(models.News)
 admin.site.register(models.Technical)
 admin.site.register(models.ChatMessage)
 admin.site.register(models.Basket)
