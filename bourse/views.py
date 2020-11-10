@@ -572,7 +572,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
                     )
             except News.DoesNotExist:
                 pass
-        print(self.queryset[0].pic)
+        # print(self.queryset[0].pic)
         return self.queryset
 
 

@@ -80,7 +80,7 @@ def scraper():
                             reference='بورس پرس'
                         )
                     except IntegrityError:
-                        return
+                        continue
                     # with open('data1.json', 'w', encoding='utf-8') as f:
                     #     json.dump(json_list, f, ensure_ascii=False)
                 except AttributeError:
@@ -141,7 +141,7 @@ def scraper():
                             reference='ایسنا'
                         )
                     except IntegrityError:
-                        return
+                        continue
 
                 except AttributeError:
                     continue
