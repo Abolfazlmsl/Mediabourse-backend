@@ -37,11 +37,11 @@ def scraper(url):
                 summary = soup.find('div', {'class': 'news-lead'}).get_text()
                 text_list = soup.find('div', {'class': 'news-text'}).find_all('p')
                 # print(text_list)
-                text_list.pop()
-                text_list.pop()
-                text = list()
-                for i, j in enumerate(text_list):
-                    text.append(j)
+                # text_list.pop()
+                # text_list.pop()
+                # text = list()
+                # for i, j in enumerate(text_list):
+                #     text.append(j)
                 # short_title = soup.find('div', {'class': 'short-title'}).get_text()
 
                 json_list = {
@@ -49,7 +49,7 @@ def scraper(url):
                     "image": image,
                     # 'short_title': short_title,
                     "summary": summary,
-                    "text": text,
+                    "text": text_list,
                     "date": date,
                 }
                 time, date = date.split('-')
@@ -65,7 +65,7 @@ def scraper(url):
                     News.objects.create(
                         title=title,
                         short_description=summary,
-                        description=text,
+                        description=text_list,
                         pic=image,
                         date=unidecode(date_str+time_str),
                         reference='بورس پرس'
