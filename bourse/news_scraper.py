@@ -99,7 +99,7 @@ def scraper():
                         "text": text,
                         "date": date,
                     }
-                    print(date)
+                    print(json_list)
                     # with open('data3.json', 'w', encoding='utf-8') as f:
                     #     json.dump(json_list, f, ensure_ascii=False)
                 except AttributeError:
