@@ -76,7 +76,8 @@ def scraper():
                             short_description=summary,
                             description=text,
                             pic=image,
-                            date=unidecode(date_str+time_str)
+                            date=unidecode(date_str+time_str),
+                            reference='بورس پرس'
                         )
                     except IntegrityError:
                         return
@@ -136,7 +137,8 @@ def scraper():
                             short_description=summary,
                             description=text,
                             pic=image,
-                            date=datetime_str
+                            date=datetime_str,
+                            reference='ایسنا'
                         )
                     except IntegrityError:
                         return

@@ -133,6 +133,7 @@ class NewsListSerializer(serializers.ModelSerializer):
 
 
 class NewsRetrieveSerializer(NewsListSerializer):
+    pic_url = serializers.CharField(max_length=255)
 
     class Meta(NewsListSerializer.Meta):
         fields = '__all__'
