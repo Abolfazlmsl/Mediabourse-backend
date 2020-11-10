@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from urllib.request import urlopen
 
 urls = [
-    # 'http://www.fipiran.com/News?Cat=1&Feeder=0',
-    # 'http://www.fipiran.com/News?Cat=2&Feeder=0',
-    # 'http://www.fipiran.com/News?Cat=4&Feeder=0',
+    'http://www.fipiran.com/News?Cat=1&Feeder=0',
+    'http://www.fipiran.com/News?Cat=2&Feeder=0',
+    'http://www.fipiran.com/News?Cat=4&Feeder=0',
     'http://www.fipiran.com/News?Cat=5&Feeder=0',
 ]
 
