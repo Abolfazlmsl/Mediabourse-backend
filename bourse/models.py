@@ -775,6 +775,11 @@ class News(models.Model):
         return self.title
 
 
+    @property
+    def pic_url(self):
+        return self.pic
+
+
 class Filter(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

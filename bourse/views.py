@@ -542,8 +542,8 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
     ]
     filterset_fields = ['category', 'is_important', 'instrument']
     search_fields = ['instrument__name', 'title', 'tag']
-    ordering_fields = ['created_on', 'hit_count']
-    ordering = ['-created_on']
+    ordering_fields = ['date', 'hit_count']
+    ordering = ['-date']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -572,7 +572,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
                     )
             except News.DoesNotExist:
                 pass
-
+        print(self.queryset[0].pic)
         return self.queryset
 
 

@@ -115,6 +115,7 @@ class NewsListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=False)
     instrument = InstrumentSerializer(many=False)
     user = UserSerializer(many=False)
+    pic_url = serializers.CharField(max_length=255)
 
     class Meta:
         model = News
@@ -124,8 +125,8 @@ class NewsListSerializer(serializers.ModelSerializer):
             'instrument',
             'user',
             'title',
-            'created_on',
-            'pic',
+            'date',
+            'pic_url',
             'tag',
             'short_description'
         )
