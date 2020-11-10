@@ -534,7 +534,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
     """List and retrieve news"""
 
     serializer_class = NewsListSerializer
-    queryset = News.objects.all()
+    queryset = News.objects.filter(is_approved=True)
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
