@@ -1620,3 +1620,22 @@ class BugReport(models.Model):
 
     def __str__(self):
         return f'{self.email}, {self.text}'
+
+
+class NewsPodcast(models.Model):
+    title = models.CharField(max_length=255)
+    thumbnail = models.ImageField(
+        upload_to='uploads/thumbnail/news-podcast',
+        help_text='تصویر'
+    )
+    file = models.FileField(
+        upload_to='uploads/file/news-podcast',
+    )
+    description = models.TextField(
+        null=True,
+        blank=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

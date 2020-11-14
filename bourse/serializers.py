@@ -12,7 +12,7 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser, BugReport
+    TechnicalJSONUser, BugReport, NewsPodcast
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -334,3 +334,20 @@ class NotificationDetailSerializer(NotificationListSerializer):
             'created_on'
         )
         depth = 1
+
+
+class NewsPodcastListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = NewsPodcast
+        fields = (
+            'id',
+            'title',
+            'thumbnail'
+        )
+
+
+class NewsPodcastDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsPodcast
+        fields = '__all__'

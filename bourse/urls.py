@@ -16,6 +16,7 @@ router.register('tutorial', views.TutorialListRetrieveApiView)
 router.register('free-tutorial', views.FreeTutorialListRetrieveApiView)
 router.register('instrument', views.InstrumentListRetrieveViewSet)
 router.register('notification', views.NotificationListRetrieveViewSet)
+router.register('news-podcast', views.NewsPodcastListRetrieveAPIView)
 
 urlpatterns = [
     path('', include(router.urls)),

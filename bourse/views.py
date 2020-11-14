@@ -35,7 +35,8 @@ from .serializers import \
     UserForgetSerializer, \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
-    NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer
+    NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
+    NewsPodcastDetailSerializer
 
 from .models import Company, \
     News, \
@@ -45,7 +46,7 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast
 
 from . import models
 
@@ -979,6 +980,27 @@ class NotificationListRetrieveViewSet(viewsets.GenericViewSet,
         if self.action == 'retrieve':
             return NotificationDetailSerializer
         return self.serializer_class
+
+
+class NewsPodcastListRetrieveAPIView(viewsets.GenericViewSet,
+                                     mixins.ListModelMixin,
+                                     mixins.RetrieveModelMixin):
+    """
+        List and retrieve news podcast
+    """
+    serializer_class = NewsPodcastListSerializer
+    queryset = NewsPodcast.objects.all()
+    filter_backends = [
+        filters.OrderingFilter
+    ]
+    ordering_fields = ['created_on']
+    ordering = ['-created_on']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return NewsPodcastDetailSerializer
+        return self.serializer_class
+
 
 
 def trade_midday_function(request):

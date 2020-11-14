@@ -148,5 +148,5 @@ def scrap():
         'http://www.fipiran.com/News?Cat=4&Feeder=0',
         'http://www.fipiran.com/News?Cat=5&Feeder=0',
     ]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(scraper, urls)
+    for url in urls:
+        scraper(url)
