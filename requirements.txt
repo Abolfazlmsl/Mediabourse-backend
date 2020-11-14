@@ -74,3 +74,6 @@ websockets==8.1
 zope.interface==5.1.2
 mysqlclient
 django-cors-headers
+
+APScheduler~=3.6.3
+Unidecode~=1.1.1

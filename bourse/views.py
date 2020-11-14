@@ -58,18 +58,6 @@ from . import trade_midday
 from . import news_scraper
 
 
-def news_scraper_view(request):
-    urls = [
-        'http://www.fipiran.com/News?Cat=1&Feeder=0',
-        'http://www.fipiran.com/News?Cat=2&Feeder=0',
-        'http://www.fipiran.com/News?Cat=4&Feeder=0',
-        'http://www.fipiran.com/News?Cat=5&Feeder=0',
-    ]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(news_scraper.scraper, urls)
-    return HttpResponse(("Text only, please."), content_type="text/plain")
-
-
 def save_csv_candle(request):
     candle.feed_candle()
     return HttpResponse(("Text only, please."), content_type="text/plain")

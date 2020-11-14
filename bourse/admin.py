@@ -178,8 +178,8 @@ class BugReportAdmin(admin.ModelAdmin):
 
 @admin.register(models.News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "reference", "created_on", "is_approved", "hit_count", "instrument")
-    list_filter = ("reference", "is_approved", "created_on",)
+    list_display = ("id", "title", "reference", "date", "is_approved", "hit_count", "instrument")
+    list_filter = ("reference", "is_approved", "date",)
 
 
 admin.site.register(models.User, UserAdmin)
