@@ -64,7 +64,7 @@ def scraper(url):
                             date[i] = '0' + date[i]
                     date_str += date[i]
                 try:
-                    News.objects.create(
+                    News.objects.get_or_create(
                         title=title,
                         short_description=summary,
                         description=text_list,
@@ -125,7 +125,7 @@ def scraper(url):
                 # print('daaaaaaaaaaaaaaaaaaaate', date_str, time_str, datetime_str)
 
                 try:
-                    News.objects.create(
+                    News.objects.get_or_create(
                         title=title,
                         short_description=summary,
                         description=text,
@@ -143,10 +143,10 @@ def scraper(url):
 def scrap():
     print('start scraping news')
     urls = [
-        'http://www.fipiran.com/News?Cat=1&Feeder=0',
+        # 'http://www.fipiran.com/News?Cat=1&Feeder=0',
         'http://www.fipiran.com/News?Cat=2&Feeder=0',
-        'http://www.fipiran.com/News?Cat=4&Feeder=0',
-        'http://www.fipiran.com/News?Cat=5&Feeder=0',
+        # 'http://www.fipiran.com/News?Cat=4&Feeder=0',
+        # 'http://www.fipiran.com/News?Cat=5&Feeder=0',
     ]
     for url in urls:
         scraper(url)

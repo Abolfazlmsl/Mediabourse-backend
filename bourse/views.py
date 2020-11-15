@@ -19,6 +19,9 @@ import pandas as pd
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
+import jdatetime
+from persiantools.jdatetime import JalaliDate
+
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
     NewsListSerializer, \
@@ -59,6 +62,72 @@ from . import trade_midday
 from . import news_scraper
 
 
+def news_scraper_view(request):
+    urls = [
+        'http://www.fipiran.com/News?Cat=1&Feeder=0',
+        'http://www.fipiran.com/News?Cat=2&Feeder=0',
+        'http://www.fipiran.com/News?Cat=4&Feeder=0',
+        'http://www.fipiran.com/News?Cat=5&Feeder=0',
+    ]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(news_scraper.scraper, urls)
+    return HttpResponse(("Text only, please."), content_type="text/plain")
+
+
+def list_trade_detail(request):
+
+
+    instrument_list = request.GET.get('instrument')
+    print(instrument_list)
+    list = instrument_list.split("_")
+    # print(list)
+
+    instrument_db = []
+    ids = []
+
+    # get iobjects from db
+    for itm in list:
+        try:
+            instrument_db.append(models.Instrumentsel.objects.get(short_name__iexact=itm))
+
+        except Instrumentsel.DoesNotExist:
+            pass
+    # print(instrument_db)
+    for itm in instrument_db:
+        ids.append(itm.id)
+    id_str = ','.join(str(x) for x in ids)
+    # print(id_str)
+
+    today_date = str(jdatetime.date.today())
+    today_date = today_date.replace('-', '')
+    timee = "090000"
+    dateTime = today_date+timee
+    # print(dateTime)
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'instrument.id={id_str}@instrument.id_op=in' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time'
+    # print(api_url)
+
+    req = requests.get(api_url)
+    # # print(req.text)
+    data1 = req.json()
+    # print(data1)
+    cntr = 0
+    for itm in data1['data']:
+        data1['data'][cntr]['instrument']['short_name'] = models.Instrumentsel.objects.get(id=itm['instrument']['id']).short_name
+        print(itm['instrument']['id'])
+        cntr += 1
+
+    # print(data1)
+    if 'error' in data1:
+        # print(data1['error']['code'] + ' - ' + data1['error']['message'])
+        return HttpResponse((data1['error']['message']), content_type="text/plain")
+
+    return JsonResponse(data1, safe=False)
+
+
 def save_csv_candle(request):
     candle.feed_candle()
     return HttpResponse(("Text only, please."), content_type="text/plain")
@@ -70,7 +139,10 @@ import time
 
 def fill_data(request):
     # candle.feed_candle()
-    # return HttpResponse(f"Table processed", content_type="text/plain")
+    lis = models.Instrumentsel.objects.all()
+    for itm in lis:
+        print('"', itm.id, "-", itm.name, "-", itm.short_name, "-", itm.english_short_name, '"')
+    return HttpResponse(f"Table processed", content_type="text/plain")
 
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -257,7 +329,7 @@ def chart_timeframes(request):
 
     return JsonResponse(res, safe=False)
     # get index candles whiout thread
-    # feed.feed_tradedaily(instrument)
+    feed.feed_tradedaily(instrument)
 
     # get selected instrument
     obj = models.Instrumentsel.objects.get(id=instrument)

@@ -1,6 +1,11 @@
 from server_helper import ClientThread
 import websockets
 import sys
+import json
+
+
+import asyncio
+
 
 sys.path.append('.')
 import asyncio
@@ -67,10 +72,29 @@ class Handler(threading.Thread):
             await websocket.send(data)
 
 
-if __name__ == "__main__":
-    namad = ['خمحرکه', 'شپنا']
-    host = '192.168.0.155'
-    port = 8000
+async def hello(websocket, path):
+    name = await websocket.recv()
+    print(f"< {name}")
+
+    greeting = f"Hello {name}!"
+
+    await websocket.send(greeting)
+    print(f"> {greeting}")
+
+
+async def hello2(websocket, path):
+    name = await websocket.recv()
+    print(f"< {name}")
+
+    # greeting = f"Hello {name}!"
+    # وسپهر,ونفت,گوهران,ثامید,وپویا,فولاد,حکشتی,شاروم,خگستر
+    namad = name.split(",")
+    print(f"< {namad}")
+
+
+    #namad = ['خمحرکه', 'شپنا']
+    host = "localhost"  # '192.168.1.105'
+    port = 8765  # 8000
     obj = ClientThread(host, port, namad)
     print('#' * 80)
     print('Please wait while scraping...')
@@ -78,16 +102,52 @@ if __name__ == "__main__":
     print('Scrape completed.')
     print('#' * 80)
     getdata = GetData(obj, data)
-    print('Waiting for client to connect...')
-    handle = Handler()
 
-    try:
-        handle.start()
+    print(f"> {getdata.get()}")
+    print(f"> {type(getdata.get())}")
+    await websocket.send(getdata.get())
 
-        ws_server = websockets.serve(handle.handler, '192.168.0.155', 8002)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(ws_server)
-        loop.run_forever()
-    except KeyboardInterrupt:
-        stopFlag = True
-        print("Exiting program...")
+    asyncio.get_event_loop().stop()
+
+
+if __name__ == "__main__":
+    start_server = websockets.serve(hello2, "localhost", 8765)
+
+
+
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
+
+
+
+
+
+
+
+
+
+
+    # namad = ['خمحرکه', 'شپنا']
+    # host = "localhost" #'192.168.1.105'
+    # port = 8765 #8000
+    # obj = ClientThread(host, port, namad)
+    # print('#' * 80)
+    # print('Please wait while scraping...')
+    # data = obj.scrape()
+    # print('Scrape completed.')
+    # print('#' * 80)
+    # getdata = GetData(obj, data)
+    # print('Waiting for client to connect...')
+    # handle = Handler()
+    #
+    # try:
+    #     handle.start()
+    #
+    #     # ws_server = websockets.serve(handle.handler, '192.168.0.155', 8002)
+    #     ws_server = websockets.serve(handle.handler, 'localhost', 8765)
+    #     loop = asyncio.get_event_loop()
+    #     loop.run_until_complete(ws_server)
+    #     loop.run_forever()
+    # except KeyboardInterrupt:
+    #     stopFlag = True
+    #     print("Exiting program...")

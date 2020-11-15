@@ -27,6 +27,8 @@ from tabulate import tabulate
 import json
 import threading
 
+driver_path = "C:/Git_project/selenumeTest/drivers/chromedriver.exe"
+
 
 class ClientThread(threading.Thread):
     '''
@@ -43,8 +45,8 @@ class ClientThread(threading.Thread):
 
     def scrape(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        self.drive = webdriver.Chrome(options=chrome_options)
+        # chrome_options.add_argument("--headless")
+        self.drive = webdriver.Chrome(executable_path=driver_path, options=chrome_options)
 
         self.drive.get("http://tsetmc.ir/")
 
@@ -73,6 +75,8 @@ class ClientThread(threading.Thread):
                 self.drive.find_element_by_id("SearchKey").clear()
 
         data = self.read()
+
+        print(data)
         return data
 
     def read(self):
@@ -337,4 +341,3 @@ class ClientThread(threading.Thread):
 
             data_list = json.dumps(data_list)
             return data_list
-
