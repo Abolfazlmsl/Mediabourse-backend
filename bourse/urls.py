@@ -38,6 +38,7 @@ urlpatterns = [
     path('watchlist2/',  views.watchlist, name='watchlist'),
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     path('list-tradeDetail/',  views.list_trade_detail, name='list-trade-detail'),
+    path('instrument-info/',  views.instrument_info, name='instrument-info'),
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     url(r'^watchlist$', views.WatchlistAPIView.as_view(), name='watchlist-post-listcreate'),
     url(r'^watchlist/(?P<pk>\d+)/$', views.WatchlistRudView.as_view(), name='watchlist-post-rud'),

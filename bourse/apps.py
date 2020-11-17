@@ -6,4 +6,5 @@ class BourseConfig(AppConfig):
 
     def ready(self):
         from . import updater
-        updater.start()
+        # disable in local
+        # updater.start()

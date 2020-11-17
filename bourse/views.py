@@ -132,6 +132,21 @@ def list_trade_detail(request):
     return JsonResponse(data1, safe=False)
 
 
+def instrument_info(request):
+    data1 = {}
+
+    res = feed.get_instrument_info(request)
+    print(res)
+
+
+    data1 = {
+        'ids': res
+    }
+
+
+    return JsonResponse(data1, safe=False)
+
+
 def save_csv_candle(request):
     candle.feed_candle()
     return HttpResponse(("Text only, please."), content_type="text/plain")
@@ -143,9 +158,7 @@ import time
 
 def fill_data(request):
     # candle.feed_candle()
-    lis = models.Instrumentsel.objects.all()
-    for itm in lis:
-        print('"', itm.id, "-", itm.name, "-", itm.short_name, "-", itm.english_short_name, '"')
+    feed.update_timeframe_candles()
     return HttpResponse(f"Table processed", content_type="text/plain")
 
 

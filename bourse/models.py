@@ -1640,3 +1640,14 @@ class NewsPodcast(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class InstrumentInfo(models.Model):
+    instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE)
+    volAvg1M = models.PositiveIntegerField(default=0, help_text='میانگین ماهانه')
+    volAvg3M = models.PositiveIntegerField(default=0, help_text='میانگین 3 ماه')
+    volAvg12M = models.PositiveIntegerField(default=0, help_text='میانگین 12 ماهه')
+    created_on = models.DateField(null=True, blank=True, help_text="آخرین روز محاسبه")
+
+    def __str__(self):
+        return self.instrument.short_name

@@ -5,12 +5,15 @@ import jdatetime
 import requests
 import time
 import pandas as pd
+from django.utils import timezone
+
 from .models import Meta, Index, Exchange
 from . import models
 from django.conf import settings
 from datetime import date, timedelta, datetime
 from persiantools.jdatetime import JalaliDate
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from .Utils import UtilFunc
 
 base_url = 'http://bourse-api.ir/bourse/api-test/?url='
 
@@ -1740,6 +1743,7 @@ def feed_tradedaily_thread(instrument_id):
 
 
 candle_list = list()
+instrument_info_list = list()
 intraday_list = list()
 
 
@@ -1922,6 +1926,7 @@ def second_get_instrument(sites):
 
 
 def second_feed_tradedaily_thread(instrument_id, host):
+    # print('start update candles info')
     num_of_threads = 10
     model = models.Tradedetail
     # model.objects.filter(instrument=instrument_id).delete()
@@ -1975,15 +1980,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
         # instrument_name = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').instrument.short_name
 
         # find candle file url
-        url = settings.MEDIA_ROOT.replace('\\', '/')
-        parts = url.split('/')
-        parts = parts[:-1]
-        url = '/'.join(parts)
-        url2 = url + candle.url
-        print(url2)
-        # url2 = 'http://127.0.0.1:8000' + candle.url
-        if host != '127.0.0.1:8000':
-            url2 = url2.replace('/media/media/', '/media/')
+        url2 = UtilFunc.findCsvFileUrl(candle.url, host)
         # read csv file
         df = pd.read_csv(url2)
         # iterate new candles and add to csv file
@@ -2039,6 +2036,15 @@ def second_feed_tradedaily_thread(instrument_id, host):
 
         # print("df:", df)
         df.to_csv(url2, index=False)
+
+        # update average of instrumentInfo model
+        obj_info, crt = models.InstrumentInfo.objects.get_or_create(instrument_id=instrument_id)
+        obj_info.volAvg1M = df.iloc[-30:, -1].mean()
+        obj_info.volAvg3M = df.iloc[-90:, -1].mean()
+        obj_info.volAvg12M = df.iloc[-360:, -1].mean()
+        obj_info.created_on = timezone.now()  # df.iloc[-1:, 0]
+        obj_info.save()
+
     except IntegrityError:
         print('candle nadarim')
         return
@@ -2048,9 +2054,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
     try:
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='W1').data
         # find candle file url
-        url2 = url + candle.url
-        if host != '127.0.0.1:8000':
-            url2 = url2.replace('/media/media/', '/media/')
+        url2 = UtilFunc.findCsvFileUrl(candle.url, host)
         # read csv file
         df_week = pd.read_csv(url2)
         # read las item
@@ -2130,9 +2134,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
     try:
         candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='MN1').data
         # find candle file url
-        url2 = url + candle.url
-        if host != '127.0.0.1:8000':
-            url2 = url2.replace('/media/media/', '/media/')
+        url2 = UtilFunc.findCsvFileUrl(candle.url, host)
         # read csv file
         df_month = pd.read_csv(url2)
         # read las item
@@ -2205,73 +2207,70 @@ def second_feed_tradedaily_thread(instrument_id, host):
     except IntegrityError:
         print('candle nadarim')
 
-    # old method
-    # cndl_list = [''] * len(candle_list)
-    # for i in range(len(candle_list)):
-    #     print('shomare', i)
-    #     # check duplication candles
-    #     if i > 0:
-    #         lst = candle_list[i].split(",")
-    #         lst_prv = candle_list[i - 1].split(",")
-    #         if int(float(lst[0][:8])) == int(float(lst_prv[0][:8])):
-    #             jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
-    #             jalali_date = str(jalali_date).replace('-', '')
-    #             lstt = [jalali_date, lst_prv[0][8:], lst_prv[1], max(lst_prv[2], lst[2]), min(lst_prv[3], lst[3]),
-    #                     lst[4], lst_prv[5]]
-    #             str1 = ','.join(lstt)
-    #             cndl_list[i] = str1
-    #             cndl_list[i - 1] = 'deleted'
-    #         else:
-    #             jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
-    #             jalali_date = str(jalali_date).replace('-', '')
-    #             lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3],
-    #                     lst[4], lst[5]]
-    #             str1 = ','.join(lstt)
-    #             cndl_list[i] = str1
-    #     else:
-    #         # add first row
-    #         lst = candle_list[i].split(",")
-    #         jalali_date = JalaliDate(int(lst[0][:4]), int(lst[0][4:6]), int(lst[0][6:8])).to_gregorian()
-    #         jalali_date = str(jalali_date).replace('-', '')
-    #         lstt = [jalali_date, lst[0][8:], lst[1], lst[2], lst[3], lst[4], lst[5]]
-    #         str1 = ','.join(lstt)
-    #         cndl_list[i] = str1
-    # new_candle_list = [x for x in cndl_list if x != 'deleted']
-    # print('new_candle_list: ', len(new_candle_list))
-    #
-    # try:
-    #     candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
-    #     candle_name = str(candle).split('/')[-1]
-    #     # find candle file url
-    #     url = settings.MEDIA_ROOT.replace('\\', '/')
-    #     parts = url.split('/')
-    #     parts = parts[:-1]
-    #     url = '/'.join(parts)
-    #     url2 = url + candle.url
-    #     # read csv file
-    #     df = pd.read_csv(url2)
-    #     i = 0
-    #     for item in new_candle_list:
-    #         print(i)
-    #         i += 1
-    #         lst = item.split(",")
-    #         print('sdfsdf', item)
-    #         print('sdfsdf', lst)
-    #         to_append = [int(float(lst[0])), int(float(lst[1])), int(float(lst[2])),
-    #                      int(float(lst[3])), int(float(lst[4])), int(float(lst[5])), int(float(lst[6]))]
-    #         df.loc[len(df), :] = to_append
-    #     print(df.tail())
-    #     df.to_csv(url2, index=False)
-    # except IntegrityError:
-    #     print('candle nadarim')
-    # print(f"Downloaded {len(sites)} in {duration} seconds")
-
 
 def update_timeframe_candles():
     instruments_id = models.Instrumentsel.objects.all().values_list('id', flat=True)
+    # host = request.get_host()
     host = ['127.0.0.1:8000'] * len(instruments_id)
     with ThreadPoolExecutor(max_workers=10) as pool:
         pool.map(second_feed_tradedaily_thread, instruments_id, host)
+
+
+def request_instrumentInfo(sites):
+    with requests.get(sites) as request:
+        data1 = request.json()
+        # print(data1)
+        print(f"receive data of {sites}, len = {len(data1['data'])}")
+        for data in data1['data']:
+            # print(data)
+            instrument_info_list.append(data)
+
+
+def get_instrument_info(request):
+
+    instruments_id = models.InstrumentInfo.objects.all().values_list('instrument__id', flat=True)
+    # host = request.get_host()
+    host = [request.get_host()] * len(instruments_id)
+    # print(instruments_id)
+
+    id_str = ','.join(str(x) for x in instruments_id)
+    # print('list: ', id_str)
+
+    # today date
+    today_date = str(jdatetime.date.today())
+    today_date = today_date.replace('-', '')
+    timee = "090000"
+    dateTime = today_date + timee
+    # print(dateTime)
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time'
+              # f'instrument.id={id_str}@instrument.id_op=in' \
+
+    # print(api_url)
+
+    sites = [
+        api_url + '@_skip=0',
+        api_url + '@_skip=100',
+        api_url + '@_skip=200',
+        api_url + '@_skip=300',
+        api_url + '@_skip=400',
+        api_url + '@_skip=500',
+        api_url + '@_skip=600',
+        api_url + '@_skip=700',
+        api_url + '@_skip=800',
+        api_url + '@_skip=900',
+        api_url + '@_skip=1000',
+        api_url + '@_skip=1100',
+    ]
+
+    instrument_info_list.clear()
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        pool.map(request_instrumentInfo, sites)
+
+    return instrument_info_list
 
 
 def test():
