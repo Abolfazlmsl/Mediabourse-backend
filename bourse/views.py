@@ -63,6 +63,10 @@ from . import news_scraper
 
 
 def news_scraper_view(request):
+
+    news_scraper.scrap()
+    return HttpResponse(("Text only, please."), content_type="text/plain")
+
     urls = [
         'http://www.fipiran.com/News?Cat=1&Feeder=0',
         'http://www.fipiran.com/News?Cat=2&Feeder=0',
