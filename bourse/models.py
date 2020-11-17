@@ -745,6 +745,7 @@ class News(models.Model):
     )
     pic = models.ImageField(
         upload_to='uploads/images/news/',
+        max_length=300,
         null=True,
         blank=True,
         help_text='تصویر'
