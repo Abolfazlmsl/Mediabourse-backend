@@ -1579,7 +1579,7 @@ def feed_candle():
     # models.Chart.objects.all().delete()
     # return
 
-    is_haghtaghadom = True #False  #
+    is_haghtaghadom = False  #True
 
     directories = os.listdir('./helper/')
     for directory in directories:
