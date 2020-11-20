@@ -12,7 +12,7 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser, BugReport, NewsPodcast
+    TechnicalJSONUser, BugReport, NewsPodcast, Article
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -137,6 +137,21 @@ class NewsRetrieveSerializer(NewsListSerializer):
     class Meta:
         model = News
         exclude = ('pic',)
+
+
+class ArticleListSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+
+    class Meta:
+        model = Article
+        fields = '__all__'
+
+
+class ArticleRetrieveSerializer(ArticleListSerializer):
+
+    class Meta:
+        model = Article
+        exclude = ('thumbnail',)
 
 
 class UserTechnicalSerializer(serializers.ModelSerializer):

@@ -703,7 +703,7 @@ class Basket(models.Model):
     )
 
     def __str__(self):
-        return f'{self.user}, {self.instrument.name}'
+        return f'{self.user}, {self.company.name}'
 
 
 class News(models.Model):
@@ -774,7 +774,6 @@ class News(models.Model):
 
     def __str__(self):
         return self.title
-
 
     @property
     def pic_url(self):
@@ -1056,7 +1055,6 @@ class Chart(models.Model):
     def __str__(self):
         return self.instrument.short_name
 
-
     class Meta:
         unique_together = ('instrument', 'timeFrame')
 
@@ -1255,6 +1253,48 @@ class TutorialOwner(models.Model):
         return f'{self.user}, {self.tutorial.title}'
 
 
+class Article(models.Model):
+    title = models.CharField(max_length=255, unique=True)
+    thumbnail = models.ImageField(
+        upload_to='uploads/thumbnail/article',
+        help_text='تصویر'
+    )
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text='در صورت اختصاص مقاله برای گروه انتخاب شود'
+    )
+    instrument = models.ForeignKey(
+        Instrumentsel,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text='در صورت اختصاص مقاله برای نماد انتخاب شود'
+    )
+    date = models.DateField(
+        auto_now_add=True,
+        help_text=
+        'تاریخ ایجاد')
+    author = models.CharField(
+        max_length=120,
+        null=True,
+        blank=True,
+        help_text='نویسنده'
+    )
+    tag = models.CharField(
+        max_length=120,
+        null=True,
+        blank=True,
+        help_text='برچسب'
+    )
+    hit_count = models.BigIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.author}, {self.title}'
+
+
 class CompanyFinancial(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1335,7 +1375,7 @@ class CompanyFinancial(models.Model):
     )
 
     def __str__(self):
-        return self.instrument.name
+        return self.company.name
 
 
 class UserComment(models.Model):
@@ -1528,6 +1568,12 @@ class HitCount(models.Model):
     )
     news = models.ForeignKey(
         News,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    article = models.ForeignKey(
+        Article,
         on_delete=models.CASCADE,
         null=True,
         blank=True

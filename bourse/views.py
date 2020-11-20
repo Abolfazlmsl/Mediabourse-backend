@@ -41,7 +41,7 @@ from .serializers import \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
     NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
-    NewsPodcastDetailSerializer
+    NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer
 
 from .models import Company, \
     News, \
@@ -51,7 +51,8 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast, InstrumentInfo
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast, InstrumentInfo, \
+    Article
 
 from . import models
 
@@ -65,7 +66,6 @@ from . import news_scraper
 
 
 def news_scraper_view(request):
-
     news_scraper.scrap()
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
@@ -81,8 +81,6 @@ def news_scraper_view(request):
 
 
 def list_trade_detail(request):
-
-
     instrument_list = request.GET.get('instrument')
     print(instrument_list)
     list = instrument_list.split("_")
@@ -107,7 +105,7 @@ def list_trade_detail(request):
     today_date = str(jdatetime.date.today())
     today_date = today_date.replace('-', '')
     timee = "090000"
-    dateTime = today_date+timee
+    dateTime = today_date + timee
     # print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
@@ -122,7 +120,8 @@ def list_trade_detail(request):
     # print(data1)
     cntr = 0
     for itm in data1['data']:
-        data1['data'][cntr]['instrument']['short_name'] = models.Instrumentsel.objects.get(id=itm['instrument']['id']).short_name
+        data1['data'][cntr]['instrument']['short_name'] = models.Instrumentsel.objects.get(
+            id=itm['instrument']['id']).short_name
         print(itm['instrument']['id'])
         cntr += 1
 
@@ -136,7 +135,6 @@ def list_trade_detail(request):
 
 # get all instrument real-time data
 def instrument_info(request):
-
     res = feed.get_instrument_info(request)
 
     cntr = 0
@@ -188,7 +186,6 @@ def instrument_info(request):
 
 
 def get_Selected_instrument_info(request):
-
     instrument_id = request.GET.get('instrument')
     back_test_day = request.GET.get('day')
 
@@ -224,8 +221,8 @@ def get_Selected_instrument_info(request):
         # print(data1)
         print(f"receive data of {api_url}, len = {len(data1['data'])}")
         # for data in data1['data']:
-            # print(data)
-            # instrument_info_list.append(data)
+        # print(data)
+        # instrument_info_list.append(data)
 
     res = data1['data']
     cntr = 0
@@ -258,26 +255,25 @@ def get_Selected_instrument_info(request):
 
 
 def bazaar_info(request):
-
     res = {}
     sites = 'http://www.tsetmc.com/Loader.aspx?ParTree=15'
 
-    bourse_bazaar_status = ""               # وضعیت بازار
-    bourse_index_total = ""                 # شاخص کل
-    bourse_index_total_Equal_weight = ""    # شاخص كل (هم وزن)
-    bourse_bazaar_value = ""                # ارزش بازار
-    bourse_date = ""                        # اطلاعات قیمت
-    bourse_transaction_count = ""           # تعداد معاملات
-    bourse_transaction_value = ""           # ارزش معاملات
-    bourse_transaction_volume = ""          # حجم معاملات
+    bourse_bazaar_status = ""  # وضعیت بازار
+    bourse_index_total = ""  # شاخص کل
+    bourse_index_total_Equal_weight = ""  # شاخص كل (هم وزن)
+    bourse_bazaar_value = ""  # ارزش بازار
+    bourse_date = ""  # اطلاعات قیمت
+    bourse_transaction_count = ""  # تعداد معاملات
+    bourse_transaction_value = ""  # ارزش معاملات
+    bourse_transaction_volume = ""  # حجم معاملات
 
-    farabourse_bazaar_status = ""           # وضعیت بازار
-    farabourse_index_total = ""             # شاخص کل
-    farabourse_bazaar_value = ""            # ارزش بازار اول و دوم
-    farabourse_date = ""                    # اطلاعات قیمت
-    farabourse_transaction_count = ""       # تعداد معاملات
-    farabourse_transaction_value = ""       # ارزش معاملات
-    farabourse_transaction_volume = ""      # حجم معاملات
+    farabourse_bazaar_status = ""  # وضعیت بازار
+    farabourse_index_total = ""  # شاخص کل
+    farabourse_bazaar_value = ""  # ارزش بازار اول و دوم
+    farabourse_date = ""  # اطلاعات قیمت
+    farabourse_transaction_count = ""  # تعداد معاملات
+    farabourse_transaction_value = ""  # ارزش معاملات
+    farabourse_transaction_volume = ""  # حجم معاملات
 
     with requests.get(sites) as request:
         data1 = request
@@ -303,37 +299,37 @@ def bazaar_info(request):
                 # bourse
                 if isBourse:
                     if td.get_text() == 'وضعیت بازار':
-                        bourse_bazaar_status = all_td[cntr+1].get_text()
+                        bourse_bazaar_status = all_td[cntr + 1].get_text()
                     if td.get_text() == 'شاخص کل':
-                        bourse_index_total = all_td[cntr+1].get_text()
+                        bourse_index_total = all_td[cntr + 1].get_text()
                     if td.get_text() == 'شاخص كل (هم وزن)':
-                        bourse_index_total_Equal_weight = all_td[cntr+1].get_text()
+                        bourse_index_total_Equal_weight = all_td[cntr + 1].get_text()
                     if td.get_text() == 'ارزش بازار':
-                        bourse_bazaar_value = all_td[cntr+1].get_text()
+                        bourse_bazaar_value = all_td[cntr + 1].get_text()
                     if td.get_text() == 'اطلاعات قیمت':
-                        bourse_date = all_td[cntr+1].get_text()
+                        bourse_date = all_td[cntr + 1].get_text()
                     if td.get_text() == 'تعداد معاملات':
-                        bourse_transaction_count = all_td[cntr+1].get_text()
+                        bourse_transaction_count = all_td[cntr + 1].get_text()
                     if td.get_text() == 'ارزش معاملات':
-                        bourse_transaction_value = all_td[cntr+1].get_text()
+                        bourse_transaction_value = all_td[cntr + 1].get_text()
                     if td.get_text() == 'حجم معاملات':
-                        bourse_transaction_volume = all_td[cntr+1].get_text()
+                        bourse_transaction_volume = all_td[cntr + 1].get_text()
                 # faraBourse
                 else:
                     if td.get_text() == 'وضعیت بازار':
-                        farabourse_bazaar_status = all_td[cntr+1].get_text()
+                        farabourse_bazaar_status = all_td[cntr + 1].get_text()
                     if td.get_text() == 'شاخص کل':
-                        farabourse_index_total = all_td[cntr+1].get_text()
+                        farabourse_index_total = all_td[cntr + 1].get_text()
                     if td.get_text() == 'ارزش بازار اول و دوم':
-                        farabourse_bazaar_value = all_td[cntr+1].get_text()
+                        farabourse_bazaar_value = all_td[cntr + 1].get_text()
                     if td.get_text() == 'اطلاعات قیمت':
-                        farabourse_date = all_td[cntr+1].get_text()
+                        farabourse_date = all_td[cntr + 1].get_text()
                     if td.get_text() == 'تعداد معاملات':
-                        farabourse_transaction_count = all_td[cntr+1].get_text()
+                        farabourse_transaction_count = all_td[cntr + 1].get_text()
                     if td.get_text() == 'ارزش معاملات':
-                        farabourse_transaction_value = all_td[cntr+1].get_text()
+                        farabourse_transaction_value = all_td[cntr + 1].get_text()
                     if td.get_text() == 'حجم معاملات':
-                        farabourse_transaction_volume = all_td[cntr+1].get_text()
+                        farabourse_transaction_volume = all_td[cntr + 1].get_text()
                 cntr += 1
 
     info = {
@@ -353,7 +349,7 @@ def bazaar_info(request):
         'farabourse_transaction_value': farabourse_transaction_value,
         'farabourse_transaction_volume': farabourse_transaction_volume,
     }
-    rr={}
+    rr = {}
 
     return JsonResponse(info, safe=False)
 
@@ -371,7 +367,6 @@ def fill_data(request):
     # candle.feed_candle()
     feed.update_timeframe_candles()
     return HttpResponse(f"Table processed", content_type="text/plain")
-
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
@@ -395,8 +390,6 @@ def fill_data(request):
         print("message sent!")
         time.sleep(1)
         count = count + 1
-
-
 
     # table = request.GET.get('table')
     # print(f"feed {table} table")
@@ -463,7 +456,7 @@ def test_data(request):
     # return HttpResponse(("test only, please." ), content_type="text/plain")
     # return JsonResponse(data, safe=False)
     return HttpResponse(json.dumps(data, ensure_ascii=False),
-             content_type="application/json")
+                        content_type="application/json")
 
 
 def trade_daily(request):
@@ -483,7 +476,6 @@ def trade_daily(request):
     #
     # return JsonResponse({}, safe=False)
 
-
     instrument = request.GET.get('instrument')
     version = request.GET.get('version')
     print(instrument, version)
@@ -494,7 +486,7 @@ def trade_daily(request):
     # get selected instrument
     obj = models.Instrumentsel.objects.get(id=instrument)
 
-    if obj.index is not  None:
+    if obj.index is not None:
         # threading to get index candles
         feed.feed_indexdaily_thread(obj.index_id)
     else:
@@ -562,7 +554,7 @@ def chart_timeframes(request):
     # get selected instrument
     obj = models.Instrumentsel.objects.get(id=instrument)
 
-    if obj.index is not  None:
+    if obj.index is not None:
         # threading to get index candles
         feed.feed_indexdaily_thread(obj.index_id)
     else:
@@ -605,7 +597,7 @@ def watchlist(request):
             obj_watchlist.save()
             return JsonResponse(list(obj_watchlist), safe=False)
         else:
-            return JsonResponse({'error':'enter watchlist name'}, safe=False)
+            return JsonResponse({'error': 'enter watchlist name'}, safe=False)
 
     else:
         watchlist = request.GET.get('watchlist')
@@ -636,7 +628,7 @@ def get_client_ip(request):
 class WatchlistAPIView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = 'pk'
     serializer_class = WatchListSerializer
-    permission_classes = [IsAuthenticated,] # [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         # print('watchlist......', self.request.user)
@@ -672,7 +664,7 @@ class WatchlistRudView(generics.RetrieveUpdateDestroyAPIView):
 class BugReportAPIView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = 'pk'
     serializer_class = BugReportSerializer
-    permission_classes = []#[IsOwnerOrReadOnly, IsAuthenticated]
+    permission_classes = []  # [IsOwnerOrReadOnly, IsAuthenticated]
 
     def get_queryset(self):
         # print('watchlist......', self.request.user)
@@ -697,7 +689,7 @@ class BugReportAPIView(mixins.CreateModelMixin, generics.ListAPIView):
 class BugReportRudView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'pk'
     serializer_class = BugReportSerializer
-    permission_classes = [ ]  # [IsOwnerOrReadOnly]
+    permission_classes = []  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         return models.BugReport.objects.all()
@@ -711,7 +703,7 @@ class BugReportRudView(generics.RetrieveUpdateDestroyAPIView):
 class UserJsonTechnicalAPIView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = 'pk'
     serializer_class = TechnicalJSONUserSerializer
-    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         # print('watchlist......', self.request.user)
@@ -758,7 +750,7 @@ class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
 class WatchlistItemAPIView(mixins.CreateModelMixin, generics.ListAPIView):
     lookup_field = 'pk'
     serializer_class = WatchListItemSerializer
-    permission_classes = [IsAuthenticated,]#[IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         qs = WatchListItem.objects.filter(watch_list__user=self.request.user)
@@ -801,7 +793,7 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_instrument = Instrumentsel.objects.get(id=self.kwargs['pk'])
@@ -816,7 +808,7 @@ class CompanyListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         company_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Instrumentsel.DoesNotExist:
                 pass
@@ -849,7 +841,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_news = News.objects.get(id=self.kwargs['pk'])
@@ -864,11 +856,57 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         news_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except News.DoesNotExist:
                 pass
-        # print(self.queryset[0].pic)
+        return self.queryset
+
+
+class ArticleListRetrieveApiView(viewsets.GenericViewSet,
+                                 mixins.ListModelMixin,
+                                 mixins.RetrieveModelMixin):
+    """List and retrieve articles"""
+
+    serializer_class = ArticleListSerializer
+    queryset = Article.objects.all()
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_fields = ['category']
+    search_fields = ['title', 'tag']
+    ordering_fields = ['date', 'hit_count']
+    ordering = ['-date']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return self.serializer_class
+        else:
+            return ArticleRetrieveSerializer
+
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            HitCount.objects.filter(date__lt=date.today()).delete()
+            customer_ip = get_client_ip(self.request)
+            try:
+                current_article = Article.objects.get(id=self.kwargs['pk'])
+                try:
+                    HitCount.objects.get(
+                        ip=customer_ip,
+                        article_id=self.kwargs['pk']
+                    )
+                except HitCount.DoesNotExist:
+                    current_article.hit_count = current_article.hit_count + 1
+                    current_article.save()
+                    HitCount.objects.create(
+                        ip=customer_ip,
+                        article_id=self.kwargs['pk'],
+                        date=date.today()
+                    )
+            except Article.DoesNotExist:
+                pass
         return self.queryset
 
 
@@ -913,7 +951,7 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
     def get_queryset(self):
         queryset = self.queryset
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_technical = Technical.objects.get(id=self.kwargs['pk'])
@@ -928,7 +966,7 @@ class TechnicalListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         technical_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Technical.DoesNotExist:
                 pass
@@ -965,7 +1003,7 @@ class WebinarListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_webinar = Webinar.objects.get(id=self.kwargs['pk'])
@@ -980,7 +1018,7 @@ class WebinarListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         webinar_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Webinar.DoesNotExist:
                 pass
@@ -1006,7 +1044,7 @@ class FundamentalListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_fundamental = Fundamental.objects.get(id=self.kwargs['pk'])
@@ -1021,7 +1059,7 @@ class FundamentalListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         fundamental_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Fundamental.DoesNotExist:
                 pass
@@ -1047,7 +1085,7 @@ class BazaarListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_bazaar = Bazaar.objects.get(id=self.kwargs['pk'])
@@ -1062,7 +1100,7 @@ class BazaarListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         bazaar_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Bazaar.DoesNotExist:
                 pass
@@ -1080,7 +1118,7 @@ class TutorialListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_tutorial = Tutorial.objects.get(id=self.kwargs['pk'])
@@ -1095,7 +1133,7 @@ class TutorialListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         tutorial_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Tutorial.DoesNotExist:
                 pass
@@ -1127,7 +1165,7 @@ class FreeTutorialListRetrieveApiView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.action == 'retrieve':
-            HitCount.objects.filter(date__lt=datetime.date.today()).delete()
+            HitCount.objects.filter(date__lt=date.today()).delete()
             customer_ip = get_client_ip(self.request)
             try:
                 current_tutorial = Tutorial.objects.get(id=self.kwargs['pk'])
@@ -1142,7 +1180,7 @@ class FreeTutorialListRetrieveApiView(viewsets.GenericViewSet,
                     HitCount.objects.create(
                         ip=customer_ip,
                         tutorial_id=self.kwargs['pk'],
-                        date=datetime.date.today()
+                        date=date.today()
                     )
             except Tutorial.DoesNotExist:
                 pass
@@ -1300,7 +1338,6 @@ class NewsPodcastListRetrieveAPIView(viewsets.GenericViewSet,
         if self.action == 'retrieve':
             return NewsPodcastDetailSerializer
         return self.serializer_class
-
 
 
 def trade_midday_function(request):
