@@ -1970,6 +1970,21 @@ def second_feed_tradedaily_thread(instrument_id, host):
 
     # check result length
     if len(candle_list) == 0:
+
+        # # Update instrument info for first time
+        # candle = models.Chart.objects.get(instrument_id=instrument_id, timeFrame='D1').data
+        # # find candle file url
+        # url2 = UtilFunc.findCsvFileUrl(candle.url, host)
+        # # read csv file
+        # df = pd.read_csv(url2)
+        # # update average of instrumentInfo model
+        # obj_info, crt = models.InstrumentInfo.objects.get_or_create(instrument_id=instrument_id)
+        # obj_info.volAvg1M = df.iloc[-30:, -1].mean()
+        # obj_info.volAvg3M = df.iloc[-90:, -1].mean()
+        # obj_info.volAvg12M = df.iloc[-360:, -1].mean()
+        # obj_info.created_on = timezone.now()  # df.iloc[-1:, 0]
+        # obj_info.save()
+
         return
 
     print("candle_list:", candle_list)
@@ -2096,6 +2111,7 @@ def second_feed_tradedaily_thread(instrument_id, host):
                 else:
                     vol = vol + df_days_of_week['<VOL>'][index_start_day + i]
 
+            print(int(d_last_str), int(0), index_start_day)
             candle_week = [int(d_last_str), int(0), int(df_days_of_week['<OPEN>'][index_start_day])
                 , int(df_days_of_week['<HIGH>'].max())
                 , int(df_days_of_week['<LOW>'].min())
@@ -2237,11 +2253,15 @@ def get_instrument_info(request):
     # print('list: ', id_str)
 
     # today date
+    user_date = request.GET.get('date')
     today_date = str(jdatetime.date.today())
     today_date = today_date.replace('-', '')
+    if user_date is not None:
+        today_date = user_date
     timee = "090000"
     dateTime = today_date + timee
-    # print(dateTime)
+    # dateTime = "13990828" + timee
+    print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
               f'@date_time={dateTime}@date_time_op=gt' \

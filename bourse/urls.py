@@ -18,6 +18,7 @@ router.register('instrument', views.InstrumentListRetrieveViewSet)
 router.register('notification', views.NotificationListRetrieveViewSet)
 router.register('news-podcast', views.NewsPodcastListRetrieveAPIView)
 
+
 urlpatterns = [
     path('', include(router.urls)),
     path(
@@ -39,6 +40,8 @@ urlpatterns = [
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     path('list-tradeDetail/',  views.list_trade_detail, name='list-trade-detail'),
     path('instrument-info/',  views.instrument_info, name='instrument-info'),
+    path('instrument-info-single/',  views.get_Selected_instrument_info, name='get-Selected-instrument-info'),
+    path('bazaar-info/',  views.bazaar_info, name='bazaar-info'),
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     url(r'^watchlist$', views.WatchlistAPIView.as_view(), name='watchlist-post-listcreate'),
     url(r'^watchlist/(?P<pk>\d+)/$', views.WatchlistRudView.as_view(), name='watchlist-post-rud'),

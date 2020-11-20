@@ -1,5 +1,4 @@
 import concurrent
-import datetime
 import logging
 import secrets
 import string
@@ -18,6 +17,9 @@ from django.http import HttpResponse, JsonResponse
 import pandas as pd
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from datetime import date, timedelta, datetime
+from bs4 import BeautifulSoup
+from urllib.request import urlopen
 
 import jdatetime
 from persiantools.jdatetime import JalaliDate
@@ -49,7 +51,7 @@ from .models import Company, \
     HitCount, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
-    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast
+    WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast, InstrumentInfo
 
 from . import models
 
@@ -132,19 +134,228 @@ def list_trade_detail(request):
     return JsonResponse(data1, safe=False)
 
 
+# get all instrument real-time data
 def instrument_info(request):
-    data1 = {}
 
     res = feed.get_instrument_info(request)
-    print(res)
+
+    cntr = 0
+    for itm in res:
+
+        # print(itm)
+
+        #  ignore deleted items
+        # if itm['meta']['state'] == 'deleted':
+        #     cntr += 1
+        #     continue
+
+        isIgnore = False
+
+        # add instrument short name
+        try:
+            # print(itm['instrument']['id'])
+            res[cntr]['instrument']['short_name'] = Instrumentsel.objects.get(id=itm['instrument']['id']).short_name
+        except Instrumentsel.DoesNotExist:
+            isIgnore = True
+            # print(f"2----An exception occurred in ")
+            res[cntr]['instrument']['short_name'] = "صندوق سرمایه گذاری"
+            # print(f'instrument {itm["instrument"]["id"]} dose not exist')
+        except:
+            isIgnore = True
+            # print(f"1----An exception occurred in ")
+        if isIgnore is True:
+            cntr += 1
+            continue
+
+        # print(f"4----cont {isIgnore}")
+
+        # print(itm)
+        # add instrument info
+        try:
+            obj_insIfno = InstrumentInfo.objects.get(instrument_id=itm['instrument']['id'])
+            res[cntr]['VolumeAvg1M'] = obj_insIfno.volAvg1M
+            res[cntr]['VolumeAvg3M'] = obj_insIfno.volAvg3M
+            res[cntr]['VolumeAvg12M'] = obj_insIfno.volAvg12M
+        except InstrumentInfo.DoesNotExist:
+            res[cntr]['VolumeAvg1M'] = -1
+            res[cntr]['VolumeAvg3M'] = -1
+            res[cntr]['VolumeAvg12M'] = -1
+        except:
+            print(f"3----An exception occurred in ")
+        cntr += 1
+
+    return JsonResponse(res, safe=False)
 
 
-    data1 = {
-        'ids': res
+def get_Selected_instrument_info(request):
+
+    instrument_id = request.GET.get('instrument')
+    back_test_day = request.GET.get('day')
+
+    # instruments_obj= models.InstrumentInfo.objects.get(ins)
+
+    if instrument_id is None:
+        return JsonResponse({'error': 'enter instrument id'}, safe=False)
+
+    # back test day limitation
+    back_test_day = int(back_test_day)
+    if back_test_day > 100:
+        back_test_day = 100
+
+    # today date
+    td = jdatetime.date.today()
+    if back_test_day is not None:
+        td = td - timedelta(days=back_test_day)
+
+    today_date = str(td)
+    today_date = today_date.replace('-', '')
+    timee = "090000"
+    dateTime = today_date + timee
+    print(dateTime)
+    # return JsonResponse({}, safe=False)
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'instrument.id={instrument_id}' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time'
+
+    with requests.get(api_url) as request:
+        data1 = request.json()
+        # print(data1)
+        print(f"receive data of {api_url}, len = {len(data1['data'])}")
+        # for data in data1['data']:
+            # print(data)
+            # instrument_info_list.append(data)
+
+    res = data1['data']
+    cntr = 0
+    for itm in res:
+        # add instrument short name
+        try:
+            # print(itm['instrument']['id'])
+            res[cntr]['instrument']['short_name'] = Instrumentsel.objects.get(id=itm['instrument']['id']).short_name
+        except Instrumentsel.DoesNotExist:
+            res[cntr]['instrument']['short_name'] = "صندوق سرمایه گذاری"
+            # print(f'instrument {itm["instrument"]["id"]} dose not exist')
+        except:
+            print(f"An exception occurred in ")
+
+        # add instrument info
+        try:
+            obj_insIfno = InstrumentInfo.objects.get(instrument_id=itm['instrument']['id'])
+            res[cntr]['VolumeAvg1M'] = obj_insIfno.volAvg1M
+            res[cntr]['VolumeAvg3M'] = obj_insIfno.volAvg3M
+            res[cntr]['VolumeAvg12M'] = obj_insIfno.volAvg12M
+        except InstrumentInfo.DoesNotExist:
+            res[cntr]['VolumeAvg1M'] = -1
+            res[cntr]['VolumeAvg3M'] = -1
+            res[cntr]['VolumeAvg12M'] = -1
+        except:
+            print(f"An exception occurred in ")
+        cntr += 1
+
+    return JsonResponse(res, safe=False)
+
+
+def bazaar_info(request):
+
+    res = {}
+    sites = 'http://www.tsetmc.com/Loader.aspx?ParTree=15'
+
+    bourse_bazaar_status = ""               # وضعیت بازار
+    bourse_index_total = ""                 # شاخص کل
+    bourse_index_total_Equal_weight = ""    # شاخص كل (هم وزن)
+    bourse_bazaar_value = ""                # ارزش بازار
+    bourse_date = ""                        # اطلاعات قیمت
+    bourse_transaction_count = ""           # تعداد معاملات
+    bourse_transaction_value = ""           # ارزش معاملات
+    bourse_transaction_volume = ""          # حجم معاملات
+
+    farabourse_bazaar_status = ""           # وضعیت بازار
+    farabourse_index_total = ""             # شاخص کل
+    farabourse_bazaar_value = ""            # ارزش بازار اول و دوم
+    farabourse_date = ""                    # اطلاعات قیمت
+    farabourse_transaction_count = ""       # تعداد معاملات
+    farabourse_transaction_value = ""       # ارزش معاملات
+    farabourse_transaction_volume = ""      # حجم معاملات
+
+    with requests.get(sites) as request:
+        data1 = request
+        # print(data1)
+        # print(f"receive data of {sites}, len = {(data1)}")
+        res = str(data1)
+
+        html_bytes = data1.text
+        html = html_bytes
+
+        soup = BeautifulSoup(html, "html.parser")
+        res2 = soup.find_all('div', {'class': 'box1 blue tbl z1_4 h210'})
+        for itm in res2:
+            print('--------------------------')
+            header = itm.find('div', {'class': 'header'})
+            isBourse = False
+            if header.get_text() == 'بازار نقدی بورس در یک نگاه':
+                isBourse = True
+            print(f'header: {header.get_text()} - {isBourse}')
+            all_td = itm.find_all('td')
+            cntr = 0
+            for td in all_td:
+                # bourse
+                if isBourse:
+                    if td.get_text() == 'وضعیت بازار':
+                        bourse_bazaar_status = all_td[cntr+1].get_text()
+                    if td.get_text() == 'شاخص کل':
+                        bourse_index_total = all_td[cntr+1].get_text()
+                    if td.get_text() == 'شاخص كل (هم وزن)':
+                        bourse_index_total_Equal_weight = all_td[cntr+1].get_text()
+                    if td.get_text() == 'ارزش بازار':
+                        bourse_bazaar_value = all_td[cntr+1].get_text()
+                    if td.get_text() == 'اطلاعات قیمت':
+                        bourse_date = all_td[cntr+1].get_text()
+                    if td.get_text() == 'تعداد معاملات':
+                        bourse_transaction_count = all_td[cntr+1].get_text()
+                    if td.get_text() == 'ارزش معاملات':
+                        bourse_transaction_value = all_td[cntr+1].get_text()
+                    if td.get_text() == 'حجم معاملات':
+                        bourse_transaction_volume = all_td[cntr+1].get_text()
+                # faraBourse
+                else:
+                    if td.get_text() == 'وضعیت بازار':
+                        farabourse_bazaar_status = all_td[cntr+1].get_text()
+                    if td.get_text() == 'شاخص کل':
+                        farabourse_index_total = all_td[cntr+1].get_text()
+                    if td.get_text() == 'ارزش بازار اول و دوم':
+                        farabourse_bazaar_value = all_td[cntr+1].get_text()
+                    if td.get_text() == 'اطلاعات قیمت':
+                        farabourse_date = all_td[cntr+1].get_text()
+                    if td.get_text() == 'تعداد معاملات':
+                        farabourse_transaction_count = all_td[cntr+1].get_text()
+                    if td.get_text() == 'ارزش معاملات':
+                        farabourse_transaction_value = all_td[cntr+1].get_text()
+                    if td.get_text() == 'حجم معاملات':
+                        farabourse_transaction_volume = all_td[cntr+1].get_text()
+                cntr += 1
+
+    info = {
+        'bourse_bazaar_status': bourse_bazaar_status,
+        'bourse_index_total': bourse_index_total,
+        'bourse_index_total_Equal_weight': bourse_index_total_Equal_weight,
+        'bourse_bazaar_value': bourse_bazaar_value,
+        'bourse_date': bourse_date,
+        'bourse_transaction_count': bourse_transaction_count,
+        'bourse_transaction_value': bourse_transaction_value,
+        'bourse_transaction_volume': bourse_transaction_volume,
+        'farabourse_bazaar_status': farabourse_bazaar_status,
+        'farabourse_index_total': farabourse_index_total,
+        'farabourse_bazaar_value': farabourse_bazaar_value,
+        'farabourse_date': farabourse_date,
+        'farabourse_transaction_count': farabourse_transaction_count,
+        'farabourse_transaction_value': farabourse_transaction_value,
+        'farabourse_transaction_volume': farabourse_transaction_volume,
     }
+    rr={}
 
-
-    return JsonResponse(data1, safe=False)
+    return JsonResponse(info, safe=False)
 
 
 def save_csv_candle(request):
