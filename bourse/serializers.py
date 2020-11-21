@@ -352,7 +352,8 @@ class NewsRetrieveSerializer(serializers.ModelSerializer):
             'pic_url',
             'tag',
             'short_description',
-            'comment'
+            'comment',
+            'description'
         )
 
 
