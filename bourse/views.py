@@ -12,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from kavenegar import KavenegarAPI, APIException, HTTPException
 from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 import pandas as pd
@@ -742,36 +743,13 @@ class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
         return TechnicalJSONUser.objects.filter(user=self.request.user)
 
 
-"""
--- Watchlist item class --
-"""
+"""-------------------------------------------------------------------------------"""
 
 
-class WatchlistItemAPIView(mixins.CreateModelMixin, generics.ListAPIView):
-    lookup_field = 'pk'
-    serializer_class = WatchListItemSerializer
-    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
-
-    def get_queryset(self):
-        qs = WatchListItem.objects.filter(watch_list__user=self.request.user)
-        return qs
-
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-
-    # post method for creat item
-    def post(self, request, *args, **kwargs):
-        print('create')
-        return self.create(request, *args, **kwargs)
-
-
-class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'pk'
-    serializer_class = WatchListItemSerializer
-    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
-
-    def get_queryset(self):
-        return WatchListItem.objects.all()
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
@@ -823,6 +801,7 @@ class NewsListRetrieveApiView(viewsets.GenericViewSet,
 
     serializer_class = NewsListSerializer
     queryset = News.objects.filter(is_approved=True)
+    # pagination_class = StandardResultsSetPagination
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
