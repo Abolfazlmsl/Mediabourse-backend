@@ -752,6 +752,39 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+
+"""
+-- Watchlist item class --
+"""
+
+
+class WatchlistItemAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = WatchListItemSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        qs = WatchListItem.objects.filter(watch_list__user=self.request.user)
+        return qs
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = WatchListItemSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return WatchListItem.objects.all()
+
+
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
                                  mixins.ListModelMixin,
                                  mixins.RetrieveModelMixin):
