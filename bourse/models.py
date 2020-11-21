@@ -393,6 +393,7 @@ class Instrument(models.Model):
     # future: آتی
     # option: اختیار فروش تبعی
     # energy: انرژی
+    # energy: انرژی
     # energy2: انرژی۲
     # intellectual_property: دارایی فکری
     # commodity: کالا
@@ -778,6 +779,10 @@ class News(models.Model):
     @property
     def pic_url(self):
         return self.pic
+
+    @property
+    def comment(self):
+        return self.usercomment_set.all()
 
 
 class Filter(models.Model):
@@ -1266,13 +1271,7 @@ class Article(models.Model):
         on_delete=models.CASCADE,
         help_text='در صورت اختصاص مقاله برای گروه انتخاب شود'
     )
-    instrument = models.ForeignKey(
-        Instrumentsel,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        help_text='در صورت اختصاص مقاله برای نماد انتخاب شود'
-    )
+    text = RichTextField()
     date = models.DateField(
         auto_now_add=True,
         help_text=

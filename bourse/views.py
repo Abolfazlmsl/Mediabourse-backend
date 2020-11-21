@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 import pandas as pd
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from datetime import date, timedelta, datetime
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -39,9 +39,9 @@ from .serializers import \
     FileRepositorySerializer, \
     UserForgetSerializer, \
     WatchListSerializer, \
-    WatchListItemSerializer, InstrumentSerializer, CommentSerializer, NotificationListSerializer, \
+    WatchListItemSerializer, InstrumentSerializer, NotificationListSerializer, \
     NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
-    NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer
+    NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer, CommentListSerializer
 
 from .models import Company, \
     News, \
@@ -1255,12 +1255,16 @@ class ForgetPasswordAPIView(generics.CreateAPIView):
             )
 
 
-class UserCommentListApiView(generics.ListAPIView):
+class UserCommentViewSet(viewsets.GenericViewSet,
+                         mixins.ListModelMixin,
+                         mixins.RetrieveModelMixin,
+                         mixins.CreateModelMixin):
     """
-        List user comment
+        List, retrieve, and create user comment
     """
-    serializer_class = CommentSerializer
+    serializer_class = CommentListSerializer
     queryset = UserComment.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly, ]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -1275,6 +1279,9 @@ class UserCommentListApiView(generics.ListAPIView):
     ]
     ordering_fields = ['created_on', 'like']
     ordering = ['-created_on']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class InstrumentListRetrieveViewSet(viewsets.GenericViewSet,

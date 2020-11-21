@@ -14,6 +14,7 @@ router.register('fundamental', views.FundamentalListRetrieveApiView)
 router.register('bazaar', views.BazaarListRetrieveApiView)
 router.register('tutorial', views.TutorialListRetrieveApiView)
 router.register('article', views.ArticleListRetrieveApiView)
+router.register('comment', views.UserCommentViewSet)
 router.register('free-tutorial', views.FreeTutorialListRetrieveApiView)
 router.register('instrument', views.InstrumentListRetrieveViewSet)
 router.register('notification', views.NotificationListRetrieveViewSet)
@@ -27,8 +28,6 @@ urlpatterns = [
         views.ForgetPasswordAPIView.as_view(),
         name='forget-password'
     ),
-    path('comment/',  views.UserCommentListApiView.as_view(), name='comment'),
-
     path('fillData/',  views.fill_data, name='fill-data'),
     path('candle/',  views.save_csv_candle, name='candle'),
     path('trade-midday/',  views.trade_midday_function, name='trade-midday'),

@@ -111,34 +111,6 @@ class InstrumentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class NewsListSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(many=False)
-    instrument = InstrumentSerializer(many=False)
-    user = UserSerializer(many=False)
-    pic_url = serializers.CharField(max_length=255)
-
-    class Meta:
-        model = News
-        fields = (
-            'id',
-            'category',
-            'instrument',
-            'user',
-            'title',
-            'date',
-            'pic_url',
-            'tag',
-            'short_description'
-        )
-
-
-class NewsRetrieveSerializer(NewsListSerializer):
-
-    class Meta:
-        model = News
-        exclude = ('pic',)
-
-
 class ArticleListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=False)
 
@@ -307,18 +279,80 @@ class UserForgetSerializer(serializers.Serializer):
         model = User
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentListSerializer(serializers.ModelSerializer):
     """Serializer for comment model"""
 
     class Meta:
         model = UserComment
         fields = (
             'id',
+            'user',
             'parent',
             'text',
             'comment_for',
             'like',
             'created_on'
+        )
+        read_only_fields = ['id', 'user']
+
+
+class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False)
+
+    class Meta:
+        model = UserComment
+        fields = (
+            'id',
+            'user',
+            'parent',
+            'text',
+            'news',
+            'like',
+            'created_on',
+        )
+
+
+class NewsListSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
+    user = UserSerializer(many=False)
+    pic_url = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = News
+        fields = (
+            'id',
+            'category',
+            'instrument',
+            'user',
+            'title',
+            'date',
+            'pic_url',
+            'tag',
+            'short_description'
+        )
+
+
+class NewsRetrieveSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+    instrument = InstrumentSerializer(many=False)
+    user = UserSerializer(many=False)
+    pic_url = serializers.CharField(max_length=255)
+    comment = NewsCommentRetrieveSerializer(many=True)
+
+    class Meta:
+        model = News
+        fields = (
+            'id',
+            'category',
+            'instrument',
+            'user',
+            'title',
+            'date',
+            'pic_url',
+            'tag',
+            'short_description',
+            'comment'
         )
 
 
