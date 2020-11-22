@@ -2265,7 +2265,7 @@ def get_instrument_info(request):
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
               f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time'
+              f'@_count=100@_sort=-date_time@_expand=trade'
               # f'instrument.id={id_str}@instrument.id_op=in' \
 
     # print(api_url)
