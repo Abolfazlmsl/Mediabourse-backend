@@ -47,8 +47,6 @@ urlpatterns = [
     url(r'^watchlist/(?P<pk>\d+)/$', views.WatchlistRudView.as_view(), name='watchlist-post-rud'),
     url(r'^bug-report$', views.BugReportAPIView.as_view(), name='bugreport-post-listcreate'),
     url(r'^bug-report/(?P<pk>\d+)/$', views.BugReportRudView.as_view(), name='bugreport-post-rud'),
-    url(r'^watchlist-item$', views.WatchlistItemAPIView.as_view(), name='watchlist-item-post-listcreate'),
-    url(r'^watchlist-item/(?P<pk>\d+)/$', views.WatchlistItemRudView.as_view(), name='watchlist-item-post-rud'),
     url(r'^user-json-technical$', views.UserJsonTechnicalAPIView.as_view(), name='user-json-technical-post-listcreate'),
     url(r'^user-json-technical/(?P<pk>\d+)/$', views.UserJsonTechnicalRudView.as_view(), name='user-json-technical-post-rud'),
 ]
