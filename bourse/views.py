@@ -215,7 +215,7 @@ def get_Selected_instrument_info(request):
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
               f'instrument.id={instrument_id}' \
               f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time'
+              f'@_count=100@_sort=-date_time@_expand=trade'
 
     with requests.get(api_url) as request:
         data1 = request.json()
@@ -750,6 +750,39 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = 'page_size'
     max_page_size = 1000
+
+
+
+"""
+-- Watchlist item class --
+"""
+
+
+class WatchlistItemAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = WatchListItemSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        qs = WatchListItem.objects.filter(watch_list__user=self.request.user)
+        return qs
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class WatchlistItemRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = WatchListItemSerializer
+    permission_classes = [IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return WatchListItem.objects.all()
 
 
 class CompanyListRetrieveApiView(viewsets.GenericViewSet,
