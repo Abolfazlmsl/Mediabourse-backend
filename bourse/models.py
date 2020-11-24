@@ -1293,6 +1293,10 @@ class Article(models.Model):
     def __str__(self):
         return f'{self.author}, {self.title}'
 
+    @property
+    def pic_url(self):
+        return self.thumbnail
+
 
 class CompanyFinancial(models.Model):
     user = models.ForeignKey(

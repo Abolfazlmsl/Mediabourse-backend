@@ -113,10 +113,23 @@ class InstrumentSerializer(serializers.ModelSerializer):
 
 class ArticleListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=False)
+    pic_url = serializers.CharField(max_length=255)
 
     class Meta:
         model = Article
-        fields = '__all__'
+        # fields = '__all__'
+        fields = (
+            'id',
+            'category',
+            'title',
+            'thumbnail',
+            'pic_url',
+            'text',
+            'date',
+            'author',
+            'tag',
+            'hit_count'
+        )
 
 
 class ArticleRetrieveSerializer(ArticleListSerializer):
