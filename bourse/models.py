@@ -782,9 +782,6 @@ class News(models.Model):
 
     @property
     def comment(self):
-        d = UserComment.objects.filter(parent=None, news_id=self.id)
-        for i in d:
-            print(i.usercomment_set.all())
         return self.usercomment_set.filter(parent=None)
 
 
