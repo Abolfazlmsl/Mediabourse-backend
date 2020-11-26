@@ -782,7 +782,7 @@ class News(models.Model):
 
     @property
     def comment(self):
-        return self.usercomment_set.all()
+        return self.usercomment_set.filter(parent__isnull=True)
 
 
 class Filter(models.Model):

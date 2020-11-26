@@ -315,6 +315,12 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
+    reply = serializers.SerializerMethodField()
+
+    def get_reply(self, obj):
+        queryset = UserComment.objects.filter(parent_id=obj.id)
+        serializer = NewsCommentRetrieveSerializer(queryset, many=True)
+        return serializer.data
 
     class Meta:
         model = UserComment
@@ -325,6 +331,7 @@ class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
             'text',
             'news',
             'like',
+            'reply',
             'created_on',
         )
 
