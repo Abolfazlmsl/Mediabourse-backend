@@ -782,7 +782,10 @@ class News(models.Model):
 
     @property
     def comment(self):
-        return self.usercomment_set.all()
+        d = UserComment.objects.filter(parent=None, news_id=self.id)
+        for i in d:
+            print(i.usercomment_set.all())
+        return self.usercomment_set.filter(parent=None)
 
 
 class Filter(models.Model):
@@ -1445,6 +1448,10 @@ class UserComment(models.Model):
 
     def __str__(self):
         return f'{self.user}, {self.text}, {self.comment_for}'
+
+    @property
+    def reply(self):
+        return UserComment.objects.filter(parent=self)
 
 
 class FileRepository(models.Model):

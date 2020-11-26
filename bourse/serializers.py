@@ -313,7 +313,7 @@ class CommentListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'user']
 
 
-class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
+class CommentReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
 
     class Meta:
@@ -326,6 +326,24 @@ class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
             'news',
             'like',
             'created_on',
+        )
+
+
+class NewsCommentRetrieveSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False)
+    reply = CommentReplySerializer(many=True)
+
+    class Meta:
+        model = UserComment
+        fields = (
+            'id',
+            'user',
+            'parent',
+            'text',
+            'news',
+            'like',
+            'created_on',
+            'reply'
         )
 
 
@@ -370,7 +388,7 @@ class NewsRetrieveSerializer(serializers.ModelSerializer):
             'tag',
             'short_description',
             'comment',
-            'description'
+            'description',
         )
 
 
