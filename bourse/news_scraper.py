@@ -1,15 +1,11 @@
-import concurrent
-import json
+from urllib.request import urlopen
 
-from django.db import IntegrityError
-
-from .models import News
-from pprint import pprint
-from urllib.error import HTTPError
-from unidecode import unidecode
 import requests
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
+from django.db import IntegrityError
+from unidecode import unidecode
+
+from .models import News
 
 
 def scraper(url):
@@ -143,10 +139,10 @@ def scraper(url):
 def scrap():
     print('start scraping news')
     urls = [
-        # 'http://www.fipiran.com/News?Cat=1&Feeder=0',
+        'http://www.fipiran.com/News?Cat=1&Feeder=0',
         'http://www.fipiran.com/News?Cat=2&Feeder=0',
-        # 'http://www.fipiran.com/News?Cat=4&Feeder=0',
-        # 'http://www.fipiran.com/News?Cat=5&Feeder=0',
+        'http://www.fipiran.com/News?Cat=4&Feeder=0',
+        'http://www.fipiran.com/News?Cat=5&Feeder=0',
     ]
     for url in urls:
         scraper(url)
