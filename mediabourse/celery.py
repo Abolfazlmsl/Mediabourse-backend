@@ -6,7 +6,7 @@ from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mediabourse.settings')
 
-app = Celery('core')
+app = Celery('mediabourse')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
