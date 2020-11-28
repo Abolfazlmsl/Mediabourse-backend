@@ -21,7 +21,10 @@ def scrap_news():
         'http://www.fipiran.ir/News?Cat=5&Feeder=0',
     ]
     for url in urls:
-        page = urlopen(url)
+        try:
+            page = urlopen(url)
+        except OSError:
+            continue
 
         html_bytes = page.read()
         html = html_bytes
@@ -31,10 +34,14 @@ def scrap_news():
         all_news = soup.find('div', {'class': 'faq_accordion'}).find_all('div', {'class': 'item'})
         for news in all_news:
             page_url = news.find('a', href=True).get('href')
-            if 'sena.ir' in page_url:
-                continue
+            # if 'sena.ir' in page_url:
+            #     continue
             print(page_url)
-            page = requests.get(page_url)
+            try:
+                page = requests.get(page_url)
+                print("passed", page)
+            except requests.exceptions.ConnectionError:
+                requests.status_code = "Connection refused"
 
             soup = BeautifulSoup(page.content, "html.parser")
 
