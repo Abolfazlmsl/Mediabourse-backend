@@ -156,7 +156,7 @@ class TradeAdmin(admin.ModelAdmin):
 
 @admin.register(models.Tradedetail)
 class TradedetailAdmin(admin.ModelAdmin):
-    list_display = ("version", "instrument_name", "date_time",  "value")
+    list_display = ("instrument_name", "date_time")
     list_filter = ("instrument", "date_time",)
 
     def instrument_name(self, obj):

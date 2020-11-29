@@ -12,7 +12,7 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser, BugReport, NewsPodcast, Article
+    TechnicalJSONUser, BugReport, NewsPodcast, Article, Tradedetail
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,6 +37,44 @@ class BugReportSerializer(serializers.ModelSerializer):  # forms.ModelForm
             'email',
         ]
         read_only_fields = ['id']
+
+
+class TradedetailSerializer(serializers.ModelSerializer):  # forms.ModelForm
+    company_name = serializers.SerializerMethodField(read_only=True)
+    company_full_name = serializers.SerializerMethodField(read_only=True)
+    company_english_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Tradedetail
+        fields = [
+            # 'id',
+            'date_time',
+            'person_buyer_count',
+            'company_buyer_count',
+            'person_buy_volume',
+            'company_buy_volume',
+            'person_seller_count',
+            'company_seller_count',
+            'person_sell_volume',
+            'company_sell_volume',
+            'company_name',
+            'company_full_name',
+            'company_english_name',
+            'trade'
+        ]
+        read_only_fields = ['date_time', 'person_buyer_count', 'company_buyer_count', 'person_buy_volume',
+                            'company_buy_volume', 'person_seller_count', 'company_seller_count', 'person_sell_volume',
+                            'company_sell_volume', 'company_name', 'company_full_name', 'company_english_name', 'trade']
+        depth = 1
+
+    def get_company_name(self, obj):
+        return obj.instrument.get_short_name()
+
+    def get_company_full_name(self, obj):
+        return obj.instrument.get_name()
+
+    def get_company_english_name(self, obj):
+        return obj.instrument.get_short_english_name()
 
 
 class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm

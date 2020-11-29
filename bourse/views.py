@@ -42,7 +42,9 @@ from .serializers import \
     WatchListSerializer, \
     WatchListItemSerializer, InstrumentSerializer, NotificationListSerializer, \
     NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
-    NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer, CommentListSerializer
+    NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer, CommentListSerializer, \
+    TradedetailSerializer
+
 
 from .models import Company, \
     News, \
@@ -53,7 +55,7 @@ from .models import Company, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
     WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast, InstrumentInfo, \
-    Article
+    Article, Tradedetail
 
 from . import models
 
@@ -362,11 +364,15 @@ def save_csv_candle(request):
 
 import socket
 import time
+from . import tasks
 
 
 def fill_data(request):
     # candle.feed_candle()
-    feed.update_timeframe_candles()
+    # feed.update_timeframe_candles()
+    tasks.update_timeframe_candles()
+
+    # tasks.get_trade_detail()
     return HttpResponse(f"Table processed", content_type="text/plain")
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -741,6 +747,24 @@ class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return TechnicalJSONUser.objects.filter(user=self.request.user)
+
+
+class TradeDetailAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = TradedetailSerializer
+    permission_classes = [] #[IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = Tradedetail.objects.all()
+        query = self.request.GET.get("q")
+        query_instrument = self.request.GET.get("instrument")
+        query_share = self.request.GET.get("share")
+        if query is not None:
+            qs = qs.filter(Q(instrument__name__icontains=query)).distinct()
+        if query_instrument is not None:
+            qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        return qs
 
 
 """-------------------------------------------------------------------------------"""

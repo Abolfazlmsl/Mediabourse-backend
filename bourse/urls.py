@@ -51,4 +51,5 @@ urlpatterns = [
     url(r'^watchlist-item/(?P<pk>\d+)/$', views.WatchlistItemRudView.as_view(), name='watchlist-item-post-rud'),
     url(r'^user-json-technical$', views.UserJsonTechnicalAPIView.as_view(), name='user-json-technical-post-listcreate'),
     url(r'^user-json-technical/(?P<pk>\d+)/$', views.UserJsonTechnicalRudView.as_view(), name='user-json-technical-post-rud'),
+    url(r'^trade-details$', views.TradeDetailAPIView.as_view(), name='trade-detail-post-listcreate'),
 ]
