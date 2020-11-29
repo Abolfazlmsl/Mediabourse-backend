@@ -1,0 +1,45 @@
+1. logn WHM pannel
+
+2. open terminal
+
+3. install supervisor (last version is 3.4.0)
+        yum -y install supervisor
+
+2. all supervisor processes go here
+        /etc/supervisor.d
+
+3. create project's celery configuration file for supervisor
+        touch /etc/supervisor.d/project_name.conf
+
+4. write supervisor configuration:
+        nano /etc/supervisor.d/project_name.conf
+
+        [program:django_celery]
+		directory=/home/bourseapi/mediabourse
+		command=/home/bourseapi/virtualenv/mediabourse/3.7/bin/celery -A mediabourse beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+		process_name=%(program_name)s_%(process_num)02d
+		numprocs=3
+		autostart=true
+		autorestart=true
+		redirect_stderr=true
+		stdout_logfile=/var/log/mediabourse/celery.log
+		stderr_logfile=/var/log/mediabourse/celery.err.log
+
+5. create log files
+        touch /var/log/myproject/celery.log
+        touch /var/log/myproject/celery.err.log
+
+6. update supervisor configuration
+        supervisorctl reread
+        supervisorctl update
+		supervisorctl status
+
+7. done
+        supervisorctl {status|start|stop|restart} project_name
+		
+		
+check log; show detail of celery process description:
+	nano /var/log/mediabourse/celery.log
+	
+check supervisor status:
+	supervisorctl status

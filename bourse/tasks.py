@@ -12,6 +12,11 @@ from .models import News
 
 
 @shared_task
+def adding(x, y):
+    return x + y;
+
+
+@shared_task
 def scrap_news():
     print('start scraping news')
     urls = [

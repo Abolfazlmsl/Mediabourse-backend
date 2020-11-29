@@ -182,6 +182,12 @@ class NewsAdmin(admin.ModelAdmin):
     list_filter = ("reference", "is_approved", "date",)
 
 
+@admin.register(models.InstrumentInfo)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ("id", "instrument", "volAvg1M", "volAvg3M", "volAvg12M", "created_on")
+    list_filter = ("instrument", "created_on",)
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.WatchList)
 admin.site.register(models.RequestSymbol)
@@ -211,4 +217,3 @@ admin.site.register(models.TutorialFreeFile)
 admin.site.register(models.Notification)
 admin.site.register(models.Trademidday)
 admin.site.register(models.NewsPodcast)
-admin.site.register(models.InstrumentInfo)
