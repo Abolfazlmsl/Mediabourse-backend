@@ -796,7 +796,7 @@ class News(models.Model):
 
     @property
     def comment(self):
-        return self.usercomment_set.filter(parent__isnull=True)
+        return self.usercomment_set.filter(parent__isnull=True).order_by('created_on')
 
 
 class Filter(models.Model):
