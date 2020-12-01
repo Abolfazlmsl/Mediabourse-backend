@@ -12,7 +12,7 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser, BugReport, NewsPodcast, Article, Tradedetail
+    TechnicalJSONUser, BugReport, NewsPodcast, Article, Tradedetail, InstrumentInfo
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,6 +37,24 @@ class BugReportSerializer(serializers.ModelSerializer):  # forms.ModelForm
             'email',
         ]
         read_only_fields = ['id']
+
+
+class InstrumentInfoSerializer(serializers.ModelSerializer):  # forms.ModelForm
+
+    class Meta:
+        model = InstrumentInfo
+        fields = [
+            'id',
+            'instrument',
+            'volAvg1M',
+            'volAvg3M',
+            'volAvg12M',
+            'created_on',
+            'val_support',
+            'val_resistance',
+            'val_candleCount',
+        ]
+        read_only_fields = ['id', 'instrument', ]
 
 
 class TradedetailSerializer(serializers.ModelSerializer):  # forms.ModelForm

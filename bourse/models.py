@@ -1711,6 +1711,9 @@ class InstrumentInfo(models.Model):
     volAvg3M = models.PositiveIntegerField(default=0, help_text='میانگین 3 ماه')
     volAvg12M = models.PositiveIntegerField(default=0, help_text='میانگین 12 ماهه')
     created_on = models.DateField(null=True, blank=True, help_text="آخرین روز محاسبه")
+    val_support = models.PositiveIntegerField(default=0, help_text='قیمت حمایت')
+    val_resistance = models.PositiveIntegerField(default=0, help_text='قیمت مقاومت')
+    val_candleCount = models.PositiveIntegerField(default=0, help_text='تعداد کندل های گذشته برای محاسبه حجم ورود و خروج')
 
     def __str__(self):
         return self.instrument.short_name

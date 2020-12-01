@@ -43,7 +43,7 @@ from .serializers import \
     WatchListItemSerializer, InstrumentSerializer, NotificationListSerializer, \
     NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
     NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer, CommentListSerializer, \
-    TradedetailSerializer
+    TradedetailSerializer, InstrumentInfoSerializer
 
 
 from .models import Company, \
@@ -246,10 +246,18 @@ def get_Selected_instrument_info(request):
             res[cntr]['VolumeAvg1M'] = obj_insIfno.volAvg1M
             res[cntr]['VolumeAvg3M'] = obj_insIfno.volAvg3M
             res[cntr]['VolumeAvg12M'] = obj_insIfno.volAvg12M
+            res[cntr]['val_support'] = obj_insIfno.val_support
+            res[cntr]['val_resistance'] = obj_insIfno.val_resistance
+            res[cntr]['val_candleCount'] = obj_insIfno.val_candleCount
+            res[cntr]['InstrumentInfo_id'] = obj_insIfno.id
         except InstrumentInfo.DoesNotExist:
             res[cntr]['VolumeAvg1M'] = -1
             res[cntr]['VolumeAvg3M'] = -1
             res[cntr]['VolumeAvg12M'] = -1
+            res[cntr]['val_support'] = -1
+            res[cntr]['val_resistance'] = -1
+            res[cntr]['val_candleCount'] = -1
+            res[cntr]['InstrumentInfo_id'] = -1
         except:
             print(f"An exception occurred in ")
         cntr += 1
@@ -370,9 +378,8 @@ from . import tasks
 def fill_data(request):
     # candle.feed_candle()
     # feed.update_timeframe_candles()
-    tasks.update_timeframe_candles()
+    # tasks.update_timeframe_candles()
 
-    # tasks.get_trade_detail()
     return HttpResponse(f"Table processed", content_type="text/plain")
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -747,6 +754,42 @@ class UserJsonTechnicalRudView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return TechnicalJSONUser.objects.filter(user=self.request.user)
+
+
+class instrumentTechnicaInfoAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = InstrumentInfoSerializer
+    permission_classes = [] #[IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+
+        qs = InstrumentInfo.objects.all()
+        query = self.request.GET.get("q")
+        query_instrument = self.request.GET.get("instrument")
+
+        if query is not None:
+            qs = qs.filter(Q(instrument__name__icontains=query)).distinct()
+
+        if query_instrument is not None:
+            qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        return qs
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+
+    # post method for creat item
+    def post(self, request, *args, **kwargs):
+        print('create')
+        return self.create(request, *args, **kwargs)
+
+
+class instrumentTechnicaInfoRudView(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'pk'
+    serializer_class = InstrumentInfoSerializer
+    permission_classes = [] #[IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return InstrumentInfo.objects.all()
 
 
 class TradeDetailAPIView(mixins.CreateModelMixin, generics.ListAPIView):

@@ -52,4 +52,8 @@ urlpatterns = [
     url(r'^user-json-technical$', views.UserJsonTechnicalAPIView.as_view(), name='user-json-technical-post-listcreate'),
     url(r'^user-json-technical/(?P<pk>\d+)/$', views.UserJsonTechnicalRudView.as_view(), name='user-json-technical-post-rud'),
     url(r'^trade-details$', views.TradeDetailAPIView.as_view(), name='trade-detail-post-listcreate'),
+    url(r'^instrument-technical-info$', views.instrumentTechnicaInfoAPIView.as_view(),
+        name='instrument-technical-info-post-listcreate'),
+    url(r'^instrument-technical-info/(?P<pk>\d+)/$', views.instrumentTechnicaInfoRudView.as_view(),
+        name='instrument-technical-info-post-rud'),
 ]
