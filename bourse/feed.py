@@ -1,3 +1,7 @@
+import asyncio
+import json
+
+import aiohttp as aiohttp
 from django.db import IntegrityError
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor
@@ -2232,11 +2236,10 @@ def update_timeframe_candles():
         pool.map(second_feed_tradedaily_thread, instruments_id, host)
 
 
-def request_instrumentInfo(sites):
-    with requests.get(sites) as request:
-        data1 = request.json()
-        # print(data1)
-        print(f"receive data of {sites}, len = {len(data1['data'])}")
+async def request_instrumentInfo(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+        # data2 = json.loads(data1)
         for data in data1['data']:
             # print(data)
             instrument_info_list.append(data)
@@ -2244,12 +2247,12 @@ def request_instrumentInfo(sites):
 
 def get_instrument_info(request):
 
-    instruments_id = models.InstrumentInfo.objects.all().values_list('instrument__id', flat=True)
+    # instruments_id = models.InstrumentInfo.objects.all().values_list('instrument__id', flat=True)
     # host = request.get_host()
-    host = [request.get_host()] * len(instruments_id)
+    # host = [request.get_host()] * len(instruments_id)
     # print(instruments_id)
 
-    id_str = ','.join(str(x) for x in instruments_id)
+    # id_str = ','.join(str(x) for x in instruments_id)
     # print('list: ', id_str)
 
     # today date
@@ -2264,32 +2267,47 @@ def get_instrument_info(request):
     print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
-              f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time@_expand=trade'
+              f'&date_time={dateTime}&date_time_op=gt' \
+              f'&_count=100@_sort=-date_time&_expand=trade'
               # f'instrument.id={id_str}@instrument.id_op=in' \
 
     # print(api_url)
 
     sites = [
-        api_url + '@_skip=0',
-        api_url + '@_skip=100',
-        api_url + '@_skip=200',
-        api_url + '@_skip=300',
-        api_url + '@_skip=400',
-        api_url + '@_skip=500',
-        api_url + '@_skip=600',
-        api_url + '@_skip=700',
-        api_url + '@_skip=800',
-        api_url + '@_skip=900',
-        api_url + '@_skip=1000',
-        api_url + '@_skip=1100',
+        api_url + '&_skip=0',
+        api_url + '&_skip=100',
+        api_url + '&_skip=200',
+        api_url + '&_skip=300',
+        api_url + '&_skip=400',
+        api_url + '&_skip=500',
+        api_url + '&_skip=600',
+        api_url + '&_skip=700',
+        api_url + '&_skip=800',
+        api_url + '&_skip=900',
+        api_url + '&_skip=1000',
+        api_url + '&_skip=1100',
     ]
 
     instrument_info_list.clear()
 
-    with ThreadPoolExecutor(max_workers=10) as pool:
-        pool.map(request_instrumentInfo, sites)
+    # with ThreadPoolExecutor(max_workers=10) as pool:
+    #     pool.map(request_instrumentInfo, sites)
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_instrumentInfo(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
     return instrument_info_list
 
 
