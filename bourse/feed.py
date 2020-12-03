@@ -2239,6 +2239,8 @@ def update_timeframe_candles():
 async def request_instrumentInfo(client, url):
     async with client.get(url) as request:
         data1 = await request.json()
+        await print(url)
+        await print(data1['data'])
         # data2 = json.loads(data1)
         for data in data1['data']:
             # print(data)
@@ -2263,29 +2265,29 @@ def get_instrument_info(request):
         today_date = user_date
     timee = "090000"
     dateTime = today_date + timee
-    # dateTime = "13990828" + timee
+    dateTime = "13990912" + timee
     print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
-              f'&date_time={dateTime}&date_time_op=gt' \
-              f'&_count=100@_sort=-date_time&_expand=trade'
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time@_expand=trade'
               # f'instrument.id={id_str}@instrument.id_op=in' \
 
     # print(api_url)
 
     sites = [
-        api_url + '&_skip=0',
-        api_url + '&_skip=100',
-        api_url + '&_skip=200',
-        api_url + '&_skip=300',
-        api_url + '&_skip=400',
-        api_url + '&_skip=500',
-        api_url + '&_skip=600',
-        api_url + '&_skip=700',
-        api_url + '&_skip=800',
-        api_url + '&_skip=900',
-        api_url + '&_skip=1000',
-        api_url + '&_skip=1100',
+        api_url + '@_skip=0',
+        api_url + '@_skip=100',
+        api_url + '@_skip=200',
+        api_url + '@_skip=300',
+        api_url + '@_skip=400',
+        api_url + '@_skip=500',
+        api_url + '@_skip=600',
+        api_url + '@_skip=700',
+        api_url + '@_skip=800',
+        api_url + '@_skip=900',
+        api_url + '@_skip=1000',
+        api_url + '@_skip=1100',
     ]
 
     instrument_info_list.clear()
