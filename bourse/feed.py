@@ -18,6 +18,7 @@ from datetime import date, timedelta, datetime
 from persiantools.jdatetime import JalaliDate
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from .Utils import UtilFunc
+from channels.db import database_sync_to_async
 
 base_url = 'http://bourse-api.ir/bourse/api-test/?url='
 
@@ -2239,10 +2240,93 @@ def update_timeframe_candles():
 async def request_instrumentInfo(client, url):
     async with client.get(url) as request:
         data1 = await request.json()
-        # data2 = json.loads(data1)
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
         for data in data1['data']:
-            # print(data)
             instrument_info_list.append(data)
+            # save_tradeDetail(data)
+
+
+# @database_sync_to_async
+def save_tradeDetail(data):
+    miss_count = 0
+    obj = data
+
+    # print(data)
+    # print("--", obj['instrument']['id'])
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    try:
+        obj_instrument = models.Instrumentsel.objects.get(id=obj['instrument']['id'])
+    except models.Instrumentsel.DoesNotExist:
+        # print('can not find; ', obj['instrument'])
+        miss_count += 1
+        return
+    # print(obj_instrument.short_name, obj_instrument.id)
+    obj_trade_detail, otd = models.Tradedetail.objects.get_or_create(instrument=obj_instrument)
+    obj_trade, ot = models.Trade.objects.get_or_create(instrument=obj_instrument)
+
+    # fill trade
+    # print(obj['trade'])
+    # print('date= ', obj['trade']['date_time'])
+    # print('open_price= ', int(obj['trade']['open_price']))
+    if 'date_time' in obj['trade']:
+        obj_trade.date_time = obj['trade']['date_time']
+    if 'open_price' in obj['trade']:
+        obj_trade.open_price = int(obj['trade']['open_price'])
+    if 'high_price' in obj['trade']:
+        obj_trade.high_price = int(obj['trade']['high_price'])
+    if 'low_price' in obj['trade']:
+        obj_trade.low_price = int(obj['trade']['low_price'])
+    if 'close_price' in obj['trade']:
+        obj_trade.close_price = int(obj['trade']['close_price'])
+    if 'close_price_change' in obj['trade']:
+        obj_trade.close_price_change = int(obj['trade']['close_price_change'])
+    if 'real_close_price' in obj['trade']:
+        obj_trade.real_close_price = int(obj['trade']['real_close_price'])
+    if 'real_close_price_change' in obj['trade']:
+        obj_trade.real_close_price_change = int(obj['trade']['real_close_price_change'])
+    if 'buyer_count' in obj['trade']:
+        obj_trade.buyer_count = int(obj['trade']['buyer_count'])
+    if 'trade_count' in obj['trade']:
+        obj_trade.trade_count = int(obj['trade']['trade_count'])
+    if 'volume' in obj['trade']:
+        obj_trade.volume = int(obj['trade']['volume'])
+    if 'value' in obj['trade']:
+        obj_trade.value = int(obj['trade']['value'])
+    obj_trade.save()
+
+    # fill trade_detail
+    if 'date_time' in obj:
+        obj_trade_detail.date_time = obj['date_time']
+    if 'person_buyer_count' in obj:
+        obj_trade_detail.person_buyer_count = int(obj['person_buyer_count'])
+    if 'company_buyer_count' in obj:
+        obj_trade_detail.company_buyer_count = int(obj['company_buyer_count'])
+    if 'person_buy_volume' in obj:
+        obj_trade_detail.person_buy_volume = int(obj['person_buy_volume'])
+    if 'company_buy_volume' in obj:
+        obj_trade_detail.company_buy_volume = int(obj['company_buy_volume'])
+    if 'person_seller_count' in obj:
+        obj_trade_detail.person_seller_count = int(obj['person_seller_count'])
+    if 'company_seller_count' in obj:
+        obj_trade_detail.company_seller_count = int(obj['company_seller_count'])
+    if 'person_sell_volume' in obj:
+        obj_trade_detail.person_sell_volume = int(obj['person_sell_volume'])
+    if 'company_sell_volume' in obj:
+        obj_trade_detail.company_sell_volume = int(obj['company_sell_volume'])
+
+    obj_trade_detail.trade = obj_trade
+    obj_trade_detail.save()
 
 
 def get_instrument_info(request):
@@ -2263,29 +2347,29 @@ def get_instrument_info(request):
         today_date = user_date
     timee = "090000"
     dateTime = today_date + timee
-    # dateTime = "13990828" + timee
+    dateTime = "13990912" + timee
     print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
-              f'&date_time={dateTime}&date_time_op=gt' \
-              f'&_count=100@_sort=-date_time&_expand=trade'
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time@_expand=trade'
               # f'instrument.id={id_str}@instrument.id_op=in' \
 
     # print(api_url)
 
     sites = [
-        api_url + '&_skip=0',
-        api_url + '&_skip=100',
-        api_url + '&_skip=200',
-        api_url + '&_skip=300',
-        api_url + '&_skip=400',
-        api_url + '&_skip=500',
-        api_url + '&_skip=600',
-        api_url + '&_skip=700',
-        api_url + '&_skip=800',
-        api_url + '&_skip=900',
-        api_url + '&_skip=1000',
-        api_url + '&_skip=1100',
+        api_url + '@_skip=0',
+        api_url + '@_skip=100',
+        api_url + '@_skip=200',
+        api_url + '@_skip=300',
+        api_url + '@_skip=400',
+        api_url + '@_skip=500',
+        api_url + '@_skip=600',
+        api_url + '@_skip=700',
+        api_url + '@_skip=800',
+        api_url + '@_skip=900',
+        api_url + '@_skip=1000',
+        api_url + '@_skip=1100',
     ]
 
     instrument_info_list.clear()
@@ -2308,6 +2392,14 @@ def get_instrument_info(request):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(scrap())
     loop.close()
+
+    start_time = time.time()
+    for itm in instrument_info_list:
+        save_tradeDetail(itm)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
     return instrument_info_list
 
 

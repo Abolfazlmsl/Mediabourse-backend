@@ -9,9 +9,11 @@ from bs4 import BeautifulSoup
 from django.db import IntegrityError
 import jdatetime
 from unidecode import unidecode
+import asyncio
+import aiohttp as aiohttp
 
 from . import feed
-from .models import News, Instrumentsel, Tradedetail, Trade
+from .models import News, Instrumentsel, Tradedetail, Trade, InstrumentInfo
 
 # global var, used in threads
 trade_detail_list = list()
@@ -167,14 +169,96 @@ def scrap_news():
     return 'successful'
 
 
-def request_trade_detail(sites):
-    with requests.get(sites) as request:
-        data1 = request.json()
-        # print(data1)
-        print(f"receive data of {sites}, len = {len(data1['data'])}")
+async def request_trade_detail(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
         for data in data1['data']:
-            # print(data)
             trade_detail_list.append(data)
+            # save_tradeDetail(data)
+
+
+# @database_sync_to_async
+def save_tradeDetail(data):
+    miss_count = 0
+    obj = data
+
+    # print(data)
+    # print("--", obj['instrument']['id'])
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    try:
+        obj_instrument = Instrumentsel.objects.get(id=obj['instrument']['id'])
+    except Instrumentsel.DoesNotExist:
+        # print('can not find; ', obj['instrument'])
+        miss_count += 1
+        return
+    # print(obj_instrument.short_name, obj_instrument.id)
+    obj_trade_detail, otd = Tradedetail.objects.get_or_create(instrument=obj_instrument)
+    obj_trade, ot = Trade.objects.get_or_create(instrument=obj_instrument)
+
+    # fill trade
+    # print(obj['trade'])
+    # print('date= ', obj['trade']['date_time'])
+    # print('open_price= ', int(obj['trade']['open_price']))
+    if 'date_time' in obj['trade']:
+        obj_trade.date_time = obj['trade']['date_time']
+    if 'open_price' in obj['trade']:
+        obj_trade.open_price = int(obj['trade']['open_price'])
+    if 'high_price' in obj['trade']:
+        obj_trade.high_price = int(obj['trade']['high_price'])
+    if 'low_price' in obj['trade']:
+        obj_trade.low_price = int(obj['trade']['low_price'])
+    if 'close_price' in obj['trade']:
+        obj_trade.close_price = int(obj['trade']['close_price'])
+    if 'close_price_change' in obj['trade']:
+        obj_trade.close_price_change = int(obj['trade']['close_price_change'])
+    if 'real_close_price' in obj['trade']:
+        obj_trade.real_close_price = int(obj['trade']['real_close_price'])
+    if 'real_close_price_change' in obj['trade']:
+        obj_trade.real_close_price_change = int(obj['trade']['real_close_price_change'])
+    if 'buyer_count' in obj['trade']:
+        obj_trade.buyer_count = int(obj['trade']['buyer_count'])
+    if 'trade_count' in obj['trade']:
+        obj_trade.trade_count = int(obj['trade']['trade_count'])
+    if 'volume' in obj['trade']:
+        obj_trade.volume = int(obj['trade']['volume'])
+    if 'value' in obj['trade']:
+        obj_trade.value = int(obj['trade']['value'])
+    obj_trade.save()
+
+    # fill trade_detail
+    if 'date_time' in obj:
+        obj_trade_detail.date_time = obj['date_time']
+    if 'person_buyer_count' in obj:
+        obj_trade_detail.person_buyer_count = int(obj['person_buyer_count'])
+    if 'company_buyer_count' in obj:
+        obj_trade_detail.company_buyer_count = int(obj['company_buyer_count'])
+    if 'person_buy_volume' in obj:
+        obj_trade_detail.person_buy_volume = int(obj['person_buy_volume'])
+    if 'company_buy_volume' in obj:
+        obj_trade_detail.company_buy_volume = int(obj['company_buy_volume'])
+    if 'person_seller_count' in obj:
+        obj_trade_detail.person_seller_count = int(obj['person_seller_count'])
+    if 'company_seller_count' in obj:
+        obj_trade_detail.company_seller_count = int(obj['company_seller_count'])
+    if 'person_sell_volume' in obj:
+        obj_trade_detail.person_sell_volume = int(obj['person_sell_volume'])
+    if 'company_sell_volume' in obj:
+        obj_trade_detail.company_sell_volume = int(obj['company_sell_volume'])
+
+    obj_trade_detail.trade = obj_trade
+    obj_trade_detail.save()
 
 
 @shared_task
@@ -186,7 +270,7 @@ def get_trade_detail():
 
     timee = "090000"
     dateTime = today_date + timee
-    # dateTime = "13990828" + timee
+    dateTime = "13990912" + timee  # test date
     print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
@@ -213,62 +297,28 @@ def get_trade_detail():
 
     trade_detail_list.clear()
 
-    with ThreadPoolExecutor(max_workers=10) as pool:
-        pool.map(request_trade_detail, sites)
+    # with ThreadPoolExecutor(max_workers=10) as pool:
+    #     pool.map(request_trade_detail, sites)
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            # start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade_detail(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            # total_time = time.time() - start_time
+            # print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
 
     #TODO: save in tradedetail model
-    miss_count = 0
-    for obj in trade_detail_list:
-
-        # print(obj)
-        # print("--", obj['instrument']['id'])
-
-        # ignore deleted state
-        if obj['meta']['state'] == 'deleted':
-            continue
-
-        try:
-            obj_instrument = Instrumentsel.objects.get(id=obj['instrument']['id'])
-        except Instrumentsel.DoesNotExist:
-            # print('can not find; ', obj['instrument'])
-            miss_count += 1
-            continue
-        # print(obj_instrument.short_name, obj_instrument.id)
-        obj_trade_detail, otd = Tradedetail.objects.get_or_create(instrument=obj_instrument)
-        obj_trade, ot = Trade.objects.get_or_create(instrument=obj_instrument)
-
-
-        # fill trade
-        # print(obj['trade'])
-        # print('date= ', obj['trade']['date_time'])
-        # print('open_price= ', int(obj['trade']['open_price']))
-        obj_trade.date_time = obj['trade']['date_time']
-        obj_trade.open_price = int(obj['trade']['open_price'])
-        obj_trade.high_price = int(obj['trade']['high_price'])
-        obj_trade.low_price = int(obj['trade']['low_price'])
-        obj_trade.close_price = int(obj['trade']['close_price'])
-        obj_trade.close_price_change = int(obj['trade']['close_price_change'])
-        obj_trade.real_close_price = int(obj['trade']['real_close_price'])
-        obj_trade.real_close_price_change = int(obj['trade']['real_close_price_change'])
-        if 'buyer_count' in obj['trade']:
-            obj_trade.buyer_count = int(obj['trade']['buyer_count'])
-        obj_trade.trade_count = int(obj['trade']['trade_count'])
-        obj_trade.volume = int(obj['trade']['volume'])
-        obj_trade.value = int(obj['trade']['value'])
-        obj_trade.save()
-
-        # fill trade_detail
-        obj_trade_detail.date_time = obj['date_time']
-        obj_trade_detail.person_buyer_count = int(obj['person_buyer_count'])
-        obj_trade_detail.company_buyer_count = int(obj['company_buyer_count'])
-        obj_trade_detail.person_buy_volume = int(obj['person_buy_volume'])
-        obj_trade_detail.company_buy_volume = int(obj['company_buy_volume'])
-        obj_trade_detail.person_seller_count = int(obj['person_seller_count'])
-        obj_trade_detail.company_seller_count = int(obj['company_seller_count'])
-        obj_trade_detail.person_sell_volume = int(obj['person_sell_volume'])
-        obj_trade_detail.company_sell_volume = int(obj['company_sell_volume'])
-        obj_trade_detail.trade = obj_trade
-        obj_trade_detail.save()
+    for itm in trade_detail_list:
+        save_tradeDetail(itm)
 
     # print(f'successful; missied instrument {miss_count}')
     return 'successful'
