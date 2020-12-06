@@ -40,6 +40,8 @@ urlpatterns = [
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     path('list-tradeDetail/',  views.list_trade_detail, name='list-trade-detail'),
     path('instrument-info/',  views.instrument_info, name='instrument-info'),
+    path('AI/trade-detail/',  views.ai_trade_detail, name='ai-trade-detail'),
+    path('AI/trade-detail-current/',  views.ai_trade_detail_current, name='ai-trade-detail-current'),
     path('instrument-info-single/',  views.get_Selected_instrument_info, name='get-Selected-instrument-info'),
     path('bazaar-info/',  views.bazaar_info, name='bazaar-info'),
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
@@ -51,4 +53,11 @@ urlpatterns = [
     url(r'^watchlist-item/(?P<pk>\d+)/$', views.WatchlistItemRudView.as_view(), name='watchlist-item-post-rud'),
     url(r'^user-json-technical$', views.UserJsonTechnicalAPIView.as_view(), name='user-json-technical-post-listcreate'),
     url(r'^user-json-technical/(?P<pk>\d+)/$', views.UserJsonTechnicalRudView.as_view(), name='user-json-technical-post-rud'),
+    url(r'^trade-details$', views.TradeDetailAPIView.as_view(), name='trade-detail-post-listcreate'),
+    url(r'^current-trade-details$', views.CurrentTradeDetailAPIView.as_view()
+        , name='current-trade-detail-post-listcreate'),
+    url(r'^instrument-technical-info$', views.instrumentTechnicaInfoAPIView.as_view(),
+        name='instrument-technical-info-post-listcreate'),
+    url(r'^instrument-technical-info/(?P<pk>\d+)/$', views.instrumentTechnicaInfoRudView.as_view(),
+        name='instrument-technical-info-post-rud'),
 ]

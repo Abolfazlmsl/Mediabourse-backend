@@ -2,13 +2,26 @@ from __future__ import absolute_import, unicode_literals
 
 from celery import shared_task
 from urllib.request import urlopen
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from bs4 import BeautifulSoup
 from django.db import IntegrityError
+import jdatetime
 from unidecode import unidecode
+import asyncio
+import aiohttp as aiohttp
 
-from .models import News
+from . import feed
+from .models import News, Instrumentsel, Tradedetail, Trade, InstrumentInfo
+
+# global var, used in threads
+trade_detail_list = list()
+
+
+@shared_task
+def adding(x, y):
+    return x + y;
 
 
 @shared_task
@@ -21,7 +34,10 @@ def scrap_news():
         'http://www.fipiran.ir/News?Cat=5&Feeder=0',
     ]
     for url in urls:
-        page = urlopen(url)
+        try:
+            page = urlopen(url)
+        except OSError:
+            continue
 
         html_bytes = page.read()
         html = html_bytes
@@ -31,10 +47,14 @@ def scrap_news():
         all_news = soup.find('div', {'class': 'faq_accordion'}).find_all('div', {'class': 'item'})
         for news in all_news:
             page_url = news.find('a', href=True).get('href')
-            if 'sena.ir' in page_url:
-                continue
+            # if 'sena.ir' in page_url:
+            #     continue
             print(page_url)
-            page = requests.get(page_url)
+            try:
+                page = requests.get(page_url)
+                print("passed", page)
+            except requests.exceptions.ConnectionError:
+                requests.status_code = "Connection refused"
 
             soup = BeautifulSoup(page.content, "html.parser")
 
@@ -147,3 +167,168 @@ def scrap_news():
                 except AttributeError:
                     continue
     return 'successful'
+
+
+async def request_trade_detail(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
+        for data in data1['data']:
+            trade_detail_list.append(data)
+            # save_tradeDetail(data)
+
+
+# @database_sync_to_async
+def save_tradeDetail(data):
+    miss_count = 0
+    obj = data
+
+    # print(data)
+    # print("--", obj['instrument']['id'])
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    try:
+        obj_instrument = Instrumentsel.objects.get(id=obj['instrument']['id'])
+    except Instrumentsel.DoesNotExist:
+        # print('can not find; ', obj['instrument'])
+        miss_count += 1
+        return
+    # print(obj_instrument.short_name, obj_instrument.id)
+    obj_trade_detail, otd = Tradedetail.objects.get_or_create(instrument=obj_instrument)
+    obj_trade, ot = Trade.objects.get_or_create(instrument=obj_instrument)
+
+    # fill trade
+    # print(obj['trade'])
+    # print('date= ', obj['trade']['date_time'])
+    # print('open_price= ', int(obj['trade']['open_price']))
+    if 'date_time' in obj['trade']:
+        obj_trade.date_time = obj['trade']['date_time']
+    if 'open_price' in obj['trade']:
+        obj_trade.open_price = int(obj['trade']['open_price'])
+    if 'high_price' in obj['trade']:
+        obj_trade.high_price = int(obj['trade']['high_price'])
+    if 'low_price' in obj['trade']:
+        obj_trade.low_price = int(obj['trade']['low_price'])
+    if 'close_price' in obj['trade']:
+        obj_trade.close_price = int(obj['trade']['close_price'])
+    if 'close_price_change' in obj['trade']:
+        obj_trade.close_price_change = int(obj['trade']['close_price_change'])
+    if 'real_close_price' in obj['trade']:
+        obj_trade.real_close_price = int(obj['trade']['real_close_price'])
+    if 'real_close_price_change' in obj['trade']:
+        obj_trade.real_close_price_change = int(obj['trade']['real_close_price_change'])
+    if 'buyer_count' in obj['trade']:
+        obj_trade.buyer_count = int(obj['trade']['buyer_count'])
+    if 'trade_count' in obj['trade']:
+        obj_trade.trade_count = int(obj['trade']['trade_count'])
+    if 'volume' in obj['trade']:
+        obj_trade.volume = int(obj['trade']['volume'])
+    if 'value' in obj['trade']:
+        obj_trade.value = int(obj['trade']['value'])
+    obj_trade.save()
+
+    # fill trade_detail
+    if 'date_time' in obj:
+        obj_trade_detail.date_time = obj['date_time']
+    if 'person_buyer_count' in obj:
+        obj_trade_detail.person_buyer_count = int(obj['person_buyer_count'])
+    if 'company_buyer_count' in obj:
+        obj_trade_detail.company_buyer_count = int(obj['company_buyer_count'])
+    if 'person_buy_volume' in obj:
+        obj_trade_detail.person_buy_volume = int(obj['person_buy_volume'])
+    if 'company_buy_volume' in obj:
+        obj_trade_detail.company_buy_volume = int(obj['company_buy_volume'])
+    if 'person_seller_count' in obj:
+        obj_trade_detail.person_seller_count = int(obj['person_seller_count'])
+    if 'company_seller_count' in obj:
+        obj_trade_detail.company_seller_count = int(obj['company_seller_count'])
+    if 'person_sell_volume' in obj:
+        obj_trade_detail.person_sell_volume = int(obj['person_sell_volume'])
+    if 'company_sell_volume' in obj:
+        obj_trade_detail.company_sell_volume = int(obj['company_sell_volume'])
+
+    obj_trade_detail.trade = obj_trade
+    obj_trade_detail.save()
+
+
+@shared_task
+def get_trade_detail():
+
+    # today date
+    today_date = str(jdatetime.date.today())
+    today_date = today_date.replace('-', '')
+
+    timee = "090000"
+    dateTime = today_date + timee
+    dateTime = "13990912" + timee  # test date
+    print(dateTime)
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time@_expand=trade'
+              # f'instrument.id={id_str}@instrument.id_op=in' \
+
+    # print(api_url)
+
+    sites = [
+        api_url + '@_skip=0',
+        api_url + '@_skip=100',
+        api_url + '@_skip=200',
+        api_url + '@_skip=300',
+        api_url + '@_skip=400',
+        api_url + '@_skip=500',
+        api_url + '@_skip=600',
+        api_url + '@_skip=700',
+        api_url + '@_skip=800',
+        api_url + '@_skip=900',
+        api_url + '@_skip=1000',
+        api_url + '@_skip=1100',
+    ]
+
+    trade_detail_list.clear()
+
+    # with ThreadPoolExecutor(max_workers=10) as pool:
+    #     pool.map(request_trade_detail, sites)
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            # start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade_detail(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            # total_time = time.time() - start_time
+            # print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    #TODO: save in tradedetail model
+    for itm in trade_detail_list:
+        save_tradeDetail(itm)
+
+    # print(f'successful; missied instrument {miss_count}')
+    return 'successful'
+
+
+@shared_task
+def update_timeframe_candles():
+    instruments_id = Instrumentsel.objects.all().values_list('id', flat=True)
+    # host = request.get_host()
+    host = ['127.0.0.1:8000'] * len(instruments_id)  # local
+    # host = ['bourse-api.ir'] * len(instruments_id)  # server
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        pool.map(feed.second_feed_tradedaily_thread, instruments_id, host)

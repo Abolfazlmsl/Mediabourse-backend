@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -12,11 +14,11 @@ from .models import Company, \
     Tutorial, \
     TutorialCategory, \
     TutorialSubCategory, FileRepository, User, WatchList, WatchListItem, Instrumentsel, UserComment, Notification, \
-    TechnicalJSONUser, BugReport, NewsPodcast, Article
+    TechnicalJSONUser, BugReport, NewsPodcast, Article, Tradedetail, InstrumentInfo, TradeCurrent, TradedetailCurrent,\
+    Trade
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = get_user_model()
         fields = (
@@ -37,6 +39,158 @@ class BugReportSerializer(serializers.ModelSerializer):  # forms.ModelForm
             'email',
         ]
         read_only_fields = ['id']
+
+
+class InstrumentInfoSerializer(serializers.ModelSerializer):  # forms.ModelForm
+
+    class Meta:
+        model = InstrumentInfo
+        fields = [
+            'id',
+            'instrument',
+            'volAvg1M',
+            'volAvg3M',
+            'volAvg12M',
+            'created_on',
+            'val_support',
+            'val_resistance',
+            'candle_start_date',
+        ]
+        read_only_fields = ['id', 'instrument', ]
+
+
+class TradeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Trade
+        fields = (
+            # 'date_time',
+            'open_price',
+            'high_price',
+            'low_price',
+            # 'close_price',
+            # 'close_price_change',
+            'real_close_price',
+            # 'real_close_price_change',
+            'value',
+            # 'buyer_count',
+            'volume',
+            'trade_count',
+            # 'adjusted_close_price'
+            # 'instrument_short_name'
+        )
+        read_only_fields = ['date_time', 'open_price', 'high_price', 'low_price', 'close_price', 'close_price_change'
+            , 'real_close_price', 'real_close_price_change', 'value', 'buyer_count', 'volume', 'trade_count'
+            , 'adjusted_close_price']
+
+
+class TradedetailSerializer(serializers.ModelSerializer):  # forms.ModelForm
+    trade = TradeSerializer()
+    instrument_short_name = serializers.SerializerMethodField(read_only=True)
+    instrument_id = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Tradedetail
+        fields = [
+            'date_time',
+            'person_buyer_count',
+            'company_buyer_count',
+            'person_buy_volume',
+            'company_buy_volume',
+            'person_seller_count',
+            'company_seller_count',
+            'person_sell_volume',
+            'company_sell_volume',
+            'instrument_short_name',
+            'instrument_id',
+            'trade'
+        ]
+        read_only_fields = ['date_time', 'person_buyer_count', 'company_buyer_count', 'person_buy_volume',
+                            'company_buy_volume', 'person_seller_count', 'company_seller_count', 'person_sell_volume',
+                            'company_sell_volume']
+        depth = 1
+
+    def get_instrument_short_name(self, obj):
+        return obj.instrument.short_name
+
+    def get_instrument_id(self, obj):
+        return obj.instrument.id
+
+
+class TradeCurrentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TradeCurrent
+        fields = (
+            # 'date_time',
+            'open_price',
+            'high_price',
+            'low_price',
+            # 'close_price',
+            # 'close_price_change',
+            'real_close_price',
+            # 'real_close_price_change',
+            'value',
+            # 'buyer_count',
+            'volume',
+            'trade_count',
+            # 'adjusted_close_price'
+            # 'instrument_short_name'
+        )
+        read_only_fields = ['date_time', 'open_price', 'high_price', 'low_price', 'close_price', 'close_price_change'
+            , 'real_close_price', 'real_close_price_change', 'value', 'buyer_count', 'volume', 'trade_count'
+            , 'adjusted_close_price']
+
+
+class TradedetailCurrentSerializer(serializers.ModelSerializer):
+    trade = TradeCurrentSerializer()
+    instrument_short_name = serializers.SerializerMethodField(read_only=True)
+    instrument_id = serializers.SerializerMethodField(read_only=True)
+    InsreumentInfo = serializers.SerializerMethodField(read_only=True)
+    # InsreumentInfo = InstrumentInfoSimpleSerializer()
+
+    class Meta:
+        model = TradedetailCurrent
+        fields = (
+            'date_time',
+            'person_buyer_count',
+            'company_buyer_count',
+            'person_buy_volume',
+            'company_buy_volume',
+            'person_seller_count',
+            'company_seller_count',
+            'person_sell_volume',
+            'company_sell_volume',
+            'instrument_short_name',
+            'instrument_id',
+            'trade',
+            'InsreumentInfo',
+        )
+        read_only_fields = ['date_time', 'person_buyer_count', 'company_buyer_count', 'person_buy_volume'
+            , 'company_buy_volume', 'person_seller_count', 'company_seller_count', 'person_sell_volume'
+            , 'company_sell_volume']
+        depth = 1
+
+    def get_instrument_short_name(self, obj):
+        return obj.instrument.short_name
+
+    def get_instrument_id(self, obj):
+        return obj.instrument.id
+
+    def get_InsreumentInfo(self, obj):
+        # print(obj.instrument.id, obj.instrument.short_name)
+        insInf, is_created = InstrumentInfo.objects.get_or_create(instrument_id=obj.instrument.id)
+        obj_json = {
+            'id': insInf.id,
+            'volAvg1M': insInf.volAvg1M,
+            'volAvg3M': insInf.volAvg3M,
+            'volAvg12M': insInf.volAvg12M,
+            'created_on': insInf.created_on,
+            'val_support': insInf.val_support,
+            'val_resistance': insInf.val_resistance,
+            'candle_start_date': insInf.candle_start_date
+        }
+        return obj_json
 
 
 class WatchListSerializer(serializers.ModelSerializer):  # forms.ModelForm
@@ -95,7 +249,6 @@ class WatchListItemSerializer(serializers.ModelSerializer):  # forms.ModelForm
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = (
@@ -105,7 +258,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class InstrumentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Instrumentsel
         fields = '__all__'
@@ -133,7 +285,6 @@ class ArticleListSerializer(serializers.ModelSerializer):
 
 
 class ArticleRetrieveSerializer(ArticleListSerializer):
-
     class Meta:
         model = Article
         exclude = ('thumbnail',)
@@ -205,6 +356,7 @@ class TechnicalRetrieveSerializer(serializers.ModelSerializer):
 
 class WebinarSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
+
     # company = InstrumentSerializer(many=False)
 
     class Meta:
@@ -231,7 +383,6 @@ class BazaarSerializer(serializers.ModelSerializer):
 
 
 class TutorialCategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TutorialCategory
         fields = (
@@ -259,7 +410,6 @@ class TutorialFileSerializer(serializers.Serializer):
 
 
 class TutorialListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Tutorial
         fields = (
@@ -396,7 +546,6 @@ class NotificationListSerializer(serializers.ModelSerializer):
 
 
 class NotificationDetailSerializer(NotificationListSerializer):
-
     class Meta:
         model = Notification
         fields = (
@@ -411,7 +560,6 @@ class NotificationDetailSerializer(NotificationListSerializer):
 
 
 class NewsPodcastListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = NewsPodcast
         fields = (
@@ -425,3 +573,4 @@ class NewsPodcastDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsPodcast
         fields = '__all__'
+

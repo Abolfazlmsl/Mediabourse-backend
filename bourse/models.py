@@ -479,46 +479,110 @@ class Instrumentsel(models.Model):
             return self.short_name
         return str(self.meta.version)
 
+    def get_short_name(self):
+        return self.short_name
+
+    def get_short_english_name(self):
+        return self.english_short_name
+
+    def get_name(self):
+        return self.name
+
 
 # معاملات روزانه
 class Trade(models.Model):
-    id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+    # id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
     date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
-    open_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='اولین قیمت معاملاتی')
-    high_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='بیشترین قیمت معاملاتی')
-    low_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='کمترین قیمت معاملاتی')
-    close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='آخرین قیمت معاملاتی')
-    close_price_change = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='تفاوت آخرین قیمت با قیمت پایانی روز قبل')
-    real_close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='قیمت پایانی معاملات با احتساب حجم مبنا')
-    real_close_price_change = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='تغییر قیمت پایانی نسبت به قیمت پایانی روز قبل')
-    value = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='ارزش ریالی معاملات')
+    open_price = models.IntegerField(null=True, blank=True, help_text='اولین قیمت معاملاتی')
+    high_price = models.IntegerField(null=True, blank=True, help_text='بیشترین قیمت معاملاتی')
+    low_price = models.IntegerField(null=True, blank=True, help_text='کمترین قیمت معاملاتی')
+    close_price = models.IntegerField(null=True, blank=True, help_text='آخرین قیمت معاملاتی')
+    close_price_change = models.IntegerField(null=True, blank=True, help_text='تفاوت آخرین قیمت با قیمت پایانی روز قبل')
+    real_close_price = models.IntegerField(null=True, blank=True, help_text='قیمت پایانی معاملات با احتساب حجم مبنا')
+    real_close_price_change = models.IntegerField(null=True, blank=True, help_text='تغییر قیمت پایانی نسبت به قیمت پایانی روز قبل')
+    value = models.BigIntegerField(null=True, blank=True, help_text='ارزش ریالی معاملات')
     buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران')
     volume = models.BigIntegerField(null=True, blank=True, help_text='تعداد معامله شده')
     trade_count = models.IntegerField(null=True, blank=True, help_text='تعداد معامله')
-    adjusted_close_price = models.DecimalField(max_digits=8, decimal_places=0, null=True, blank=True, help_text='')
+    adjusted_close_price = models.IntegerField(null=True, blank=True, help_text='')
 
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
     instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
 
     def __str__(self):
-        return self.instrument.name
+        if self.instrument is not None:
+            return self.instrument.short_name
+        return ''
+
+
+# معاملات روزانه جاری
+class TradeCurrent(models.Model):
+    # id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    open_price = models.IntegerField(null=True, blank=True, help_text='اولین قیمت معاملاتی')
+    high_price = models.IntegerField(null=True, blank=True, help_text='بیشترین قیمت معاملاتی')
+    low_price = models.IntegerField(null=True, blank=True, help_text='کمترین قیمت معاملاتی')
+    close_price = models.IntegerField(null=True, blank=True, help_text='آخرین قیمت معاملاتی')
+    close_price_change = models.IntegerField(null=True, blank=True, help_text='تفاوت آخرین قیمت با قیمت پایانی روز قبل')
+    real_close_price = models.IntegerField(null=True, blank=True, help_text='قیمت پایانی معاملات با احتساب حجم مبنا')
+    real_close_price_change = models.IntegerField(null=True, blank=True, help_text='تغییر قیمت پایانی نسبت به قیمت پایانی روز قبل')
+    value = models.BigIntegerField(null=True, blank=True, help_text='ارزش ریالی معاملات')
+    buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران')
+    volume = models.BigIntegerField(null=True, blank=True, help_text='تعداد معامله شده')
+    trade_count = models.IntegerField(null=True, blank=True, help_text='تعداد معامله')
+    adjusted_close_price = models.IntegerField(null=True, blank=True, help_text='')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    instrument = models.ForeignKey(Instrumentsel, related_name='tradeCurrent', on_delete=models.CASCADE, null=True, blank=True, help_text='بازار معاملاتی')
+
+    def __str__(self):
+        if self.instrument is not None:
+            return self.instrument.short_name
+        return ''
 
 
 # جزعیات معاملات روزانه
 class Tradedetail(models.Model):
     date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
-    value = models.CharField(max_length=255, null=True, blank=True, help_text='اطلاعات کندل')
-    #  open_price, high_price, low_price, close_price, close_price_change, real_close_price
-    #  , real_close_price_change, buyer_count, trade_count, volume, value
-    #  person_buyer_count, company_buyer_count, person_buy_volume, company_buy_volume, person_seller_count
-    #  , company_seller_count, person_sell_volume, company_sell_volume
-    version = models.BigIntegerField(primary_key=True, help_text='نسخه فیلد')
+    person_buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران حقیقی')
+    company_buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران حقوقی')
+    person_buy_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم خریداری شده توسط حقیقی ها')
+    company_buy_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم خریداری شده توسط حقوقی ها')
+    person_seller_count = models.IntegerField(null=True, blank=True, help_text='تعداد فروشندگان حقیقی')
+    company_seller_count = models.IntegerField(null=True, blank=True, help_text='تعداد فروشندگان حقوقی')
+    person_sell_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم فروخته شده توسط حقیقی ها')
+    company_sell_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم فروخته شده توسط حقوقی ها')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
     instrument = models.ForeignKey(Instrumentsel, on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
+    trade = models.ForeignKey(Trade, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات ترید')
 
     def __str__(self):
         if self.instrument is not None:
             return self.instrument.name
-        return self.version
+        return self.meta.version
+
+
+# جزعیات معاملات روزانه جاری
+class TradedetailCurrent(models.Model):
+    date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
+    person_buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران حقیقی')
+    company_buyer_count = models.IntegerField(null=True, blank=True, help_text='تعداد خریداران حقوقی')
+    person_buy_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم خریداری شده توسط حقیقی ها')
+    company_buy_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم خریداری شده توسط حقوقی ها')
+    person_seller_count = models.IntegerField(null=True, blank=True, help_text='تعداد فروشندگان حقیقی')
+    company_seller_count = models.IntegerField(null=True, blank=True, help_text='تعداد فروشندگان حقوقی')
+    person_sell_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم فروخته شده توسط حقیقی ها')
+    company_sell_volume = models.BigIntegerField(null=True, blank=True, help_text='حجم فروخته شده توسط حقوقی ها')
+
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+    instrument = models.ForeignKey(Instrumentsel, related_name='tradeDetailCurrent', on_delete=models.CASCADE, null=True, blank=True, help_text='نماد معاملاتی')
+    trade = models.ForeignKey(TradeCurrent, on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات ترید')
+
+    def __str__(self):
+        if self.instrument is not None:
+            return self.instrument.name
+        return self.meta.version
 
 
 class Trademidday(models.Model):
@@ -782,7 +846,7 @@ class News(models.Model):
 
     @property
     def comment(self):
-        return self.usercomment_set.filter(parent__isnull=True)
+        return self.usercomment_set.filter(parent__isnull=True).order_by('created_on')
 
 
 class Filter(models.Model):
@@ -1697,6 +1761,9 @@ class InstrumentInfo(models.Model):
     volAvg3M = models.PositiveIntegerField(default=0, help_text='میانگین 3 ماه')
     volAvg12M = models.PositiveIntegerField(default=0, help_text='میانگین 12 ماهه')
     created_on = models.DateField(null=True, blank=True, help_text="آخرین روز محاسبه")
+    val_support = models.PositiveIntegerField(default=0, help_text='قیمت حمایت')
+    val_resistance = models.PositiveIntegerField(default=0, help_text='قیمت مقاومت')
+    candle_start_date = models.DateField(null=True, blank=True, help_text="روز مبدا شمارش حجم")
 
     def __str__(self):
         return self.instrument.short_name
