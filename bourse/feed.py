@@ -2254,7 +2254,7 @@ async def request_instrumentInfo(client, url):
 
 
 # @database_sync_to_async
-def save_tradeDetail(data):
+def save_tradeDetailCurrent(data):
     miss_count = 0
     obj = data
 
@@ -2272,8 +2272,8 @@ def save_tradeDetail(data):
         miss_count += 1
         return
     # print(obj_instrument.short_name, obj_instrument.id)
-    obj_trade_detail, otd = models.Tradedetail.objects.get_or_create(instrument=obj_instrument)
-    obj_trade, ot = models.Trade.objects.get_or_create(instrument=obj_instrument)
+    obj_trade_detail, otd = models.TradedetailCurrent.objects.get_or_create(instrument=obj_instrument)
+    obj_trade, ot = models.TradeCurrent.objects.get_or_create(instrument=obj_instrument)
 
     # fill trade
     # print(obj['trade'])
@@ -2347,7 +2347,7 @@ def get_instrument_info(request):
         today_date = user_date
     timee = "090000"
     dateTime = today_date + timee
-    dateTime = "13990912" + timee
+    # dateTime = "13990912" + timee
     print(dateTime)
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
@@ -2395,12 +2395,399 @@ def get_instrument_info(request):
 
     start_time = time.time()
     for itm in instrument_info_list:
-        save_tradeDetail(itm)
+        save_tradeDetailCurrent(itm)
 
     total_time = time.time() - start_time
     print('save in DB in', total_time, 'seconds')
 
+    # return instrument_info_list
     return instrument_info_list
+
+
+# -------------------------------------------
+# ------- trade detail functions ------------
+
+trade_detail_list = list()
+
+
+# ger url
+async def request_trade_detail(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
+        for data in data1['data']:
+            trade_detail_list.append(data)
+            # save_tradeDetail(data)
+
+
+# save single data
+def save_single_trade_detail(data, obj_instrument):
+
+    obj = data
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    obj_trade_detail, otd = models.Tradedetail.objects.get_or_create(id=obj['id'])
+    obj_trade, ot = models.Trade.objects.get_or_create(id=obj['trade']['id'])
+
+    obj_trade_detail.instrument = obj_instrument
+    obj_trade.instrument = obj_instrument
+
+    # fill trade
+    # print(obj['trade'])
+    # print('date= ', obj['trade']['date_time'])
+    # print('open_price= ', int(obj['trade']['open_price']))
+    if 'date_time' in obj['trade']:
+        obj_trade.date_time = obj['trade']['date_time']
+    if 'open_price' in obj['trade']:
+        obj_trade.open_price = int(obj['trade']['open_price'])
+    if 'high_price' in obj['trade']:
+        obj_trade.high_price = int(obj['trade']['high_price'])
+    if 'low_price' in obj['trade']:
+        obj_trade.low_price = int(obj['trade']['low_price'])
+    if 'close_price' in obj['trade']:
+        obj_trade.close_price = int(obj['trade']['close_price'])
+    if 'close_price_change' in obj['trade']:
+        obj_trade.close_price_change = int(obj['trade']['close_price_change'])
+    if 'real_close_price' in obj['trade']:
+        obj_trade.real_close_price = int(obj['trade']['real_close_price'])
+    if 'real_close_price_change' in obj['trade']:
+        obj_trade.real_close_price_change = int(obj['trade']['real_close_price_change'])
+    if 'buyer_count' in obj['trade']:
+        obj_trade.buyer_count = int(obj['trade']['buyer_count'])
+    if 'trade_count' in obj['trade']:
+        obj_trade.trade_count = int(obj['trade']['trade_count'])
+    if 'volume' in obj['trade']:
+        obj_trade.volume = int(obj['trade']['volume'])
+    if 'value' in obj['trade']:
+        obj_trade.value = int(obj['trade']['value'])
+    obj_trade.save()
+
+    # fill trade_detail
+    if 'date_time' in obj:
+        obj_trade_detail.date_time = obj['date_time']
+    if 'person_buyer_count' in obj:
+        obj_trade_detail.person_buyer_count = int(obj['person_buyer_count'])
+    if 'company_buyer_count' in obj:
+        obj_trade_detail.company_buyer_count = int(obj['company_buyer_count'])
+    if 'person_buy_volume' in obj:
+        obj_trade_detail.person_buy_volume = int(obj['person_buy_volume'])
+    if 'company_buy_volume' in obj:
+        obj_trade_detail.company_buy_volume = int(obj['company_buy_volume'])
+    if 'person_seller_count' in obj:
+        obj_trade_detail.person_seller_count = int(obj['person_seller_count'])
+    if 'company_seller_count' in obj:
+        obj_trade_detail.company_seller_count = int(obj['company_seller_count'])
+    if 'person_sell_volume' in obj:
+        obj_trade_detail.person_sell_volume = int(obj['person_sell_volume'])
+    if 'company_sell_volume' in obj:
+        obj_trade_detail.company_sell_volume = int(obj['company_sell_volume'])
+
+    obj_trade_detail.trade = obj_trade
+    obj_trade_detail.save()
+    # print('obj_trade_detail: ', obj_trade_detail)
+
+
+# fill all data
+def get_trade_detail(request, instrument):
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'instrument.id={instrument.id}@_count=100'  # @_expand=trade'
+
+    sites = []
+    for cntr in range(15):
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+    # print('site: ', sites)
+
+    trade_detail_list.clear()
+
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade_detail(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    start_time = time.time()
+
+    cnt = 0
+    for itm in trade_detail_list:
+        save_single_trade_detail(itm, instrument)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
+    # return instrument_info_list
+    return trade_detail_list
+
+
+# fill custom data
+def get_trade_detail_oneDay(request, dateTime):
+
+    print(dateTime)
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time' #@_expand=trade'
+
+    sites = []
+    for cntr in range(15):
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+    trade_detail_list.clear()
+
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade_detail(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    start_time = time.time()
+
+    for itm in trade_detail_list:
+        # print('--- ', itm)
+        if itm['meta']['state'] == 'deleted':
+            continue
+        try:
+            instrument = models.Instrumentsel.objects.get(id=itm['instrument']['id'])
+        except models.Instrumentsel.DoesNotExist:
+            continue
+        save_single_trade_detail(itm, instrument)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
+    # return instrument_info_list
+    return trade_detail_list
+
+# ------- end of trade detail functions -------
+# ---------------------------------------------
+
+
+# -------------------------------------------
+# ------- trade functions ------------
+
+trade_list = list()
+
+
+# ger url
+async def request_trade(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
+        for data in data1['data']:
+            trade_list.append(data)
+            # save_tradeDetail(data)
+
+
+# save single data
+def save_single_trade(data, obj_instrument):
+
+    obj = data
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    obj_trade, ot = models.Trade.objects.get_or_create(id=obj['id'])
+
+    obj_trade.instrument = obj_instrument
+
+    if obj_instrument.type == 'index':
+        if 'date_time' in obj:
+            obj_trade.date_time = obj['date_time']
+        if 'open_value' in obj:
+            obj_trade.open_price = int(obj['open_value'])
+        if 'high_value' in obj:
+            obj_trade.high_price = int(obj['high_value'])
+        if 'low_value' in obj:
+            obj_trade.low_price = int(obj['low_value'])
+        if 'close_value' in obj:
+            obj_trade.close_price = int(obj['close_value'])
+            obj_trade.real_close_price = int(obj['close_value'])
+        if 'close_value_change' in obj:
+            obj_trade.close_price_change = int(obj['close_value_change'])
+    else:
+
+        # fill trade
+        # print(obj['trade'])
+        # print('date= ', obj['trade']['date_time'])
+        # print('open_price= ', int(obj['trade']['open_price']))
+        if 'date_time' in obj:
+            obj_trade.date_time = obj['date_time']
+        if 'open_price' in obj:
+            obj_trade.open_price = int(obj['open_price'])
+        if 'high_price' in obj:
+            obj_trade.high_price = int(obj['high_price'])
+        if 'low_price' in obj:
+            obj_trade.low_price = int(obj['low_price'])
+        if 'close_price' in obj:
+            obj_trade.close_price = int(obj['close_price'])
+        if 'close_price_change' in obj:
+            obj_trade.close_price_change = int(obj['close_price_change'])
+        if 'real_close_price' in obj:
+            obj_trade.real_close_price = int(obj['real_close_price'])
+        if 'real_close_price_change' in obj:
+            obj_trade.real_close_price_change = int(obj['real_close_price_change'])
+        if 'buyer_count' in obj:
+            obj_trade.buyer_count = int(obj['buyer_count'])
+        if 'trade_count' in obj:
+            obj_trade.trade_count = int(obj['trade_count'])
+        if 'volume' in obj:
+            obj_trade.volume = int(obj['volume'])
+        if 'value' in obj:
+            obj_trade.value = int(obj['value'])
+    obj_trade.save()
+    # print('obj_trade: ', obj_trade)
+
+
+# fill all data
+def get_trade(request, instrument):
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/trades?' \
+              f'instrument.id={instrument.id}@_count=100@_expand=trade'
+
+    if instrument.type == 'index':
+        api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/indexvalues?' \
+                 f'index.id={instrument.index.id}@_count=100'  # @_expand=trade'
+
+    sites = []
+    for cntr in range(16):
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+    # print('site: ', sites)
+
+    trade_list.clear()
+
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    start_time = time.time()
+
+    cnt = 0
+    for itm in trade_list:
+        save_single_trade(itm, instrument)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
+    # return instrument_info_list
+    return trade_list
+
+
+# fill custom data
+def get_trade_oneDay(request, dateTime):
+
+    sites = []
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/trades?' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time' #@_expand=trade'
+    for cntr in range(16):
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/indexvalues?' \
+              f'@date_time={dateTime}@date_time_op=gt' \
+              f'@_count=100@_sort=-date_time'
+
+    for cntr in range(2):
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+    # print('site: ', sites)
+
+    trade_list.clear()
+
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_trade(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    start_time = time.time()
+
+    cnt = 0
+    for itm in trade_list:
+        if itm['meta']['state'] == 'deleted':
+            continue
+        try:
+            if 'index' in itm:
+                instrument = models.Instrumentsel.objects.get(index__id=itm['index']['id'])
+            else:
+                instrument = models.Instrumentsel.objects.get(id=itm['instrument']['id'])
+        except models.Instrumentsel.DoesNotExist:
+            continue
+        save_single_trade(itm, instrument)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
+    # return instrument_info_list
+    return trade_list
+
+# ------- end of trade detail functions -------
+# ---------------------------------------------
 
 
 def test():

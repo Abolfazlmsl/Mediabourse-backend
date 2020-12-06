@@ -12,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from kavenegar import KavenegarAPI, APIException, HTTPException
 from rest_framework import mixins, viewsets, generics, status
 from rest_framework import filters
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
@@ -20,10 +21,13 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from datetime import date, timedelta, datetime
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 import jdatetime
 from persiantools.jdatetime import JalaliDate
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from .serializers import \
@@ -43,7 +47,7 @@ from .serializers import \
     WatchListItemSerializer, InstrumentSerializer, NotificationListSerializer, \
     NotificationDetailSerializer, TechnicalJSONUserSerializer, BugReportSerializer, NewsPodcastListSerializer, \
     NewsPodcastDetailSerializer, ArticleListSerializer, ArticleRetrieveSerializer, CommentListSerializer, \
-    TradedetailSerializer, InstrumentInfoSerializer
+    TradedetailSerializer, InstrumentInfoSerializer, TradedetailCurrentSerializer
 
 
 from .models import Company, \
@@ -55,7 +59,9 @@ from .models import Company, \
     Fundamental, \
     Bazaar, Tutorial, FileRepository, User, Meta, Index, \
     WatchList, WatchListItem, Instrumentsel, UserComment, Notification, TechnicalJSONUser, NewsPodcast, InstrumentInfo, \
-    Article, Tradedetail
+    Article, Tradedetail, TradedetailCurrent
+
+from .permissions import AdminAuthenticationPermission
 
 from . import models
 
@@ -186,6 +192,58 @@ def instrument_info(request):
         cntr += 1
 
     return JsonResponse(res, safe=False)
+
+
+# get all instrument real-time data
+# @login_required
+# @user_passes_test(lambda u: u.is_superuser)
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([AdminAuthenticationPermission])
+def ai_trade_detail(request):
+
+    user_date = request.GET.get('date')
+    is_update_daily = request.GET.get('updateDaily')
+
+    # update one day
+    if is_update_daily is not None:
+        # today date
+        td = jdatetime.date.today()
+        td = td - timedelta(days=1)
+        today_date = str(td)
+        # print('today_date: ', today_date)
+        today_date = today_date.replace('-', '')
+        if user_date is not None:
+            today_date = user_date
+        timee = "090000"
+        dateTime = today_date + timee
+        # dateTime = "13990912" + timee
+        feed.get_trade_detail_oneDay(request, dateTime)
+        feed.get_trade_oneDay(request, dateTime)
+    # update from first date (all data)
+    else:
+        list_of_instruments = models.Instrumentsel.objects.all()
+        count = list_of_instruments.count()
+
+        counter = 0
+        for ins in list_of_instruments:
+            print(f'-- start to scrap {counter} of {count} - {ins.short_name} --')
+            feed.get_trade_detail(request, ins)
+            feed.get_trade(request, ins)
+            counter += 1
+
+    return JsonResponse({'status': 'successful'}, safe=False)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([AdminAuthenticationPermission])
+def ai_trade_detail_current(request):
+    res = feed.get_instrument_info(request)
+    if len(res) == 0:
+        return JsonResponse({'status': 'LIST_EMPTY'}, safe=False)
+
+    return JsonResponse({'status': 'successful'}, safe=False)
 
 
 def get_Selected_instrument_info(request):
@@ -799,14 +857,33 @@ class TradeDetailAPIView(mixins.CreateModelMixin, generics.ListAPIView):
 
     def get_queryset(self):
         # print('watchlist......', self.request.user)
-        qs = Tradedetail.objects.all()
-        query = self.request.GET.get("q")
-        query_instrument = self.request.GET.get("instrument")
-        query_share = self.request.GET.get("share")
+        qs = Tradedetail.objects.all().order_by('date_time')
+        query = self.request.GET.get("q")                       # filter certain instrument based on short_name
+        query_instrument = self.request.GET.get("instrument")   # filter certain instrument based on id
+        query_date = self.request.GET.get("date")               # get grater than date info
+        query_one_date = self.request.GET.get("oneDate")        # get certain day info
         if query is not None:
-            qs = qs.filter(Q(instrument__name__icontains=query)).distinct()
+            qs = qs.filter(Q(instrument__short_name__icontains=query)).distinct()
         if query_instrument is not None:
             qs = qs.filter(Q(instrument=query_instrument)).distinct()
+        if query_date is not None:
+            qs = qs.filter(Q(date_time__gt=query_date)).distinct()
+        if query_one_date is not None:
+            qs = qs.filter(Q(date_time__icontains=query_one_date)).distinct()
+        return qs
+
+
+class CurrentTradeDetailAPIView(mixins.CreateModelMixin, generics.ListAPIView):
+    lookup_field = 'pk'
+    serializer_class = TradedetailCurrentSerializer
+    permission_classes = [] #[IsAuthenticated, ]  # [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # print('watchlist......', self.request.user)
+        qs = TradedetailCurrent.objects.all()
+        query = self.request.GET.get("instrument")
+        if query is not None:
+            qs = qs.filter(Q(instrument__id=query)).distinct()
         return qs
 
 

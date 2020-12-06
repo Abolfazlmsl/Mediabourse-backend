@@ -147,8 +147,17 @@ class InstrumentselAdmin(admin.ModelAdmin):
 
 @admin.register(models.Trade)
 class TradeAdmin(admin.ModelAdmin):
-    list_display = ("id", "instrument_name", "date_time",  "volume", "trade_count")
-    list_filter = ("date_time",)
+    list_display = ("id", "instrument", "instrument_name", "date_time",  "volume", "trade_count")
+    list_filter = ("instrument",)
+
+    def instrument_name(self, obj):
+        return obj.instrument.name
+
+
+@admin.register(models.TradeCurrent)
+class TradeCurrentAdmin(admin.ModelAdmin):
+    list_display = ("id", "instrument", "instrument_name", "date_time",  "volume", "trade_count")
+    list_filter = ("instrument",)
 
     def instrument_name(self, obj):
         return obj.instrument.name
@@ -160,7 +169,20 @@ class TradedetailAdmin(admin.ModelAdmin):
     list_filter = ("instrument", "date_time",)
 
     def instrument_name(self, obj):
-        return obj.instrument.short_name
+        if obj.instrument is not None:
+            return obj.instrument.short_name
+        return ''
+
+
+@admin.register(models.TradedetailCurrent)
+class TradedetailCurrentAdmin(admin.ModelAdmin):
+    list_display = ("instrument_name", "date_time")
+    list_filter = ("instrument", "date_time",)
+
+    def instrument_name(self, obj):
+        if obj.instrument is not None:
+            return obj.instrument.short_name
+        return ''
 
 
 
@@ -184,7 +206,8 @@ class NewsAdmin(admin.ModelAdmin):
 
 @admin.register(models.InstrumentInfo)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ("id", "instrument", "volAvg1M", "volAvg3M", "volAvg12M", "created_on")
+    list_display = ("id", "instrument", "volAvg1M", "volAvg3M", "volAvg12M", "candle_start_date", "val_support"
+                    , "val_resistance", "created_on")
     list_filter = ("instrument", "created_on",)
 
 
