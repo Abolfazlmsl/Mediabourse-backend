@@ -1,0 +1,9 @@
+Celery commands:
+    [Linux]
+        celery -A mediabourse worker --loglevel=info
+    [Windows OS]
+        celery -A mediabourse worker -l info --pool=solo
+    [Celery beat setting mode]
+        celery -A mediabourse beat -l INFO
+    [Celery beat db mode]
+        celery -A mediabourse beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
