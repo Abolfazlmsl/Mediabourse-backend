@@ -83,22 +83,35 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from bourse.models import Article
 
+from bourse.serializers import ArticleListSerializer
+
 
 @database_sync_to_async
 def get_data():
-    return str(Article.objects.all())
+    articles = Article.objects.all()
+    return ArticleListSerializer(articles, many=True).data
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        # self.room_name = self.scope['url_route']['kwargs']['room_name']
+        # self.room_group_name = 'chat_%s' % self.room_name
 
         # Join room group
         await self.channel_layer.group_add(
-            self.room_group_name,
+            'nanaz',
             self.channel_name
+        )
+        data = await get_data()
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            'nanaz',
+            {
+                'type': 'chat_message',
+                'message': data
+            }
         )
 
         await self.accept()
@@ -110,24 +123,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
-            self.room_group_name,
+            'nanaz',
             self.channel_name
         )
 
-    # Receive message from WebSocket
-    async def receive(self, text_data):
-        data = await get_data()
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': data
-            }
-        )
+    # # Receive message from WebSocket
+    # async def receive(self, text_data):
+    #     data = await get_data()
+    #     text_data_json = json.loads(text_data)
+    #     message = text_data_json['message']
+    #
+    #     # Send message to room group
+    #     await self.channel_layer.group_send(
+    #         'nanaz',
+    #         {
+    #             'type': 'chat_message',
+    #             'message': data
+    #         }
+    #     )
 
     # Receive message from room group
     async def chat_message(self, event):
