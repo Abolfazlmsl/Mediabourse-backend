@@ -8,6 +8,7 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from kavenegar import KavenegarAPI, APIException, HTTPException
 from rest_framework import mixins, viewsets, generics, status
@@ -74,19 +75,29 @@ from . import trade_midday
 from . import news_scraper
 
 
+def index(request):
+    return render(request, 'bourse/index.html')
+
+
+def room(request, room_name):
+    return render(request, 'bourse/room.html', {
+        'room_name': room_name
+    })
+
+
 def news_scraper_view(request):
     news_scraper.scrap()
     return HttpResponse(("Text only, please."), content_type="text/plain")
 
-    urls = [
-        'http://www.fipiran.com/News?Cat=1&Feeder=0',
-        'http://www.fipiran.com/News?Cat=2&Feeder=0',
-        'http://www.fipiran.com/News?Cat=4&Feeder=0',
-        'http://www.fipiran.com/News?Cat=5&Feeder=0',
-    ]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(news_scraper.scraper, urls)
-    return HttpResponse(("Text only, please."), content_type="text/plain")
+    # urls = [
+    #     'http://www.fipiran.com/News?Cat=1&Feeder=0',
+    #     'http://www.fipiran.com/News?Cat=2&Feeder=0',
+    #     'http://www.fipiran.com/News?Cat=4&Feeder=0',
+    #     'http://www.fipiran.com/News?Cat=5&Feeder=0',
+    # ]
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+    #     executor.map(news_scraper.scraper, urls)
+    # return HttpResponse(("Text only, please."), content_type="text/plain")
 
 
 def list_trade_detail(request):

@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+
+from bourse import consumers
 from . import views
 from django.conf.urls import url
 
@@ -22,6 +24,9 @@ router.register('news-podcast', views.NewsPodcastListRetrieveAPIView)
 
 
 urlpatterns = [
+    path('chat/', views.index, name='index'),
+    # path('live/', consumers.NewsConsumer, name='index'),
+    path('chat/<str:room_name>/', views.room, name='room'),
     path('', include(router.urls)),
     path(
         'forget-password/',

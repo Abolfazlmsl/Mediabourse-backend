@@ -490,7 +490,7 @@ class Instrumentsel(models.Model):
 
 
 # معاملات روزانه
-class Trade(models.Model):
+class   Trade(models.Model):
     # id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
     date_time = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ و زمان معامله انجام شده')
     open_price = models.IntegerField(null=True, blank=True, help_text='اولین قیمت معاملاتی')
