@@ -45,8 +45,8 @@ def validate_image(image):
 
 
 def validate_watchlist_items(watchlist):
-    if WatchListItem.objects.filter(watch_list_id=watchlist).count() >= 20:
-        raise ValidationError('شما نمی توانید بیش از 20 نماد در یک دیده بان ذخیره نمایید.')
+    if WatchListItem.objects.filter(watch_list_id=watchlist).count() >= 40:
+        raise ValidationError('شما نمی توانید بیش از 40 نماد در یک دیده بان ذخیره نمایید.')
 
 
 class UserManager(BaseUserManager):

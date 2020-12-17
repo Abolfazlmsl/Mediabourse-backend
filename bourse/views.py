@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 import pandas as pd
 from django.conf import settings
+from django.db.models import Avg
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from datetime import date, timedelta, datetime
 from bs4 import BeautifulSoup
@@ -231,6 +232,54 @@ def ai_trade_detail(request):
             feed.get_trade_detail(request, ins)
             feed.get_trade(request, ins)
             counter += 1
+
+    # update month average values
+    if True: #False:
+        list_of_instruments = models.Instrumentsel.objects.all()
+        counter = 0
+
+        # one month
+        td = jdatetime.date.today()
+        td_date30 = td - timedelta(days=30)
+        td_date30 = str(td_date30)
+        td_date30 = td_date30.replace('-', '')
+        timee = "090000"
+        td_date30 = td_date30 + timee
+
+        # three month
+        td_date90 = td - timedelta(days=90)
+        td_date90 = str(td_date90)
+        td_date90 = td_date90.replace('-', '')
+        td_date90 = td_date90 + timee
+
+        # 12 month
+        td_date365 = td - timedelta(days=365)
+        td_date365 = str(td_date365)
+        td_date365 = td_date365.replace('-', '')
+        td_date365 = td_date365 + timee
+
+        count = list_of_instruments.count()
+        for ins in list_of_instruments:
+            print(f'-- start to cal. avg {counter} of {count} - {ins.short_name} --')
+            counter += 1
+
+            # one month
+            avg = models.Trade.objects.filter(date_time__gt=td_date30).aggregate(Avg('volume'))
+            obj_info, crt = models.InstrumentInfo.objects.get_or_create(instrument=ins)
+            obj_info.volAvg1M = avg['volume__avg']
+            print(f'volAvg1M: {avg}')
+
+            # three month
+            avg = models.Trade.objects.filter(date_time__gt=td_date90).aggregate(Avg('volume'))
+            obj_info.volAvg3M = avg['volume__avg']
+            print(f'volAvg3M: {avg}')
+
+            # 12 month
+            avg = models.Trade.objects.filter(date_time__gt=td_date365).aggregate(Avg('volume'))
+            obj_info.volAvg12M = avg['volume__avg']
+            print(f'volAvg12M: {avg}')
+
+            obj_info.save()
 
     return JsonResponse({'status': 'successful'}, safe=False)
 
