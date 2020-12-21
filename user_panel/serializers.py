@@ -17,7 +17,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class SetPasswordSerializer(serializers.Serializer):
 
-    new_password = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
     
 
 
