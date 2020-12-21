@@ -116,10 +116,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-    @database_sync_to_async
-    def get_name(self):
-        return Article.objects.all()
-
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
