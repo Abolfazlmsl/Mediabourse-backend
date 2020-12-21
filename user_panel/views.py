@@ -193,16 +193,23 @@ class SetPasswordAPIView(UpdateAPIView):
 
         if serializer.is_valid():
             # Check set password status
-            if not self.object.set_password:
-                return Response({"message": ["اجازه دسترسی ندارید!"]}, status=status.HTTP_400_BAD_REQUEST)
-            # set_password also hashes the password that the user will get
-            self.object.set_password(serializer.data.get("password"))
-            self.object.save()
-            response = {
-                'message': 'رمز عبور با موفقیت ثبت شد',
-            }
+            if self.object.is_active:
+                if not self.object.set_password_bool:
+                    return Response(
+                        {
+                            "message": "اجازه دسترسی ندارید!"
+                        }, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                # set_password also hashes the password that the user will get
+                self.object.set_password_bool == True
+                self.object.set_password(serializer.data.get("password"))
+                self.object.save()
+                response = {
+                    'message': 'رمز عبور با موفقیت ثبت شد',
+                }
 
-            return Response(response, status=status.HTTP_200_OK)
+                return Response(response, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
