@@ -131,7 +131,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_date = models.DateField(null=True, blank=True)
     postal_code = models.IntegerField(null=True, blank=True, unique=True)
     address = models.TextField(null=True, blank=True)
-    set_password = models.BooleanField(default=False)
+    set_password_bool = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
