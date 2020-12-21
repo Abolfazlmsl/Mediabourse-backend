@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company, \
@@ -55,7 +56,7 @@ class SignUpAPIView(APIView):
                     )
                 else:
                     print('11111111111111')
-                    user.set_password(serializer.validated_data['password'])
+                    # user.set_password(serializer.validated_data['password'])
                     user.generated_token = randint(100000, 999999)
                     user.save()
                     try:
@@ -88,9 +89,9 @@ class SignUpAPIView(APIView):
                 user = User(
                     phone_number=phone_number,
                 )
-                password = serializer.validated_data['password']
+                # password = serializer.validated_data['password']
                 user.is_active = False
-                user.set_password(password)
+                # user.set_password(password)
                 user.generated_token = randint(100000, 999999)
                 user.save()
                 try:
@@ -161,6 +162,58 @@ class ResendSignUpTokenAPIView(APIView):
             return Response({"user": "چنین کاربری وجود ندارد"})
 
 
+def get_tokens_for_user(user):
+    """
+        Function for receive token from JWT
+    """
+
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+
+class SetPasswordAPIView(UpdateAPIView):
+    """
+    An endpoint for set password.
+    """
+    serializer_class = serializers.SetPasswordSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check set password status
+            if self.object.is_active:
+                if not self.object.set_password_bool:
+                    return Response(
+                        {
+                            "message": "اجازه دسترسی ندارید!"
+                        }, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                # set_password also hashes the password that the user will get
+                self.object.set_password_bool == True
+                self.object.set_password(serializer.data.get("password"))
+                self.object.save()
+                response = {
+                    'message': 'رمز عبور با موفقیت ثبت شد',
+                }
+
+                return Response(response, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserPhoneRegisterAPIView(APIView):
     """
     User verification via sms
@@ -176,7 +229,11 @@ class UserPhoneRegisterAPIView(APIView):
                 if serializer.data['generated_token'] == int(data.get("generated_token")):
                     user.is_active = True
                     user.save()
-                    return Response({"user": "verified successfully"})
+                    res = {
+                        'message': "verified successfully",
+                        'token': get_tokens_for_user(user)
+                    }
+                    return Response(res, status=status.HTTP_200_OK)
                 else:
                     return Response(
                         {

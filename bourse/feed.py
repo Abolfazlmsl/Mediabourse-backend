@@ -2434,6 +2434,7 @@ def save_single_trade_detail(data, obj_instrument):
 
     # ignore deleted state
     if obj['meta']['state'] == 'deleted':
+        models.Tradedetail.objects.filter(id=obj['id']).delete()
         return
 
     obj_trade_detail, otd = models.Tradedetail.objects.get_or_create(id=obj['id'])
@@ -2504,7 +2505,7 @@ def get_trade_detail(request, instrument):
               f'instrument.id={instrument.id}@_count=100'  # @_expand=trade'
 
     sites = []
-    for cntr in range(15):
+    for cntr in range(30):
         sites.append(f'{api_url}@_skip={cntr*100}')
 
     # print('site: ', sites)
@@ -2548,10 +2549,10 @@ def get_trade_detail_oneDay(request, dateTime):
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/tradedetails?' \
               f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time' #@_expand=trade'
+              f'@_count=100@_sort=date_time' #@_expand=trade'
 
     sites = []
-    for cntr in range(15):
+    for cntr in range(30):
         sites.append(f'{api_url}@_skip={cntr*100}')
 
     trade_detail_list.clear()
@@ -2733,13 +2734,13 @@ def get_trade_oneDay(request, dateTime):
     sites = []
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/trades?' \
               f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time' #@_expand=trade'
+              f'@_count=100@_sort=date_time' #@_expand=trade'
     for cntr in range(16):
         sites.append(f'{api_url}@_skip={cntr*100}')
 
     api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/exchange/indexvalues?' \
               f'@date_time={dateTime}@date_time_op=gt' \
-              f'@_count=100@_sort=-date_time'
+              f'@_count=100@_sort=date_time'
 
     for cntr in range(2):
         sites.append(f'{api_url}@_skip={cntr*100}')

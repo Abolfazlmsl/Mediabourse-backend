@@ -45,8 +45,8 @@ def validate_image(image):
 
 
 def validate_watchlist_items(watchlist):
-    if WatchListItem.objects.filter(watch_list_id=watchlist).count() >= 20:
-        raise ValidationError('شما نمی توانید بیش از 20 نماد در یک دیده بان ذخیره نمایید.')
+    if WatchListItem.objects.filter(watch_list_id=watchlist).count() >= 40:
+        raise ValidationError('شما نمی توانید بیش از 40 نماد در یک دیده بان ذخیره نمایید.')
 
 
 class UserManager(BaseUserManager):
@@ -131,6 +131,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_date = models.DateField(null=True, blank=True)
     postal_code = models.IntegerField(null=True, blank=True, unique=True)
     address = models.TextField(null=True, blank=True)
+    set_password_bool = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
