@@ -24,7 +24,8 @@ class UserAdmin(UserAdminBase):
                     'father_name',
                     'birth_date',
                     'postal_code',
-                    'address'
+                    'address',
+                    'set_password'
                 )
             }
         ),

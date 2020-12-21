@@ -12,12 +12,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   'last_name', 'picture',
                   'national_code', 'father_name', 'birth_date',
                   'postal_code', 'address']
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'phone_number')
+
+
+class SetPasswordSerializer(serializers.Serializer):
+
+    new_password = serializers.CharField(required=True)
+    
 
 
 class UserSignUpSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=11)
-    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    # password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     #
     # class Meta:
     #     model = User
