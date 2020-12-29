@@ -29,3 +29,11 @@ class IsWatchListOwner(permissions.BasePermission):
             watch_list_object = WatchList.objects.filter(id=watch_list_id, user=user).exists()
             return watch_list_object
         return True
+
+
+class IsUserFirstTime(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.user.is_active and not request.user.set_info:
+            return True
+        return False

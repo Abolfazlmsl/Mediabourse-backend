@@ -15,11 +15,35 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'phone_number')
 
 
-class SetPasswordSerializer(serializers.Serializer):
+class SetInfoSerializer(serializers.ModelSerializer):
 
-    password = serializers.CharField(required=True)
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'email',
+            'password',
+            'user_name',
+            'first_name',
+            'last_name',
+            'gender',
+            'accept_rule',
+        ]
+        read_only_fields = ('id',)
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        """Update the user, setting the password correctly and return it"""
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        user.set_info = True
+        user.set_password(password)
+        user.save()
+
+        return user
     
-
 
 class UserSignUpSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=11)

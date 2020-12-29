@@ -21,7 +21,7 @@ from mediabourse.settings import KAVENEGAR_APIKEY
 from bourse.models import User, WatchList, WatchListItem, Basket, UserTechnical, UserComment, Note, Bookmark, Company, \
     Tutorial, RequestSymbol
 from . import serializers
-from .permissions import IsOwner, IsWatchListOwner
+from .permissions import IsOwner, IsWatchListOwner, IsUserFirstTime
 
 
 class UserInfoView(RetrieveUpdateAPIView):
@@ -90,7 +90,7 @@ class SignUpAPIView(APIView):
                     phone_number=phone_number,
                 )
                 # password = serializer.validated_data['password']
-                user.is_active = False
+                # user.is_active = False
                 # user.set_password(password)
                 user.generated_token = randint(100000, 999999)
                 user.save()
@@ -175,44 +175,17 @@ def get_tokens_for_user(user):
     }
 
 
-class SetPasswordAPIView(UpdateAPIView):
+class SetInfoAPIView(UpdateAPIView):
     """
     An endpoint for set password.
     """
-    serializer_class = serializers.SetPasswordSerializer
+    serializer_class = serializers.SetInfoSerializer
     model = User
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsUserFirstTime)
 
     def get_object(self, queryset=None):
         obj = self.request.user
         return obj
-
-    def update(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        serializer = self.get_serializer(data=request.data)
-
-        if serializer.is_valid():
-            # Check set password status
-            if self.object.is_active:
-                print(self.object.set_password_bool)
-                if self.object.set_password_bool:
-                    return Response(
-                        {
-                            "message": "اجازه دسترسی ندارید!"
-                        }, 
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                # set_password also hashes the password that the user will get
-                self.object.set_password_bool = True
-                self.object.set_password(serializer.data.get("password"))
-                self.object.save()
-                response = {
-                    'message': 'رمز عبور با موفقیت ثبت شد',
-                }
-
-                return Response(response, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserPhoneRegisterAPIView(APIView):

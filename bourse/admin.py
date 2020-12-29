@@ -18,6 +18,8 @@ class UserAdmin(UserAdminBase):
                     'first_name',
                     'last_name',
                     'email',
+                    'user_name',
+                    'gender',
                     'generated_token',
                     'picture',
                     'national_code',
@@ -25,14 +27,20 @@ class UserAdmin(UserAdminBase):
                     'birth_date',
                     'postal_code',
                     'address',
-                    'set_password_bool'
+                    'set_info',
+                    'accept_rule',
                 )
             }
         ),
         (
             _('Permissions'),
             {
-                'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'groups'
+                )
             }
         ),
         (

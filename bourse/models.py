@@ -87,7 +87,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model that support phone number instead of username
     """
-
+    GENDER = (
+        ('male', 'مذکر'),
+        ('female', 'مونث')
+    )
     first_name = models.CharField(
         max_length=255,
         blank=True,
@@ -109,6 +112,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
+    user_name = models.CharField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True
+    )
     generated_token = models.IntegerField(
         blank=True,
         null=True,
@@ -123,6 +132,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True
     )
+    gender = models.CharField(
+        choices=GENDER,
+        max_length=255,
+        null=True,
+        blank=True
+    )
     father_name = models.CharField(
         max_length=128,
         null=True,
@@ -131,8 +146,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_date = models.DateField(null=True, blank=True)
     postal_code = models.IntegerField(null=True, blank=True, unique=True)
     address = models.TextField(null=True, blank=True)
-    set_password_bool = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    set_info = models.BooleanField(default=False)
+    accept_rule = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
