@@ -206,6 +206,25 @@ def instrument_info(request):
     return JsonResponse(res, safe=False)
 
 
+# get all capital change
+def capital_change(request):
+    instrument_id = request.GET.get('instrument')
+
+    if instrument_id is None:
+        return JsonResponse({'error': 'enter instrument id'}, safe=False)
+
+
+    try:
+        instrument = models.Instrumentsel.objects.get(id=instrument_id)
+    except models.Company.DoesNotExist:
+        return JsonResponse({'error': 'wrong instrument id'}, safe=False)
+
+    # get result candles
+    trade = models.Capitalchange.objects.filter(company_id=instrument.stock_id).order_by('date').values()
+
+    return JsonResponse(list(trade), safe=False)
+
+
 # get all instrument real-time data
 # @login_required
 # @user_passes_test(lambda u: u.is_superuser)
@@ -239,13 +258,14 @@ def ai_trade_detail(request):
 
         counter = 0
         for ins in list_of_instruments:
-            print(f'-- start to scrap {counter} of {count} - {ins.short_name} --')
+            # print(f'-- start to scrap {counter} of {count} - {ins.short_name} --')
             feed.get_trade_detail(request, ins)
             feed.get_trade(request, ins)
             counter += 1
 
     # update month average values
-    if True: #False:
+    isOperate = False
+    if isOperate: #False:
         list_of_instruments = models.Instrumentsel.objects.all()
         counter = 0
 
@@ -286,9 +306,9 @@ def ai_trade_detail(request):
             print(f'volAvg3M: {avg}')
 
             # 12 month
-            avg = models.Trade.objects.filter(date_time__gt=td_date365).aggregate(Avg('volume'))
-            obj_info.volAvg12M = avg['volume__avg']
-            print(f'volAvg12M: {avg}')
+            # avg = models.Trade.objects.filter(date_time__gt=td_date365).aggregate(Avg('volume'))
+            # obj_info.volAvg12M = avg['volume__avg']
+            # print(f'volAvg12M: {avg}')
 
             obj_info.save()
 
@@ -498,9 +518,20 @@ def fill_data(request):
     # feed.update_timeframe_candles()
     # tasks.update_timeframe_candles()
 
-    return HttpResponse(f"Table processed", content_type="text/plain")
+
+    # q = request.GET.get('instrument')
+    # print(q)
+    # if q:
+    #     ins = models.Instrumentsel.objects.get(id=q)
+    #     feed.get_trade_detail(request, ins)
+    #     feed.get_trade(request, ins)
+
+
+    return HttpResponse(f"Table processed 2", content_type="text/plain")
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+
+    # feed.get_capital_change(request)
 
     # Enable port reusage so we will be able to run multiple clients and servers on single (host, port).
     # Do not use socket.SO_REUSEADDR except you using linux(kernel<3.9): goto https://stackoverflow.com/questions/14388706/how-do-so-reuseaddr-and-so-reuseport-differ for more information.

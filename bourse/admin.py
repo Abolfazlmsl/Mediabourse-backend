@@ -64,6 +64,12 @@ class IndexAdmin(admin.ModelAdmin):
     list_filter = ("name", "meta")
 
 
+@admin.register(models.Capitalchange)
+class CapitalchangeAdmin(admin.ModelAdmin):
+    list_display = ("id", "company", "date")
+    list_filter = ("company",)
+
+
 @admin.register(models.Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
     list_display = ("id", "title", "english_title", "meta")
@@ -213,11 +219,10 @@ class NewsAdmin(admin.ModelAdmin):
     list_filter = ("reference", "is_approved", "date",)
 
 
-@admin.register(models.InstrumentInfo)
-class NewsAdmin(admin.ModelAdmin):
-    list_display = ("id", "instrument", "volAvg1M", "volAvg3M", "volAvg12M", "candle_start_date", "val_support"
-                    , "val_resistance", "created_on")
-    list_filter = ("instrument", "created_on",)
+@admin.register(models.Tutorial)
+class TutorialAdmin(admin.ModelAdmin):
+    list_display = ("id", "created_on", "title", "sub_category", "hit_count", "free",)
+    list_filter = ("sub_category", "created_on",)
 
 
 admin.site.register(models.User, UserAdmin)
@@ -234,7 +239,6 @@ admin.site.register(models.Bazaar)
 admin.site.register(models.UserTechnical)
 admin.site.register(models.TutorialCategory)
 admin.site.register(models.TutorialSubCategory)
-admin.site.register(models.Tutorial)
 admin.site.register(models.CompanyFinancial)
 admin.site.register(models.UserComment)
 admin.site.register(models.FileRepository)

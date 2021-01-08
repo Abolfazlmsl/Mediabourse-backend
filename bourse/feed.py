@@ -2605,18 +2605,21 @@ trade_list = list()
 # ger url
 async def request_trade(client, url):
     async with client.get(url) as request:
-        data1 = await request.json()
+        try:
+            data1 = await request.json()
 
-        # check error
-        if 'error' in data1:
-            print(f'error in {url}')
-            return
+            # check error
+            if 'error' in data1:
+                print(f'error in {url}')
+                return
 
-        print(f"receive data of {url}, len = {len(data1['data'])}")
+            print(f"receive data of {url}, len = {len(data1['data'])}")
 
-        for data in data1['data']:
-            trade_list.append(data)
-            # save_tradeDetail(data)
+            for data in data1['data']:
+                trade_list.append(data)
+                # save_tradeDetail(data)
+        except aiohttp.client_exceptions.ContentTypeError:
+            print(aiohttp.client_exceptions.ContentTypeError)
 
 
 # save single data
@@ -2691,7 +2694,7 @@ def get_trade(request, instrument):
                  f'index.id={instrument.index.id}@_count=100'  # @_expand=trade'
 
     sites = []
-    for cntr in range(16):
+    for cntr in range(30):
         sites.append(f'{api_url}@_skip={cntr*100}')
 
     # print('site: ', sites)
@@ -2779,6 +2782,7 @@ def get_trade_oneDay(request, dateTime):
                 instrument = models.Instrumentsel.objects.get(id=itm['instrument']['id'])
         except models.Instrumentsel.DoesNotExist:
             continue
+        # print(f'start save {instrument} - {itm}')
         save_single_trade(itm, instrument)
 
     total_time = time.time() - start_time
@@ -2790,6 +2794,124 @@ def get_trade_oneDay(request, dateTime):
 # ------- end of trade detail functions -------
 # ---------------------------------------------
 
+
+# ---------------------------------------------
+# ------- start of capital change functions -------
+
+capital_change_list = list()
+
+
+# ger url
+async def request_capital_change(client, url):
+    async with client.get(url) as request:
+        data1 = await request.json()
+
+        # check error
+        if 'error' in data1:
+            print(f'error in {url}')
+            return
+
+        print(f"receive data of {url}, len = {len(data1['data'])}")
+
+        for data in data1['data']:
+            capital_change_list.append(data)
+            # save_tradeDetail(data)
+
+
+# save capital change data
+def save_capital_change(data, obj_company):
+
+    obj = data
+
+    # ignore deleted state
+    if obj['meta']['state'] == 'deleted':
+        return
+
+    obj_capital, ot = models.Capitalchange.objects.get_or_create(id=obj['id'])
+
+    obj_capital.company = obj_company
+
+    if 'date' in obj:
+        obj_capital.date = obj['date']
+    if 'previous_capital' in obj:
+        obj_capital.previous_capital = float(obj['previous_capital'])
+    if 'new_capital' in obj:
+        obj_capital.new_capital = float(obj['new_capital'])
+    if 'contribution_percent' in obj:
+        obj_capital.contribution_percent = float(obj['contribution_percent'])
+    if 'reserve_percent' in obj:
+        obj_capital.reserve_percent = int(obj['reserve_percent'])
+    if 'premium_percent' in obj:
+        obj_capital.premium_percent = int(obj['premium_percent'])
+    # if 'underwriting_end_date' in obj:
+    #     obj_capital.underwriting_end_date = int(obj['underwriting_end_date'])
+    if 'registration_date' in obj:
+        obj_capital.registration_date = obj['registration_date']
+    if 'stock_certificate_receive_date' in obj:
+        obj_capital.stock_certificate_receive_date = obj['stock_certificate_receive_date']
+    if 'comments' in obj:
+        obj_capital.comments = obj['comments']
+
+
+    obj_capital.save()
+    # print('obj_capital: ', obj_capital)
+
+
+# fill capital change data
+def get_capital_change(request):
+
+    sites = []
+    api_url = f'https://bourse-api.ir/bourse/api-test/?url=https://v1.db.api.mabnadp.com/stock/capitalchanges?' \
+              f'@_count=100' #@_expand=trade'
+    for cntr in range(20): #65
+        # cntr = cntr + 60
+        sites.append(f'{api_url}@_skip={cntr*100}')
+
+
+    # print('site: ', sites)
+
+    capital_change_list.clear()
+
+    async def scrap():
+        async with aiohttp.ClientSession() as client:
+            start_time = time.time()
+            tasks = []
+            for url in sites:
+                task = asyncio.ensure_future(request_capital_change(client, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+            total_time = time.time() - start_time
+            print('scrapped in', total_time, 'seconds')
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrap())
+    loop.close()
+
+    start_time = time.time()
+
+    cnt = 0
+    for itm in capital_change_list:
+        # print(itm)
+        # continue
+        if itm['meta']['state'] == 'deleted':
+            continue
+        try:
+            company = models.Company.objects.get(id=itm['company']['id'])
+        except models.Company.DoesNotExist:
+            continue
+        # print(f'start save {company} - {itm}')
+        save_capital_change(itm, company)
+
+    total_time = time.time() - start_time
+    print('save in DB in', total_time, 'seconds')
+
+    # return instrument_info_list
+    return trade_list
+
+# ------- end of capital change functions -------
+# ---------------------------------------------
 
 def test():
     print('man')

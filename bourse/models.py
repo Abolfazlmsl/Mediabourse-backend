@@ -506,6 +506,30 @@ class Instrumentsel(models.Model):
         return self.name
 
 
+# تغییرات سرمایه
+class Capitalchange(models.Model):
+    id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
+
+    # report, TODO: new model
+    date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ افزایش سرمایه')
+    # meeting, TODO: new model
+    previous_capital = models.BigIntegerField(null=True, blank=True, help_text='سرمایه شرکت قبل از افزایش سرمایه(ریال)')
+    new_capital = models.BigIntegerField(null=True, blank=True, help_text='سرمایه شرکت پس از افزایش سرمایه(ریال)')
+    contribution_percent = models.IntegerField(null=True, blank=True, help_text='درصد افزایش سرمایه از محل مطالبات و آورده نقدی سهامداران')
+    reserve_percent = models.IntegerField(null=True, blank=True, help_text='درصد افزایش سرمایه از محل اندوخته‌ها')
+    premium_percent = models.IntegerField(null=True, blank=True, help_text='درصد افزایش سرمایه از محل صرف سهام')
+    # registration_report
+    registration_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ ثبت افزایش سرمایه')
+    # stock_certificate_receive_report
+    stock_certificate_receive_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ دریافت برگه سهام')
+    warrant_sell_date = models.CharField(max_length=255, null=True, blank=True, help_text='تاریخ فروش حق تقدم')
+    comments = models.CharField(max_length=1000, null=True, blank=True, help_text='توضیحات')
+    english_comments = models.CharField(max_length=1000, null=True, blank=True, help_text='توضیحات (انگلیسی)')
+
+    company = models.ForeignKey(Company, related_name='company_capital_changes', on_delete=models.CASCADE, null=True, blank=True, help_text='شرکت')
+    meta = models.ForeignKey(Meta, related_name='meta_capital_changes', on_delete=models.CASCADE, null=True, blank=True, help_text='اطلاعات رکورد')
+
+
 # معاملات روزانه
 class   Trade(models.Model):
     # id = models.CharField(max_length=255, primary_key=True, help_text='کد رکورد')
@@ -1274,7 +1298,7 @@ class Tutorial(models.Model):
         on_delete=models.CASCADE,
         help_text='کاربر'
     )
-    created_on = models.DateField(auto_now_add=True, help_text='تاریخ ایجاد')
+    created_on = models.DateTimeField(help_text='تاریخ ایجاد')
     title = models.CharField(max_length=255, help_text='عنوان')
     sub_category = models.ForeignKey(
         TutorialSubCategory,
@@ -1298,6 +1322,9 @@ class Tutorial(models.Model):
         upload_to='uploads/thumbnail/tutorial',
         help_text='تصویر'
     )
+
+    class Meta:
+        ordering = ('-created_on', )
 
     @property
     def tutorial_files(self):

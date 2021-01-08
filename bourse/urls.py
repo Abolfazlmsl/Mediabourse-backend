@@ -5,6 +5,7 @@ from bourse import consumers
 from . import views
 from django.conf.urls import url
 
+app_name = 'bourse'
 
 router = DefaultRouter()
 router.register('company', views.CompanyListRetrieveApiView)
@@ -45,6 +46,7 @@ urlpatterns = [
     path('news-scraper/',  views.news_scraper_view, name='news-scraper'),
     path('list-tradeDetail/',  views.list_trade_detail, name='list-trade-detail'),
     path('instrument-info/',  views.instrument_info, name='instrument-info'),
+    path('capitalChange/',  views.capital_change, name='capital-change'),
     path('AI/trade-detail/',  views.ai_trade_detail, name='ai-trade-detail'),
     path('AI/trade-detail-current/',  views.ai_trade_detail_current, name='ai-trade-detail-current'),
     path('instrument-info-single/',  views.get_Selected_instrument_info, name='get-Selected-instrument-info'),
